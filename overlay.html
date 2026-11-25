@@ -26,11 +26,19 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
+      width: 100%;
+      height: 100%;
       background: transparent !important;
       color: var(--text-primary);
       font-family: var(--font-sans);
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
+    }
+
+    body.standalone-fit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .root {
@@ -39,6 +47,16 @@
       gap: 12px;
       padding: 18px;
       width: 344px;
+      flex-shrink: 0;
+    }
+
+    body.standalone-fit .root {
+      padding: 8px;
+      width: 324px;
+    }
+
+    body.standalone-fit .root.has-neon-glow {
+      padding: 20px;
     }
 
     .root.compact {
@@ -47,20 +65,29 @@
       padding: 14px;
     }
 
+    body.standalone-fit .root.compact {
+      width: 284px;
+      padding: 6px;
+    }
+
+    body.standalone-fit .root.compact.has-neon-glow {
+      padding: 18px;
+    }
+
     .root.wins-vertical-only {
-      width: 184px;
+      width: 164px;
     }
 
     .root.compact.wins-vertical-only {
-      width: 158px;
+      width: 142px;
     }
 
     .root.gift-spotlight-only {
-      width: 268px;
+      width: 236px;
     }
 
     .root.compact.gift-spotlight-only {
-      width: 232px;
+      width: 204px;
     }
 
     .widget {
@@ -405,27 +432,43 @@
       background: var(--ok);
     }
 
-    /* Highest Combo & Biggest Gift Spotlight (Transparent Floating Icon + Tilted x100/Coins + Centered Name) */
+    /* Highest Combo & Biggest Gift Spotlight (v1.1.1 Floating Icon + Top Header + Tilted x100/Coins + Centered Name) */
     .gift-spotlight-body {
-      padding: 14px 12px 12px;
+      padding: 10px 12px 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      gap: 10px;
+      gap: 8px;
       background: transparent;
     }
 
     .compact .gift-spotlight-body {
-      padding: 10px 8px;
-      gap: 7px;
+      padding: 8px 8px 10px;
+      gap: 6px;
+    }
+
+    .gift-spotlight-top-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      line-height: 1.15;
+      color: var(--card-text, #FAFAFA);
+      text-align: center;
+      background: transparent;
+      white-space: nowrap;
+    }
+
+    .compact .gift-spotlight-top-title {
+      font-size: 14px;
     }
 
     .gift-spotlight-icon-wrap {
       position: relative;
-      width: 98px;
-      height: 98px;
+      width: 100px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -434,8 +477,8 @@
     }
 
     .compact .gift-spotlight-icon-wrap {
-      width: 80px;
-      height: 80px;
+      width: 82px;
+      height: 82px;
     }
 
     .gift-spotlight-img {
@@ -470,6 +513,7 @@
       transform: rotate(var(--badge-tilt, -10deg));
       transform-origin: center center;
       pointer-events: none;
+      z-index: 3;
     }
 
     .gift-tilted-main {
@@ -522,6 +566,7 @@
       padding: 0 4px;
     }
 
+    .text-outline-on .gift-spotlight-top-title,
     .text-outline-on .gift-spotlight-user,
     .text-outline-on .win-current,
     .text-outline-on .win-goal,
@@ -801,15 +846,8 @@
     </section>
 
     <section id="w-combo" class="widget floating-spotlight hidden">
-      <div id="combo-head" class="widget-head hidden">
-        <div class="widget-title-wrap">
-          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-          </svg>
-          <span id="combo-title" class="widget-title">Highest Combo</span>
-        </div>
-      </div>
       <div class="gift-spotlight-body">
+        <div id="combo-title" class="gift-spotlight-top-title">Highest Combo</div>
         <div class="gift-spotlight-icon-wrap">
           <div id="combo-icon-slot"></div>
           <div id="combo-corner" class="gift-tilted-corner hidden">
@@ -822,15 +860,8 @@
     </section>
 
     <section id="w-biggest" class="widget floating-spotlight hidden">
-      <div id="biggest-head" class="widget-head hidden">
-        <div class="widget-title-wrap">
-          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>
-          </svg>
-          <span id="biggest-title" class="widget-title">Biggest Gift</span>
-        </div>
-      </div>
       <div class="gift-spotlight-body">
+        <div id="biggest-title" class="gift-spotlight-top-title">Biggest Gift</div>
         <div class="gift-spotlight-icon-wrap">
           <div id="biggest-icon-slot"></div>
           <div id="biggest-corner" class="gift-tilted-corner hidden">
@@ -915,7 +946,7 @@
         borderMode: ws.borderMode || (isSpotlight ? 'none' : (cfg.cardBorderMode || 'solid')),
         borderColor: ws.borderColor || (isSpotlight ? '#38BDF8' : (cfg.cardBorderColor || '#2E2E36')),
         accentColor: ws.accentColor || cfg.accentColor || '#2563EB',
-        showTitle: ws.showTitle !== undefined ? Boolean(ws.showTitle) : !isSpotlight,
+        showTitle: ws.showTitle !== undefined ? Boolean(ws.showTitle) : true,
         nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
         badgeColor: ws.badgeColor || '#FBBF24',
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
@@ -1302,17 +1333,18 @@
         fill.classList.toggle('done', reached);
       }
 
-      // Highest Gift Combo Spotlight (Transparent Floating Icon + Tilted x100 & Coins + Centered Name)
+      // Highest Gift Combo Spotlight (Top Header + Floating Icon + Tilted x100 & Coins + Centered Name)
       const comboEl = document.getElementById('w-combo');
       comboEl.classList.toggle('hidden', !showCombo);
       if (showCombo) {
         const ws = getWidgetStyle(cfg, 'combo');
-        const comboHead = document.getElementById('combo-head');
-        comboHead.classList.toggle('hidden', !ws.showTitle);
-        applyWidgetAppearance(comboEl, ws, { headEl: comboHead });
+        applyWidgetAppearance(comboEl, ws, {});
         comboEl.style.setProperty('--badge-color', ws.badgeColor);
         comboEl.style.setProperty('--badge-tilt', ws.badgeTilt + 'deg');
-        document.getElementById('combo-title').textContent = cfg.comboTitle || 'Highest Combo';
+
+        const titleEl = document.getElementById('combo-title');
+        titleEl.textContent = cfg.comboTitle || 'Highest Combo';
+        titleEl.classList.toggle('hidden', !ws.showTitle);
 
         const hc = state.highestCombo || null;
         const slot = document.getElementById('combo-icon-slot');
@@ -1340,17 +1372,18 @@
         }
       }
 
-      // Biggest Gift Spotlight (Same Transparent Floating Icon + Tilted Coins + Centered Name)
+      // Biggest Gift Spotlight (Top Header + Floating Icon + Tilted Coins & Count + Centered Name)
       const biggestEl = document.getElementById('w-biggest');
       biggestEl.classList.toggle('hidden', !showBiggest);
       if (showBiggest) {
         const ws = getWidgetStyle(cfg, 'biggest');
-        const biggestHead = document.getElementById('biggest-head');
-        biggestHead.classList.toggle('hidden', !ws.showTitle);
-        applyWidgetAppearance(biggestEl, ws, { headEl: biggestHead });
+        applyWidgetAppearance(biggestEl, ws, {});
         biggestEl.style.setProperty('--badge-color', ws.badgeColor);
         biggestEl.style.setProperty('--badge-tilt', ws.badgeTilt + 'deg');
-        document.getElementById('biggest-title').textContent = cfg.biggestTitle || 'Biggest Gift';
+
+        const titleEl = document.getElementById('biggest-title');
+        titleEl.textContent = cfg.biggestTitle || 'Biggest Gift';
+        titleEl.classList.toggle('hidden', !ws.showTitle);
 
         const bg = state.biggestGift || null;
         const slot = document.getElementById('biggest-icon-slot');
@@ -1419,6 +1452,47 @@
           'No gifts yet'
         );
       }
+
+      if (MODE !== 'all') {
+        const activeStyle = getWidgetStyle(cfg, MODE);
+        root.classList.toggle('has-neon-glow', activeStyle.borderMode === 'neon');
+      } else {
+        root.classList.remove('has-neon-glow');
+      }
+      fitStandaloneViewport();
+    }
+
+    // Zero-crop auto-fit scaling: standalone overlays cleanly fill any OBS / LIVE Studio viewport size
+    function fitStandaloneViewport() {
+      const isStandalone = MODE !== 'all';
+      document.body.classList.toggle('standalone-fit', isStandalone);
+      const root = document.getElementById('root');
+      if (!root) return;
+      if (!isStandalone) {
+        root.style.zoom = '';
+        root.style.transform = '';
+        return;
+      }
+      root.style.zoom = '1';
+      root.style.transform = '';
+      const vw = Math.max(64, window.innerWidth || 0);
+      const vh = Math.max(64, window.innerHeight || 0);
+      const natW = Math.max(1, root.offsetWidth || root.scrollWidth);
+      const natH = Math.max(1, root.offsetHeight || root.scrollHeight);
+      const scale = Math.max(0.25, Math.min(6, Math.min(vw / natW, vh / natH)));
+      if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '1.5')) {
+        root.style.zoom = scale.toFixed(4);
+      } else {
+        root.style.transformOrigin = 'center center';
+        root.style.transform = 'scale(' + scale.toFixed(4) + ')';
+      }
+    }
+
+    window.addEventListener('resize', fitStandaloneViewport);
+    if (typeof ResizeObserver !== 'undefined') {
+      try {
+        new ResizeObserver(fitStandaloneViewport).observe(document.getElementById('root'));
+      } catch (_) {}
     }
 
     let ws = null;
