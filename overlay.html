@@ -953,7 +953,9 @@
         badgeColor: ws.badgeColor || '#FBBF24',
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
         showCoins: ws.showCoins !== false,
-        topLimit: Number.isFinite(Number(ws.topLimit)) ? Math.max(1, Math.min(10, Number(ws.topLimit))) : (Number(cfg.topLimit) || 5),
+        topLimit: Number.isFinite(Number(ws.topLimit))
+          ? Math.max(3, Math.min(10, Math.round(Number(ws.topLimit))))
+          : Math.max(3, Math.min(10, Math.round(Number(cfg.topLimit) || 5))),
         showAvatars: ws.showAvatars !== undefined ? Boolean(ws.showAvatars) : (cfg.showAvatars !== false),
       };
     }
