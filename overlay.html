@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamForge Overlay — all</title>
+  <style>
+    :root {
+      --bg-card: rgba(15, 15, 18, 0.9);
+      --bg-row: rgba(255, 255, 255, 0.035);
+      --border: rgba(255, 255, 255, 0.11);
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --text-primary: #F4F4F5;
+      --text-secondary: #A1A1AA;
+      --text-muted: #71717A;
+      --accent: #2563EB;
+      --gold: #FBBF24;
+      --silver: #D4D4D8;
+      --bronze: #D97706;
+      --ok: #4ADE80;
+      --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: transparent !important;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    .root {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      width: 320px;
+    }
+
+    .root.compact {
+      width: 276px;
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .widget {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .widget-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 8px;
+    }
+
+    .compact .widget-head {
+      padding: 8px 10px;
+    }
+
+    .widget-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .widget-icon {
+      width: 15px;
+      height: 15px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .widget-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .pill.done {
+      color: var(--ok);
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .pill.live {
+      color: var(--ok);
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.28);
+    }
+
+    .pill.warn {
+      color: var(--gold);
+      background: rgba(251, 191, 36, 0.14);
+      border-color: rgba(251, 191, 36, 0.32);
+    }
+
+    /* Stream Timer Body */
+    .timer-widget {
+      transition: background-color 160ms ease, border-color 160ms ease;
+    }
+
+    .timer-body {
+      padding: 14px 16px 13px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .compact .timer-body {
+      padding: 11px 12px 10px;
+      gap: 6px;
+    }
+
+    .timer-body.minimal {
+      padding: 10px 14px;
+      gap: 4px;
+    }
+
+    .timer-digits-row {
+      display: inline-flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      color: var(--timer-text, var(--text-primary));
+    }
+
+    .timer-unit-col {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      min-width: 58px;
+    }
+
+    .compact .timer-unit-col {
+      min-width: 48px;
+    }
+
+    .timer-num {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: inherit;
+    }
+
+    .compact .timer-num {
+      font-size: 32px;
+    }
+
+    .timer-colon {
+      font-size: 36px;
+      font-weight: 600;
+      line-height: 0.94;
+      opacity: 0.6;
+      color: inherit;
+      user-select: none;
+    }
+
+    .compact .timer-colon {
+      font-size: 28px;
+    }
+
+    .timer-unit-label {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      opacity: 0.62;
+      color: inherit;
+    }
+
+    .timer-meta {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      color: var(--timer-text, var(--text-secondary));
+      opacity: 0.72;
+    }
+
+    .timer-float-add {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ok);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(34, 197, 94, 0.16);
+      border: 1px solid rgba(34, 197, 94, 0.34);
+    }
+
+    /* Win Counter Body */
+    .win-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .compact .win-body {
+      padding: 10px;
+      gap: 8px;
+    }
+
+    .win-score-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .win-fraction {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      line-height: 1;
+    }
+
+    .win-current {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+    }
+
+    .compact .win-current {
+      font-size: 26px;
+    }
+
+    .win-sep {
+      font-size: 18px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .win-goal {
+      font-size: 18px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .win-pct {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--accent);
+      transition: width 260ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease;
+    }
+
+    .progress-fill.done {
+      background: var(--ok);
+    }
+
+    /* Leaderboard Rows */
+    .lb-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      min-width: 0;
+    }
+
+    .compact .lb-row {
+      padding: 6px 10px;
+      gap: 7px;
+    }
+
+    .lb-row:last-child {
+      border-bottom: none;
+    }
+
+    .lb-rank {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .lb-rank.r1 { color: var(--gold); border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.12); }
+    .lb-rank.r2 { color: var(--silver); border-color: rgba(212, 212, 216, 0.3); background: rgba(212, 212, 216, 0.09); }
+    .lb-rank.r3 { color: var(--bronze); border-color: rgba(217, 119, 6, 0.35); background: rgba(217, 119, 6, 0.12); }
+
+    .lb-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
+    }
+
+    .lb-avatar-fallback {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .compact .lb-avatar,
+    .compact .lb-avatar-fallback {
+      width: 20px;
+      height: 20px;
+      font-size: 9px;
+    }
+
+    .lb-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .compact .lb-name {
+      font-size: 12px;
+    }
+
+    .lb-score {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .lb-unit {
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 11px;
+      margin-left: 3px;
+    }
+
+    .lb-empty {
+      padding: 16px 12px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="root" class="root" data-mode="all">
+    <section id="w-timer" class="widget timer-widget hidden">
+      <div id="timer-head" class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M9 2h6"/><path d="M12 2v3"/>
+          </svg>
+          <span id="timer-title" class="widget-title">Stream Timer</span>
+        </div>
+        <span id="timer-badge" class="pill">PAUSED</span>
+      </div>
+      <div id="timer-body" class="timer-body">
+        <div id="timer-digits" class="timer-digits-row" aria-label="Stream Timer">
+          <div class="timer-unit-col">
+            <span id="timer-hrs" class="timer-num">01</span>
+            <span class="timer-unit-label">HRS</span>
+          </div>
+          <span class="timer-colon">:</span>
+          <div class="timer-unit-col">
+            <span id="timer-min" class="timer-num">00</span>
+            <span class="timer-unit-label">MIN</span>
+          </div>
+          <span class="timer-colon">:</span>
+          <div class="timer-unit-col">
+            <span id="timer-sec" class="timer-num">00</span>
+            <span class="timer-unit-label">SEC</span>
+          </div>
+        </div>
+        <div id="timer-float-add" class="timer-float-add hidden">+0s</div>
+        <div id="timer-meta" class="timer-meta">
+          <span id="timer-rate">1c = +1s</span>
+          <span id="timer-mode-meta">Countdown</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="w-wins" class="widget hidden">
+      <div class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+          <span id="wins-title" class="widget-title">Win Goal</span>
+        </div>
+        <span id="wins-badge" class="pill">0%</span>
+      </div>
+      <div class="win-body">
+        <div class="win-score-row">
+          <div class="win-fraction">
+            <span id="wins-current" class="win-current">0</span>
+            <span class="win-sep">/</span>
+            <span id="wins-goal" class="win-goal">10</span>
+          </div>
+          <span id="wins-remaining" class="win-pct">10 left</span>
+        </div>
+        <div id="wins-progress-track" class="progress-track">
+          <div id="wins-progress-fill" class="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="w-likers" class="widget hidden">
+      <div class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+          </svg>
+          <span id="likers-title" class="widget-title">Top Likers</span>
+        </div>
+        <span id="likers-count" class="pill">Top 5</span>
+      </div>
+      <div id="likers-list" class="lb-list"></div>
+    </section>
+
+    <section id="w-coins" class="widget hidden">
+      <div class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>
+          </svg>
+          <span id="coins-title" class="widget-title">Top Supporters</span>
+        </div>
+        <span id="coins-count" class="pill">Top 5</span>
+      </div>
+      <div id="coins-list" class="lb-list"></div>
+    </section>
+  </div>
+
+  <script>
+    const CLOUD_SB_URL = "https://eqcimeczulbkmatdbnie.supabase.co";
+    const CLOUD_SB_KEY = "sb_publishable_BfwBTX4NzKuJURYLjDBn_g_6i17jD_O";
+    const qp = new URLSearchParams(window.location.search || '');
+    const reqMode = String(qp.get('mode') || 'all').toLowerCase();
+    const MODE = ['all', 'timer', 'wins', 'likers', 'coins'].includes(reqMode) ? reqMode : 'all';
+    document.getElementById('root').dataset.mode = MODE;
+    const ROOM_TOKEN = String(qp.get('room') || '').trim();
+    const VALID_ROOM = /^[a-zA-Z0-9_-]{8,64}$/.test(ROOM_TOKEN);
+    let latestState = null;
+    let clockOffsetMs = 0;
+
+    function fmtNum(n) {
+      const val = Number(n) || 0;
+      if (val >= 1000000) return (val / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (val >= 10000) return (val / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return val.toLocaleString();
+    }
+
+    function hexToRgba(hex, opacityPct) {
+      const clean = typeof hex === 'string' && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#0F0F12';
+      const r = parseInt(clean.slice(1, 3), 16);
+      const g = parseInt(clean.slice(3, 5), 16);
+      const b = parseInt(clean.slice(5, 7), 16);
+      const a = Math.max(0, Math.min(100, Number(opacityPct))) / 100;
+      return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a.toFixed(3) + ')';
+    }
+
+    function fmtSecondsShort(rawSec) {
+      const val = Math.max(0, Number(rawSec) || 0);
+      if (val < 60) {
+        const rounded = Math.round(val * 100) / 100;
+        return rounded + 's';
+      }
+      const total = Math.round(val);
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      const parts = [];
+      if (h > 0) parts.push(h + 'h');
+      if (m > 0) parts.push(m + 'm');
+      if (s > 0 || parts.length === 0) parts.push(s + 's');
+      return parts.join(' ');
+    }
+
+    function computeLiveTimerSeconds(t) {
+      if (!t) return 0;
+      const base = Math.max(0, Number(t.baseSeconds) || 0);
+      if (!t.running || !t.startedAt) return base;
+      const estServerNow = Date.now() - clockOffsetMs;
+      const elapsed = Math.max(0, (estServerNow - Number(t.startedAt)) / 1000);
+      if (t.mode === 'countup') {
+        return Math.min(3599999, base + elapsed);
+      }
+      return Math.max(0, base - elapsed);
+    }
+
+    function renderTimerTick() {
+      if (!latestState || !latestState.config) return;
+      const cfg = latestState.config;
+      const showTimer = MODE === 'timer' || (MODE === 'all' && cfg.showTimer !== false);
+      const timerEl = document.getElementById('w-timer');
+      if (!timerEl) return;
+      timerEl.classList.toggle('hidden', !showTimer);
+      if (!showTimer) return;
+
+      const t = latestState.timer || {
+        running: false,
+        mode: cfg.timerMode || 'countdown',
+        baseSeconds: cfg.timerMode === 'countup' ? 0 : (Number(cfg.timerInitialSeconds) || 3600),
+        startedAt: null,
+        totalAddedSeconds: 0,
+        lastAdd: null,
+      };
+
+      const rawSec = computeLiveTimerSeconds(t);
+      const displaySec = t.mode === 'countdown' && t.running && rawSec > 0
+        ? Math.ceil(rawSec)
+        : Math.floor(rawSec);
+
+      const safe = Math.max(0, displaySec);
+      const hrs = Math.floor(safe / 3600);
+      const mins = Math.floor((safe % 3600) / 60);
+      const secs = safe % 60;
+
+      document.getElementById('timer-hrs').textContent = String(hrs).padStart(2, '0');
+      document.getElementById('timer-min').textContent = String(mins).padStart(2, '0');
+      document.getElementById('timer-sec').textContent = String(secs).padStart(2, '0');
+
+      const opacity = Number.isFinite(Number(cfg.timerBgOpacity)) ? Math.max(0, Math.min(100, Number(cfg.timerBgOpacity))) : 90;
+      const bgHex = cfg.timerBgColor || '#0F0F12';
+      const textHex = cfg.timerTextColor || '#FAFAFA';
+      const showTitle = cfg.timerShowTitle !== false;
+
+      timerEl.style.setProperty('--timer-text', textHex);
+      timerEl.style.backgroundColor = opacity <= 0 ? 'rgba(0, 0, 0, 0)' : hexToRgba(bgHex, opacity);
+      timerEl.style.borderColor = opacity <= 0
+        ? 'transparent'
+        : 'rgba(255, 255, 255, ' + (0.11 * Math.min(1, opacity / 40)).toFixed(3) + ')';
+
+      const headEl = document.getElementById('timer-head');
+      const bodyEl = document.getElementById('timer-body');
+      const metaEl = document.getElementById('timer-meta');
+      const floatAddEl = document.getElementById('timer-float-add');
+
+      headEl.classList.toggle('hidden', !showTitle);
+      metaEl.classList.toggle('hidden', !showTitle);
+      bodyEl.classList.toggle('minimal', !showTitle);
+      headEl.style.borderBottomColor = opacity <= 0
+        ? 'transparent'
+        : 'rgba(255, 255, 255, ' + (0.07 * Math.min(1, opacity / 40)).toFixed(3) + ')';
+      metaEl.style.borderTopColor = opacity <= 0
+        ? 'transparent'
+        : 'rgba(255, 255, 255, ' + (0.07 * Math.min(1, opacity / 40)).toFixed(3) + ')';
+
+      const estServerNow = Date.now() - clockOffsetMs;
+      const recentAdd = t.lastAdd && t.lastAdd.seconds > 0 && (estServerNow - Number(t.lastAdd.at || 0)) < 3500
+        ? t.lastAdd
+        : null;
+
+      if (showTitle) {
+        const titleEl = document.getElementById('timer-title');
+        titleEl.textContent = cfg.timerTitle || 'Stream Timer';
+        titleEl.style.color = textHex;
+        titleEl.style.opacity = '0.82';
+
+        const badge = document.getElementById('timer-badge');
+        badge.classList.remove('done', 'live', 'warn');
+        if (recentAdd) {
+          badge.textContent = '+' + fmtSecondsShort(recentAdd.seconds);
+          badge.classList.add('done');
+        } else if (t.running && !(t.mode === 'countdown' && rawSec <= 0)) {
+          badge.textContent = 'LIVE';
+          badge.classList.add('live');
+        } else if (t.mode === 'countdown' && rawSec <= 0) {
+          badge.textContent = 'TIME UP';
+          badge.classList.add('warn');
+        } else {
+          badge.textContent = 'PAUSED';
+        }
+
+        const rateEl = document.getElementById('timer-rate');
+        const spc = Number(cfg.timerSecondsPerCoin) || 0;
+        if (cfg.timerAddOnCoins !== false && spc > 0) {
+          rateEl.textContent = '1c = +' + fmtSecondsShort(spc);
+        } else {
+          rateEl.textContent = 'Coin add off';
+        }
+
+        const modeMetaEl = document.getElementById('timer-mode-meta');
+        const totalAdded = Number(t.totalAddedSeconds) || 0;
+        if (totalAdded > 0) {
+          modeMetaEl.textContent = '+' + fmtSecondsShort(totalAdded) + ' added';
+        } else {
+          modeMetaEl.textContent = t.mode === 'countup' ? 'Countup' : 'Countdown';
+        }
+
+        floatAddEl.classList.add('hidden');
+      } else {
+        if (recentAdd) {
+          floatAddEl.textContent = '+' + fmtSecondsShort(recentAdd.seconds);
+          floatAddEl.classList.remove('hidden');
+        } else {
+          floatAddEl.classList.add('hidden');
+        }
+      }
+    }
+
+    function createAvatarNode(entry) {
+      const label = (entry.nickname || entry.user || '?').trim();
+      const initials = label.slice(0, 2).toUpperCase();
+      if (entry.avatarUrl && entry.avatarUrl.startsWith('https://')) {
+        const img = document.createElement('img');
+        img.className = 'lb-avatar';
+        img.src = entry.avatarUrl;
+        img.alt = '';
+        img.referrerPolicy = 'no-referrer';
+        img.onerror = function () {
+          const fb = document.createElement('span');
+          fb.className = 'lb-avatar-fallback';
+          fb.textContent = initials;
+          img.replaceWith(fb);
+        };
+        return img;
+      }
+      const fb = document.createElement('span');
+      fb.className = 'lb-avatar-fallback';
+      fb.textContent = initials;
+      return fb;
+    }
+
+    function renderLeaderboard(container, rows, valueKey, unitLabel, showAvatars, emptyText) {
+      container.textContent = '';
+      if (!Array.isArray(rows) || rows.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'lb-empty';
+        empty.textContent = emptyText;
+        container.appendChild(empty);
+        return;
+      }
+
+      rows.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'lb-row';
+
+        const rank = document.createElement('span');
+        rank.className = 'lb-rank' + (idx < 3 ? ' r' + (idx + 1) : '');
+        rank.textContent = String(idx + 1);
+        row.appendChild(rank);
+
+        if (showAvatars) {
+          row.appendChild(createAvatarNode(item));
+        }
+
+        const name = document.createElement('span');
+        name.className = 'lb-name';
+        name.textContent = item.nickname || item.user || 'Viewer';
+        row.appendChild(name);
+
+        const score = document.createElement('span');
+        score.className = 'lb-score';
+        score.textContent = fmtNum(item[valueKey]);
+
+        if (unitLabel) {
+          const unit = document.createElement('span');
+          unit.className = 'lb-unit';
+          unit.textContent = unitLabel;
+          score.appendChild(unit);
+        }
+
+        row.appendChild(score);
+        container.appendChild(row);
+      });
+    }
+
+    function render(state) {
+      if (!state || !state.config) return;
+      latestState = state;
+      if (state.timer && Number.isFinite(Number(state.timer.serverNow))) {
+        clockOffsetMs = Date.now() - Number(state.timer.serverNow);
+      }
+      const cfg = state.config;
+      const root = document.getElementById('root');
+      root.classList.toggle('compact', Boolean(cfg.compact));
+      if (cfg.accentColor) {
+        document.documentElement.style.setProperty('--accent', cfg.accentColor);
+      }
+
+      renderTimerTick();
+
+      const showWins = MODE === 'wins' || (MODE === 'all' && cfg.showWins !== false);
+      const showLikers = MODE === 'likers' || (MODE === 'all' && cfg.showLikers !== false);
+      const showCoins = MODE === 'coins' || (MODE === 'all' && cfg.showCoins !== false);
+
+      const winsEl = document.getElementById('w-wins');
+      winsEl.classList.toggle('hidden', !showWins);
+      if (showWins) {
+        const wins = Math.max(0, Number(cfg.wins) || 0);
+        const goal = Math.max(1, Number(cfg.winGoal) || 10);
+        const pct = Math.min(100, Math.round((wins / goal) * 100));
+        const reached = wins >= goal;
+
+        document.getElementById('wins-title').textContent = cfg.winTitle || 'Win Goal';
+        document.getElementById('wins-current').textContent = wins.toLocaleString();
+        document.getElementById('wins-goal').textContent = goal.toLocaleString();
+
+        const badge = document.getElementById('wins-badge');
+        badge.textContent = reached ? 'GOAL HIT' : pct + '%';
+        badge.classList.toggle('done', reached);
+
+        const rem = document.getElementById('wins-remaining');
+        rem.textContent = reached ? 'Target reached' : (goal - wins).toLocaleString() + ' to go';
+
+        const track = document.getElementById('wins-progress-track');
+        track.classList.toggle('hidden', cfg.showProgressBar === false);
+        const fill = document.getElementById('wins-progress-fill');
+        fill.style.width = pct + '%';
+        fill.classList.toggle('done', reached);
+      }
+
+      const limit = Math.max(1, Math.min(10, Number(cfg.topLimit) || 5));
+
+      const likersEl = document.getElementById('w-likers');
+      likersEl.classList.toggle('hidden', !showLikers);
+      if (showLikers) {
+        document.getElementById('likers-title').textContent = cfg.likersTitle || 'Top Likers';
+        document.getElementById('likers-count').textContent = 'Top ' + limit;
+        renderLeaderboard(
+          document.getElementById('likers-list'),
+          (state.topLikers || []).slice(0, limit),
+          'likes',
+          'likes',
+          cfg.showAvatars !== false,
+          'No likes yet'
+        );
+      }
+
+      const coinsEl = document.getElementById('w-coins');
+      coinsEl.classList.toggle('hidden', !showCoins);
+      if (showCoins) {
+        document.getElementById('coins-title').textContent = cfg.coinsTitle || 'Top Supporters';
+        document.getElementById('coins-count').textContent = 'Top ' + limit;
+        renderLeaderboard(
+          document.getElementById('coins-list'),
+          (state.topCoins || []).slice(0, limit),
+          'coins',
+          cfg.pointsUnit || 'coins',
+          cfg.showAvatars !== false,
+          'No gifts yet'
+        );
+      }
+    }
+
+    let ws = null;
+    let hbTimer = null;
+    let helloTimer = null;
+    let reconnectAttempt = 0;
+    let refSeq = 0;
+    let receivedFirstState = false;
+
+    function nextRef() {
+      refSeq += 1;
+      return String(refSeq);
+    }
+
+    function sendFrame(frame) {
+      try {
+        if (ws && ws.readyState === 1) ws.send(JSON.stringify(frame));
+      } catch (_) {}
+    }
+
+    function sendHello(topic) {
+      sendFrame({
+        topic,
+        event: 'broadcast',
+        payload: { type: 'broadcast', event: 'hello', payload: { mode: MODE } },
+        ref: nextRef(),
+      });
+    }
+
+    function connectCloud() {
+      if (!VALID_ROOM || !CLOUD_SB_URL || !CLOUD_SB_KEY) return;
+      const wsBase = CLOUD_SB_URL.replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://').replace(/\/+$/, '');
+      const wsUrl = wsBase + '/realtime/v1/websocket?apikey=' + encodeURIComponent(CLOUD_SB_KEY) + '&vsn=1.0.0';
+      const topic = 'realtime:sf_ov_' + ROOM_TOKEN;
+
+      try {
+        if (ws) {
+          ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null;
+          ws.close();
+        }
+        ws = new WebSocket(wsUrl);
+      } catch (_) {
+        scheduleCloudReconnect();
+        return;
+      }
+
+      ws.onopen = () => {
+        reconnectAttempt = 0;
+        sendFrame({
+          topic,
+          event: 'phx_join',
+          payload: {
+            config: {
+              broadcast: { self: false, ack: false },
+              presence: { key: '' },
+            },
+          },
+          ref: nextRef(),
+        });
+        if (hbTimer) clearInterval(hbTimer);
+        hbTimer = setInterval(() => {
+          sendFrame({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: nextRef() });
+        }, 25000);
+      };
+
+      ws.onmessage = (ev) => {
+        let msg;
+        try {
+          msg = JSON.parse(String(ev.data || ''));
+        } catch (_) {
+          return;
+        }
+        if (msg.event === 'phx_reply' && msg.topic === topic && msg.payload && msg.payload.status === 'ok') {
+          sendHello(topic);
+          if (helloTimer) clearInterval(helloTimer);
+          helloTimer = setInterval(() => {
+            if (receivedFirstState) {
+              clearInterval(helloTimer);
+              helloTimer = null;
+              return;
+            }
+            sendHello(topic);
+          }, 3000);
+          return;
+        }
+        if (msg.event === 'broadcast' && msg.topic === topic && msg.payload && msg.payload.event === 'state') {
+          receivedFirstState = true;
+          if (helloTimer) {
+            clearInterval(helloTimer);
+            helloTimer = null;
+          }
+          render(msg.payload.payload);
+        }
+      };
+
+      ws.onerror = () => {};
+      ws.onclose = () => {
+        if (hbTimer) { clearInterval(hbTimer); hbTimer = null; }
+        if (helloTimer) { clearInterval(helloTimer); helloTimer = null; }
+        scheduleCloudReconnect();
+      };
+    }
+
+    function scheduleCloudReconnect() {
+      reconnectAttempt += 1;
+      const delay = Math.min(15000, 1800 * Math.pow(1.6, Math.min(reconnectAttempt - 1, 4)));
+      setTimeout(connectCloud, delay);
+    }
+
+    setInterval(renderTimerTick, 200);
+    connectCloud();
+  </script>
+</body>
+</html>
