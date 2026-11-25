@@ -1143,6 +1143,7 @@
       giftName: 'Galaxy',
       imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/79a02148079526539f7599150da9fd28.png~tplv-obj.webp',
       comboCount: 1,
+      unitCoins: 1000,
       totalCoins: 1000,
       nickname: 'TopGifter',
     };
@@ -1399,43 +1400,32 @@
         }
       }
 
-      // Biggest Gift Spotlight (Top Header + Floating Icon + Tilted Coins & Count + Centered Name)
+      // Biggest Gift Spotlight (Top Header + Floating Icon + Centered Sender Name ONLY — no coins badge)
       const biggestEl = document.getElementById('w-biggest');
       biggestEl.classList.toggle('hidden', !showBiggest);
       if (showBiggest) {
         const ws = getWidgetStyle(cfg, 'biggest');
         applyWidgetAppearance(biggestEl, ws, {});
-        biggestEl.style.setProperty('--badge-color', ws.badgeColor);
-        biggestEl.style.setProperty('--badge-tilt', ws.badgeTilt + 'deg');
 
         const titleEl = document.getElementById('biggest-title');
         titleEl.textContent = cfg.biggestTitle || 'Biggest Gift';
         titleEl.classList.toggle('hidden', !ws.showTitle);
 
-        const bg = state.biggestGift && state.biggestGift.totalCoins > 0
-          ? state.biggestGift
-          : (cfg.spotlightShowSample !== false ? SAMPLE_BIGGEST_GIFT : null);
+        const bg =
+          state.biggestGift && (Number(state.biggestGift.unitCoins) > 0 || Number(state.biggestGift.totalCoins) > 0)
+            ? state.biggestGift
+            : (cfg.spotlightShowSample !== false ? SAMPLE_BIGGEST_GIFT : null);
         const slot = document.getElementById('biggest-icon-slot');
         const corner = document.getElementById('biggest-corner');
-        const bBadge = document.getElementById('biggest-badge');
-        const bCountSub = document.getElementById('biggest-count-sub');
         const bUser = document.getElementById('biggest-user');
 
+        corner.classList.add('hidden');
         bUser.style.fontSize = ws.nameSize + 'px';
-        if (bg && bg.totalCoins > 0) {
+        if (bg) {
           renderGiftIconSlot(slot, bg.imageUrl, bg.giftName);
-          bBadge.textContent = fmtNum(bg.totalCoins) + ' ' + pointsUnit;
-          if (bg.comboCount > 1) {
-            bCountSub.textContent = 'x' + fmtNum(bg.comboCount);
-            bCountSub.classList.remove('hidden');
-          } else {
-            bCountSub.classList.add('hidden');
-          }
-          corner.classList.remove('hidden');
           bUser.textContent = bg.nickname || bg.user || 'Viewer';
         } else {
           renderGiftIconSlot(slot, '', '');
-          corner.classList.add('hidden');
           bUser.textContent = '';
         }
       }
