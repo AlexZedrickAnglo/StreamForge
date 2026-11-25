@@ -1121,6 +1121,21 @@
       }
     }
 
+    const SAMPLE_COMBO_GIFT = {
+      giftName: 'Rose',
+      imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
+      comboCount: 100,
+      totalCoins: 100,
+      nickname: 'SampleGifter',
+    };
+    const SAMPLE_BIGGEST_GIFT = {
+      giftName: 'Galaxy',
+      imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/79a02148079526539f7599150da9fd28.png~tplv-obj.webp',
+      comboCount: 1,
+      totalCoins: 1000,
+      nickname: 'TopGifter',
+    };
+
     function createSvgEl(tag, attrs) {
       const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
       if (attrs) {
@@ -1352,7 +1367,9 @@
         titleEl.textContent = cfg.comboTitle || 'Highest Combo';
         titleEl.classList.toggle('hidden', !ws.showTitle);
 
-        const hc = state.highestCombo || null;
+        const hc = state.highestCombo && state.highestCombo.comboCount > 0
+          ? state.highestCombo
+          : (cfg.spotlightShowSample !== false ? SAMPLE_COMBO_GIFT : null);
         const slot = document.getElementById('combo-icon-slot');
         const corner = document.getElementById('combo-corner');
         const cBadge = document.getElementById('combo-badge');
@@ -1391,7 +1408,9 @@
         titleEl.textContent = cfg.biggestTitle || 'Biggest Gift';
         titleEl.classList.toggle('hidden', !ws.showTitle);
 
-        const bg = state.biggestGift || null;
+        const bg = state.biggestGift && state.biggestGift.totalCoins > 0
+          ? state.biggestGift
+          : (cfg.spotlightShowSample !== false ? SAMPLE_BIGGEST_GIFT : null);
         const slot = document.getElementById('biggest-icon-slot');
         const corner = document.getElementById('biggest-corner');
         const bBadge = document.getElementById('biggest-badge');
