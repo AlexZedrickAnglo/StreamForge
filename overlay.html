@@ -98,6 +98,233 @@
       width: 204px;
     }
 
+    .root.jar-only {
+      width: 392px;
+    }
+
+    .root.compact.jar-only {
+      width: 344px;
+    }
+
+    /* Like Goal & Follower Goal Bar */
+    .goal-body {
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .compact .goal-body {
+      padding: 10px 11px 11px;
+      gap: 7px;
+    }
+
+    .goal-values-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .goal-fraction {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      line-height: 1;
+      color: inherit;
+    }
+
+    .goal-current {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: inherit;
+    }
+
+    .compact .goal-current {
+      font-size: 21px;
+    }
+
+    .goal-sep {
+      font-size: 16px;
+      opacity: 0.5;
+      font-weight: 600;
+    }
+
+    .goal-target {
+      font-size: 18px;
+      font-weight: 700;
+      opacity: 0.78;
+    }
+
+    .compact .goal-target {
+      font-size: 15px;
+    }
+
+    .goal-remaining {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.75;
+      white-space: nowrap;
+    }
+
+    .goal-bar-track {
+      width: 100%;
+      height: 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+    }
+
+    .goal-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--widget-accent, var(--accent));
+      transition: width 280ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease;
+    }
+
+    .goal-bar-fill.done {
+      background: var(--ok);
+    }
+
+    /* Realistic Glass Mason Gift Jar + Floating Donation Toast */
+    .jar-widget {
+      overflow: visible !important;
+      padding: 4px 0 6px;
+    }
+
+    .jar-top-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--card-text, #FAFAFA);
+      margin-bottom: 4px;
+    }
+
+    .jar-stage {
+      position: relative;
+      width: 368px;
+      height: 380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .compact .jar-stage {
+      width: 320px;
+      height: 332px;
+    }
+
+    .jar-vessel {
+      position: relative;
+      width: 320px;
+      height: 380px;
+      flex-shrink: 0;
+    }
+
+    .compact .jar-vessel {
+      transform: scale(0.87);
+      transform-origin: center center;
+    }
+
+    .jar-svg-layer {
+      position: absolute;
+      inset: 0;
+      width: 320px;
+      height: 380px;
+      pointer-events: none;
+      display: block;
+    }
+
+    .jar-canvas {
+      position: absolute;
+      inset: 0;
+      width: 320px;
+      height: 380px;
+      display: block;
+    }
+
+    .jar-toast {
+      position: absolute;
+      left: 0;
+      top: 132px;
+      z-index: 6;
+      max-width: 356px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px 8px 9px;
+      border-radius: 14px;
+      background: rgba(18, 18, 22, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+      color: #FAFAFA;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(-14px) scale(0.96);
+      transition: opacity 220ms ease, transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .jar-toast.visible {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+
+    .jar-toast-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      flex-shrink: 0;
+      background: #27272A;
+    }
+
+    .jar-toast-avatar-fb {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #27272A;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #FAFAFA;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .jar-toast-gift-img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .jar-toast-muted {
+      font-weight: 500;
+      color: #D4D4D8;
+    }
+
+    .jar-toast-coins {
+      color: #FBBF24;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+    }
+
     .widget {
       background: var(--bg-card);
       border: 1.5px solid var(--border);
@@ -577,6 +804,9 @@
 
     .text-outline-on .gift-spotlight-top-title,
     .text-outline-on .gift-spotlight-user,
+    .text-outline-on .jar-top-title,
+    .text-outline-on .goal-current,
+    .text-outline-on .goal-target,
     .text-outline-on .win-current,
     .text-outline-on .win-goal,
     .text-outline-on .timer-num,
@@ -854,6 +1084,125 @@
       </div>
     </section>
 
+    <section id="w-likegoal" class="widget hidden">
+      <div id="likegoal-head" class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="currentColor" style="color: var(--heart);">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span id="likegoal-title" class="widget-title">Like Goal</span>
+        </div>
+        <span id="likegoal-badge" class="pill">0%</span>
+      </div>
+      <div class="goal-body">
+        <div class="goal-values-row">
+          <div class="goal-fraction">
+            <span id="likegoal-current" class="goal-current">0</span>
+            <span class="goal-sep">/</span>
+            <span id="likegoal-target" class="goal-target">10,000</span>
+          </div>
+          <span id="likegoal-remaining" class="goal-remaining">10,000 left</span>
+        </div>
+        <div class="goal-bar-track">
+          <div id="likegoal-fill" class="goal-bar-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="w-followgoal" class="widget hidden">
+      <div id="followgoal-head" class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+          </svg>
+          <span id="followgoal-title" class="widget-title">Follower Goal</span>
+        </div>
+        <span id="followgoal-badge" class="pill">0%</span>
+      </div>
+      <div class="goal-body">
+        <div class="goal-values-row">
+          <div class="goal-fraction">
+            <span id="followgoal-current" class="goal-current">0</span>
+            <span class="goal-sep">/</span>
+            <span id="followgoal-target" class="goal-target">100</span>
+          </div>
+          <span id="followgoal-remaining" class="goal-remaining">100 left</span>
+        </div>
+        <div class="goal-bar-track">
+          <div id="followgoal-fill" class="goal-bar-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="w-jar" class="widget jar-widget hidden">
+      <div id="jar-title" class="jar-top-title hidden">Gift Jar</div>
+      <div class="jar-stage">
+        <div id="jar-toast" class="jar-toast" aria-live="polite"></div>
+        <div class="jar-vessel">
+          <!-- Back Translucent Glass Jar Layer -->
+          <svg id="jar-svg-back" class="jar-svg-layer" viewBox="0 0 320 380" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="jarGlassBackGrad" x1="34" y1="70" x2="286" y2="362" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.16)"/>
+                <stop offset="28%" stop-color="rgba(215,224,235,0.06)"/>
+                <stop offset="72%" stop-color="rgba(215,224,235,0.05)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.15)"/>
+              </linearGradient>
+              <linearGradient id="jarMouthGrad" x1="76" y1="30" x2="244" y2="74" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.28)"/>
+                <stop offset="50%" stop-color="rgba(180,192,208,0.14)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.28)"/>
+              </linearGradient>
+            </defs>
+            <!-- Outer glass silhouette -->
+            <path id="jar-body-fill" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66 Z" fill="url(#jarGlassBackGrad)"/>
+            <!-- Glass neck throat -->
+            <rect x="82" y="34" width="156" height="36" rx="8" fill="url(#jarMouthGrad)"/>
+            <!-- Back rim ellipse -->
+            <ellipse cx="160" cy="36" rx="82" ry="11" fill="rgba(12,14,18,0.42)" stroke="rgba(255,255,255,0.52)" stroke-width="2"/>
+            <ellipse cx="160" cy="36" rx="72" ry="7.5" fill="rgba(0,0,0,0.28)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+            <!-- Subtle base glass floor ellipse -->
+            <ellipse cx="160" cy="355" rx="94" ry="8" fill="rgba(255,255,255,0.10)"/>
+          </svg>
+
+          <!-- 60 FPS Rigid-Body Gift Physics Canvas -->
+          <canvas id="jar-canvas" class="jar-canvas" width="320" height="380"></canvas>
+
+          <!-- Front Glass Specular Shine, Screw Threads & Rim Layer -->
+          <svg id="jar-svg-front" class="jar-svg-layer" viewBox="0 0 320 380" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="jarShineLeft" x1="42" y1="106" x2="72" y2="106" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.34)"/>
+                <stop offset="48%" stop-color="rgba(255,255,255,0.10)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+              </linearGradient>
+              <linearGradient id="jarShineRight" x1="252" y1="106" x2="278" y2="106" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+                <stop offset="55%" stop-color="rgba(255,255,255,0.12)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.30)"/>
+              </linearGradient>
+            </defs>
+            <!-- Left & Right vertical specular glass reflections -->
+            <path d="M48 118 C48 104 66 96 76 86 L80 94 C70 104 62 112 62 126 L62 322 C62 336 68 346 78 352 L64 352 C52 344 48 334 48 318 Z" fill="url(#jarShineLeft)"/>
+            <path d="M272 118 C272 104 256 96 246 86 L243 94 C252 104 260 112 260 126 L260 322 C260 336 254 346 244 352 L258 352 C268 344 272 334 272 318 Z" fill="url(#jarShineRight)"/>
+            <!-- Crisp shoulder highlight arc -->
+            <path d="M56 112 C62 96 78 88 92 78" stroke="rgba(255,255,255,0.52)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M264 112 C258 96 242 88 228 78" stroke="rgba(255,255,255,0.38)" stroke-width="2" stroke-linecap="round"/>
+            <!-- Threaded Mason Jar glass collar rings -->
+            <path d="M77 44 C105 51 215 51 243 44" stroke="rgba(255,255,255,0.58)" stroke-width="3.2" stroke-linecap="round"/>
+            <path d="M76 53 C106 60 214 60 244 53" stroke="rgba(255,255,255,0.48)" stroke-width="3" stroke-linecap="round"/>
+            <path d="M79 62 C108 68 212 68 241 62" stroke="rgba(255,255,255,0.42)" stroke-width="2.6" stroke-linecap="round"/>
+            <!-- Front mouth lip curve -->
+            <path d="M78 37 C106 47 214 47 242 37" stroke="rgba(255,255,255,0.68)" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- Thick curved glass bottom reflection -->
+            <path d="M62 344 C94 362 226 362 258 344" stroke="rgba(255,255,255,0.42)" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Main outer glass border stroke -->
+            <path id="jar-glass-outline" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66" stroke="rgba(255,255,255,0.52)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
     <section id="w-combo" class="widget floating-spotlight hidden">
       <div class="gift-spotlight-body">
         <div id="combo-title" class="gift-spotlight-top-title">Highest Combo</div>
@@ -914,7 +1263,7 @@
     const CLOUD_SB_KEY = "sb_publishable_BfwBTX4NzKuJURYLjDBn_g_6i17jD_O";
     const qp = new URLSearchParams(window.location.search || '');
     const reqMode = String(qp.get('mode') || 'all').toLowerCase();
-    const MODE = ['all', 'timer', 'wins', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
+    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
     document.getElementById('root').dataset.mode = MODE;
     const ROOM_TOKEN = String(qp.get('room') || '').trim();
     const VALID_ROOM = /^[a-zA-Z0-9_-]{8,64}$/.test(ROOM_TOKEN);
@@ -946,18 +1295,20 @@
       const map = cfg && cfg.widgetStyles && typeof cfg.widgetStyles === 'object' ? cfg.widgetStyles : {};
       const ws = map[key] && typeof map[key] === 'object' ? map[key] : {};
       const isSpotlight = key === 'combo' || key === 'biggest';
+      const isTransparentDefault = isSpotlight || key === 'jar';
+      const defaultAccent = key === 'likegoal' ? '#EF4444' : key === 'followgoal' ? '#38BDF8' : (cfg.accentColor || '#2563EB');
       return {
         bgOpacity: Number.isFinite(Number(ws.bgOpacity))
           ? Math.max(0, Math.min(100, Number(ws.bgOpacity)))
-          : (key === 'timer' ? (Number(cfg.timerBgOpacity) ?? 90) : isSpotlight ? 0 : (Number(cfg.cardBgOpacity) ?? 90)),
+          : (key === 'timer' ? (Number(cfg.timerBgOpacity) ?? 90) : isTransparentDefault ? 0 : (Number(cfg.cardBgOpacity) ?? 90)),
         bgColor: ws.bgColor || (key === 'timer' ? (cfg.timerBgColor || '#0F0F12') : (cfg.cardBgColor || '#141418')),
         textColor: ws.textColor || (key === 'timer' ? (cfg.timerTextColor || '#FAFAFA') : (cfg.cardTextColor || '#FAFAFA')),
-        borderMode: ws.borderMode || (isSpotlight ? 'none' : (cfg.cardBorderMode || 'solid')),
-        borderColor: ws.borderColor || (isSpotlight ? '#38BDF8' : (cfg.cardBorderColor || '#2E2E36')),
-        accentColor: ws.accentColor || cfg.accentColor || '#2563EB',
+        borderMode: ws.borderMode || (isTransparentDefault ? 'none' : (cfg.cardBorderMode || 'solid')),
+        borderColor: ws.borderColor || (isTransparentDefault ? '#38BDF8' : (cfg.cardBorderColor || '#2E2E36')),
+        accentColor: ws.accentColor || defaultAccent,
         showTitle: isSpotlight && cfg.spotlightHeaderMigrated !== true
           ? true
-          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : true),
+          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : (key !== 'jar' && key !== 'wins')),
         nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
         badgeColor: ws.badgeColor || '#FBBF24',
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
@@ -1319,6 +1670,7 @@
       root.classList.toggle('wins-only', MODE === 'wins' && cfg.winLayout !== 'vertical');
       root.classList.toggle('wins-vertical-only', MODE === 'wins' && cfg.winLayout === 'vertical');
       root.classList.toggle('gift-spotlight-only', MODE === 'combo' || MODE === 'biggest');
+      root.classList.toggle('jar-only', MODE === 'jar');
       if (cfg.accentColor) {
         document.documentElement.style.setProperty('--accent', cfg.accentColor);
       }
@@ -1326,6 +1678,9 @@
       renderTimerTick();
 
       const showWins = MODE === 'wins' || (MODE === 'all' && cfg.showWins !== false);
+      const showLikeGoal = MODE === 'likegoal' || (MODE === 'all' && cfg.showLikeGoal !== false);
+      const showFollowGoal = MODE === 'followgoal' || (MODE === 'all' && cfg.showFollowGoal !== false);
+      const showJar = MODE === 'jar' || (MODE === 'all' && cfg.showJar === true);
       const showCombo = MODE === 'combo' || (MODE === 'all' && cfg.showCombo !== false);
       const showBiggest = MODE === 'biggest' || (MODE === 'all' && cfg.showBiggest !== false);
       const showLikers = MODE === 'likers' || (MODE === 'all' && cfg.showLikers !== false);
@@ -1357,6 +1712,89 @@
 
         const track = document.getElementById('wins-progress-track');
         track.classList.add('hidden');
+      }
+
+      // Like Goal Bar
+      const likeGoalEl = document.getElementById('w-likegoal');
+      likeGoalEl.classList.toggle('hidden', !showLikeGoal);
+      if (showLikeGoal) {
+        const ws = getWidgetStyle(cfg, 'likegoal');
+        const headEl = document.getElementById('likegoal-head');
+        headEl.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(likeGoalEl, ws, { headEl });
+
+        const lg = state.likeGoal || { current: cfg.likeGoalCount || 0, target: cfg.likeGoalTarget || 10000 };
+        const cur = Math.max(0, Math.floor(Number(lg.current) || 0));
+        const target = Math.max(1, Math.floor(Number(lg.target) || 10000));
+        const pct = Math.min(100, Math.round((cur / target) * 100));
+        const reached = cur >= target;
+
+        document.getElementById('likegoal-title').textContent = cfg.likeGoalTitle || 'Like Goal';
+        document.getElementById('likegoal-current').textContent = cur.toLocaleString();
+        document.getElementById('likegoal-target').textContent = target.toLocaleString();
+        const badge = document.getElementById('likegoal-badge');
+        badge.textContent = reached ? 'GOAL HIT' : pct + '%';
+        badge.classList.toggle('done', reached);
+        document.getElementById('likegoal-remaining').textContent = reached
+          ? 'Goal Reached'
+          : (target - cur).toLocaleString() + ' left';
+        const fill = document.getElementById('likegoal-fill');
+        fill.style.width = pct + '%';
+        fill.classList.toggle('done', reached);
+      }
+
+      // Follower Goal Bar
+      const followGoalEl = document.getElementById('w-followgoal');
+      followGoalEl.classList.toggle('hidden', !showFollowGoal);
+      if (showFollowGoal) {
+        const ws = getWidgetStyle(cfg, 'followgoal');
+        const headEl = document.getElementById('followgoal-head');
+        headEl.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(followGoalEl, ws, { headEl });
+
+        const fg = state.followGoal || { current: cfg.followGoalCount || 0, target: cfg.followGoalTarget || 100 };
+        const cur = Math.max(0, Math.floor(Number(fg.current) || 0));
+        const target = Math.max(1, Math.floor(Number(fg.target) || 100));
+        const pct = Math.min(100, Math.round((cur / target) * 100));
+        const reached = cur >= target;
+
+        document.getElementById('followgoal-title').textContent = cfg.followGoalTitle || 'Follower Goal';
+        document.getElementById('followgoal-current').textContent = cur.toLocaleString();
+        document.getElementById('followgoal-target').textContent = target.toLocaleString();
+        const badge = document.getElementById('followgoal-badge');
+        badge.textContent = reached ? 'GOAL HIT' : pct + '%';
+        badge.classList.toggle('done', reached);
+        document.getElementById('followgoal-remaining').textContent = reached
+          ? 'Goal Reached'
+          : (target - cur).toLocaleString() + ' left';
+        const fill = document.getElementById('followgoal-fill');
+        fill.style.width = pct + '%';
+        fill.classList.toggle('done', reached);
+      }
+
+      // Realistic Glass Gift Jar (2D Rigid-Body Physics + Toast)
+      const jarEl = document.getElementById('w-jar');
+      jarEl.classList.toggle('hidden', !showJar);
+      if (showJar) {
+        const ws = getWidgetStyle(cfg, 'jar');
+        applyWidgetAppearance(jarEl, ws, {});
+        const jarTitleEl = document.getElementById('jar-title');
+        jarTitleEl.textContent = cfg.jarTitle || 'Gift Jar';
+        jarTitleEl.classList.toggle('hidden', !ws.showTitle);
+        const outlineEl = document.getElementById('jar-glass-outline');
+        if (outlineEl) {
+          if (ws.borderMode === 'neon') {
+            outlineEl.setAttribute('stroke', ws.borderColor || '#38BDF8');
+            outlineEl.style.filter = 'drop-shadow(0 0 6px ' + (ws.borderColor || '#38BDF8') + ')';
+          } else if (ws.borderMode === 'solid') {
+            outlineEl.setAttribute('stroke', ws.borderColor || 'rgba(255,255,255,0.65)');
+            outlineEl.style.filter = '';
+          } else {
+            outlineEl.setAttribute('stroke', 'rgba(255,255,255,0.52)');
+            outlineEl.style.filter = '';
+          }
+        }
+        syncJarOverlayState(state, cfg, pointsUnit);
       }
 
       // Highest Gift Combo Spotlight (Top Header + Floating Icon + Tilted x100 & Coins + Centered Name)
@@ -1479,6 +1917,477 @@
         root.classList.remove('has-neon-glow');
       }
       fitStandaloneViewport();
+    }
+
+    // 60 FPS 2D Rigid-Body Gift Jar Physics Engine (Pure Canvas — Zero External Dependencies)
+    const JAR_DEMO_POOL = [
+      { giftName: 'Rose', unitCoins: 1, count: 4, user: 'lucky7', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp' },
+      { giftName: 'Heart Me', unitCoins: 1, count: 4, user: 'bigtipper', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d56945782445b0b8c8658ed44f894c7b~tplv-resize:258:258.webp' },
+      { giftName: 'Finger Heart', unitCoins: 5, count: 3, user: 'streamerfan', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/a4c4dc437fd3a6632aba149769491f49.png~tplv-obj.webp' },
+      { giftName: 'Perfume', unitCoins: 20, count: 1, user: 'lucky7', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/20b8f61246c7b6032777bb81bf4ee055~tplv-obj.webp' },
+      { giftName: 'Hand Heart', unitCoins: 100, count: 1, user: 'bigtipper', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/374dfe46d5b09ce1db19be06202d34f5.png~tplv-obj.webp' },
+      { giftName: 'Sunglasses', unitCoins: 199, count: 1, user: 'vipfan', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/08af67ab13a8053269bf539fd27f3873.png~tplv-obj.webp' },
+      { giftName: 'Galaxy', unitCoins: 1000, count: 1, user: 'whale99', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/79a02148079526539f7599150da9fd28.png~tplv-obj.webp' },
+      { giftName: 'Lion', unitCoins: 29999, count: 1, user: 'kinggifter', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4fb89af2082a290b37d704e20f4fe729~tplv-obj.webp' },
+    ];
+
+    const jarEngine = {
+      bodies: [],
+      pendingDrops: [],
+      imgCache: new Map(),
+      lastEventId: 0,
+      lastResetSeq: -1,
+      initialized: false,
+      running: false,
+      maxItems: 160,
+      showToast: true,
+      demoEnabled: false,
+      pointsUnit: 'Coins',
+      toastTimer: null,
+      demoTimer: null,
+      demoIdx: 0,
+      lastTime: 0,
+      nextSpawnAt: 0,
+    };
+
+    function jarRadiusForCoins(unitCoins) {
+      const c = Math.max(0, Number(unitCoins) || 0);
+      if (c >= 5000) return 52;
+      if (c >= 1000) return 38;
+      if (c >= 200) return 27;
+      if (c >= 50) return 22;
+      if (c >= 10) return 17;
+      return 13.5;
+    }
+
+    function getJarCachedImg(url) {
+      if (!url || !url.startsWith('https://')) return null;
+      let entry = jarEngine.imgCache.get(url);
+      if (!entry) {
+        const img = new Image();
+        img.referrerPolicy = 'no-referrer';
+        entry = { img, loaded: false, failed: false };
+        img.onload = function () { entry.loaded = true; };
+        img.onerror = function () { entry.failed = true; };
+        img.src = url;
+        jarEngine.imgCache.set(url, entry);
+      }
+      return entry.loaded && !entry.failed ? entry.img : null;
+    }
+
+    function showJarToast(ev) {
+      if (!jarEngine.showToast || !ev) return;
+      const toast = document.getElementById('jar-toast');
+      if (!toast) return;
+      toast.textContent = '';
+
+      const labelName = String(ev.nickname || ev.user || 'Viewer').trim();
+      if (ev.avatarUrl && ev.avatarUrl.startsWith('https://')) {
+        const av = document.createElement('img');
+        av.className = 'jar-toast-avatar';
+        av.src = ev.avatarUrl;
+        av.alt = '';
+        av.referrerPolicy = 'no-referrer';
+        toast.appendChild(av);
+      } else {
+        const fb = document.createElement('span');
+        fb.className = 'jar-toast-avatar-fb';
+        fb.textContent = labelName.slice(0, 2).toUpperCase();
+        toast.appendChild(fb);
+      }
+
+      const nameEl = document.createElement('span');
+      nameEl.textContent = labelName;
+      toast.appendChild(nameEl);
+
+      const verbEl = document.createElement('span');
+      verbEl.className = 'jar-toast-muted';
+      verbEl.textContent = 'donated';
+      toast.appendChild(verbEl);
+
+      if (ev.imageUrl && ev.imageUrl.startsWith('https://')) {
+        const gi = document.createElement('img');
+        gi.className = 'jar-toast-gift-img';
+        gi.src = ev.imageUrl;
+        gi.alt = ev.giftName || 'Gift';
+        gi.referrerPolicy = 'no-referrer';
+        toast.appendChild(gi);
+      }
+
+      const giftEl = document.createElement('span');
+      const cnt = Math.max(1, Number(ev.count) || 1);
+      giftEl.textContent = (ev.giftName || 'Gift') + (cnt > 1 ? ' x' + fmtNum(cnt) : '');
+      toast.appendChild(giftEl);
+
+      const tot = Math.max(0, Number(ev.totalCoins) || (Number(ev.unitCoins) || 0) * cnt);
+      if (tot > 0) {
+        const cEl = document.createElement('span');
+        cEl.className = 'jar-toast-coins';
+        cEl.textContent = '(' + fmtNum(tot) + ' ' + (tot === 1 ? 'Coin' : 'Coins') + ')';
+        toast.appendChild(cEl);
+      }
+
+      toast.classList.add('visible');
+      if (jarEngine.toastTimer) clearTimeout(jarEngine.toastTimer);
+      jarEngine.toastTimer = setTimeout(function () {
+        toast.classList.remove('visible');
+      }, 3600);
+    }
+
+    function spawnJarBody(item, settled) {
+      const r = jarRadiusForCoins(item.unitCoins);
+      const maxCap = Math.max(40, Math.min(250, Number(jarEngine.maxItems) || 160));
+      while (jarEngine.bodies.length >= maxCap) {
+        // Prefer evicting oldest small items so big showcase gifts stay visible longer
+        let evictIdx = jarEngine.bodies.findIndex(function (b) { return b.r <= 18; });
+        if (evictIdx < 0) evictIdx = 0;
+        jarEngine.bodies.splice(evictIdx, 1);
+      }
+      if (item.imageUrl) getJarCachedImg(item.imageUrl);
+      const halfMouth = Math.max(10, 62 - Math.min(r, 48));
+      const x = settled
+        ? 54 + r + Math.random() * Math.max(10, 212 - r * 2)
+        : 160 + (Math.random() * 2 - 1) * halfMouth;
+      const y = settled
+        ? 140 + Math.random() * 190
+        : 22 - Math.random() * 16;
+      jarEngine.bodies.push({
+        x: x,
+        y: y,
+        vx: settled ? 0 : (Math.random() - 0.5) * 70,
+        vy: settled ? 40 : 60 + Math.random() * 55,
+        angle: (Math.random() - 0.5) * 0.9,
+        omega: settled ? 0 : (Math.random() - 0.5) * 5.2,
+        r: r,
+        invMass: 1 / (r * r),
+        imageUrl: item.imageUrl || '',
+        giftName: item.giftName || 'Gift',
+        unitCoins: Number(item.unitCoins) || 0,
+      });
+    }
+
+    function enqueueJarDrop(ev, silentReplay) {
+      const cnt = Math.max(1, Math.min(14, Number(ev.count) || 1));
+      if (silentReplay) {
+        const capReplay = Math.min(cnt, 6);
+        for (let i = 0; i < capReplay; i++) {
+          spawnJarBody(ev, true);
+        }
+        return;
+      }
+      showJarToast(ev);
+      for (let i = 0; i < cnt; i++) {
+        jarEngine.pendingDrops.push({
+          imageUrl: ev.imageUrl || '',
+          giftName: ev.giftName || 'Gift',
+          unitCoins: Number(ev.unitCoins) || 0,
+        });
+      }
+    }
+
+    function stepJarPhysics(dt) {
+      const substeps = 2;
+      const sdt = Math.min(0.033, dt) / substeps;
+      const gravity = 960;
+      const leftWall = 42;
+      const rightWall = 278;
+      const bottomY = 356;
+      const cornerR = 34;
+      const blCx = leftWall + cornerR;
+      const brCx = rightWall - cornerR;
+      const bCy = bottomY - cornerR;
+      const bodies = jarEngine.bodies;
+      const n = bodies.length;
+
+      for (let s = 0; s < substeps; s++) {
+        for (let i = 0; i < n; i++) {
+          const b = bodies[i];
+          b.vy += gravity * sdt;
+          b.vx *= 0.996;
+          b.vy *= 0.996;
+          b.omega *= 0.975;
+          b.x += b.vx * sdt;
+          b.y += b.vy * sdt;
+          b.angle += b.omega * sdt;
+        }
+
+        // Pairwise circle-circle collision resolution
+        for (let iter = 0; iter < 5; iter++) {
+          for (let i = 0; i < n; i++) {
+            const a = bodies[i];
+            for (let j = i + 1; j < n; j++) {
+              const b = bodies[j];
+              const dx = b.x - a.x;
+              const dy = b.y - a.y;
+              const minD = a.r + b.r;
+              const distSq = dx * dx + dy * dy;
+              if (distSq < minD * minD && distSq > 0.0001) {
+                const dist = Math.sqrt(distSq);
+                const nx = dx / dist;
+                const ny = dy / dist;
+                const overlap = minD - dist;
+                const invSum = a.invMass + b.invMass;
+                const corrA = (overlap * a.invMass) / invSum;
+                const corrB = (overlap * b.invMass) / invSum;
+                a.x -= nx * corrA;
+                a.y -= ny * corrA;
+                b.x += nx * corrB;
+                b.y += ny * corrB;
+
+                const rvx = b.vx - a.vx;
+                const rvy = b.vy - a.vy;
+                const vn = rvx * nx + rvy * ny;
+                if (vn < 0) {
+                  const restitution = vn < -80 ? 0.22 : 0.04;
+                  const imp = (-(1 + restitution) * vn) / invSum;
+                  a.vx -= imp * nx * a.invMass;
+                  a.vy -= imp * ny * a.invMass;
+                  b.vx += imp * nx * b.invMass;
+                  b.vy += imp * ny * b.invMass;
+
+                  // Tangential friction & realistic roll spin
+                  const tx = -ny;
+                  const ty = nx;
+                  const vt = rvx * tx + rvy * ty;
+                  const fric = vt * 0.08;
+                  a.vx += fric * tx * 0.5;
+                  b.vx -= fric * tx * 0.5;
+                  a.omega -= (vt / Math.max(12, a.r)) * 0.06;
+                  b.omega += (vt / Math.max(12, b.r)) * 0.06;
+                }
+              }
+            }
+          }
+
+          // Jar walls, neck funnel, floor, and rounded bottom corners
+          for (let i = 0; i < n; i++) {
+            const b = bodies[i];
+            // Funnel through neck mouth when entering top
+            if (b.y < 98) {
+              const halfAllow = Math.max(0, 74 - Math.min(b.r, 68));
+              const minX = 160 - halfAllow;
+              const maxX = 160 + halfAllow;
+              if (b.x < minX) {
+                b.x = minX;
+                if (b.vx < 0) b.vx = -b.vx * 0.25;
+              } else if (b.x > maxX) {
+                b.x = maxX;
+                if (b.vx > 0) b.vx = -b.vx * 0.25;
+              }
+            } else {
+              if (b.x - b.r < leftWall) {
+                b.x = leftWall + b.r;
+                if (b.vx < 0) {
+                  b.vx = -b.vx * 0.22;
+                  b.omega += (b.vy / Math.max(12, b.r)) * 0.08;
+                }
+              } else if (b.x + b.r > rightWall) {
+                b.x = rightWall - b.r;
+                if (b.vx > 0) {
+                  b.vx = -b.vx * 0.22;
+                  b.omega -= (b.vy / Math.max(12, b.r)) * 0.08;
+                }
+              }
+            }
+
+            // Rounded bottom-left corner arc
+            if (b.x < blCx && b.y > bCy) {
+              const dx = b.x - blCx;
+              const dy = b.y - bCy;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const maxR = Math.max(2, cornerR - b.r);
+              if (dist > maxR && dist > 0.001) {
+                const nx = dx / dist;
+                const ny = dy / dist;
+                b.x = blCx + nx * maxR;
+                b.y = bCy + ny * maxR;
+                const vn = b.vx * nx + b.vy * ny;
+                if (vn > 0) {
+                  b.vx -= 1.2 * vn * nx;
+                  b.vy -= 1.2 * vn * ny;
+                }
+              }
+            }
+            // Rounded bottom-right corner arc
+            if (b.x > brCx && b.y > bCy) {
+              const dx = b.x - brCx;
+              const dy = b.y - bCy;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const maxR = Math.max(2, cornerR - b.r);
+              if (dist > maxR && dist > 0.001) {
+                const nx = dx / dist;
+                const ny = dy / dist;
+                b.x = brCx + nx * maxR;
+                b.y = bCy + ny * maxR;
+                const vn = b.vx * nx + b.vy * ny;
+                if (vn > 0) {
+                  b.vx -= 1.2 * vn * nx;
+                  b.vy -= 1.2 * vn * ny;
+                }
+              }
+            }
+
+            // Flat glass bottom floor
+            if (b.y + b.r > bottomY) {
+              b.y = bottomY - b.r;
+              if (b.vy > 0) {
+                b.vy = b.vy > 75 ? -b.vy * 0.2 : 0;
+              }
+              b.vx *= 0.86;
+              b.omega *= 0.82;
+            }
+          }
+        }
+
+        // Gentle sleep damping so settled piles stay calm with zero jitter
+        for (let i = 0; i < n; i++) {
+          const b = bodies[i];
+          if (Math.abs(b.vx) < 2.2) b.vx = 0;
+          if (Math.abs(b.vy) < 2.2) b.vy = 0;
+          if (Math.abs(b.omega) < 0.04) b.omega = 0;
+        }
+      }
+    }
+
+    function drawJarCanvas() {
+      const canvas = document.getElementById('jar-canvas');
+      if (!canvas) return;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const targetW = Math.round(320 * dpr);
+      const targetH = Math.round(380 * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, 320, 380);
+
+      // Clip strictly inside the Mason Jar interior (mouth -> shoulders -> body -> rounded bottom)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(84, 32);
+      ctx.lineTo(236, 32);
+      ctx.lineTo(236, 66);
+      ctx.bezierCurveTo(236, 82, 281, 92, 281, 122);
+      ctx.lineTo(281, 322);
+      ctx.bezierCurveTo(281, 347, 260, 362, 232, 362);
+      ctx.lineTo(88, 362);
+      ctx.bezierCurveTo(60, 362, 39, 347, 39, 322);
+      ctx.lineTo(39, 122);
+      ctx.bezierCurveTo(39, 92, 84, 82, 84, 66);
+      ctx.closePath();
+      ctx.clip();
+
+      const bodies = jarEngine.bodies;
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.angle);
+        const img = getJarCachedImg(b.imageUrl);
+        if (img) {
+          const drawSize = b.r * 2.18;
+          ctx.drawImage(img, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, b.r * 0.92, 0, Math.PI * 2);
+          ctx.fillStyle = b.unitCoins >= 1000 ? '#FBBF24' : b.unitCoins >= 20 ? '#EC4899' : '#EF4444';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    function jarTick(ts) {
+      const jarEl = document.getElementById('w-jar');
+      if (!jarEl || jarEl.classList.contains('hidden')) {
+        jarEngine.running = false;
+        return;
+      }
+      const dt = jarEngine.lastTime ? Math.min(0.05, (ts - jarEngine.lastTime) / 1000) : 0.016;
+      jarEngine.lastTime = ts;
+
+      if (jarEngine.pendingDrops.length > 0 && ts >= jarEngine.nextSpawnAt) {
+        const nextItem = jarEngine.pendingDrops.shift();
+        spawnJarBody(nextItem, false);
+        jarEngine.nextSpawnAt = ts + 65;
+      }
+
+      stepJarPhysics(dt);
+      drawJarCanvas();
+      requestAnimationFrame(jarTick);
+    }
+
+    function ensureJarLoop() {
+      if (!jarEngine.running) {
+        jarEngine.running = true;
+        jarEngine.lastTime = 0;
+        requestAnimationFrame(jarTick);
+      }
+    }
+
+    function updateJarDemoLoop(enabled) {
+      jarEngine.demoEnabled = Boolean(enabled);
+      if (jarEngine.demoTimer) {
+        clearInterval(jarEngine.demoTimer);
+        jarEngine.demoTimer = null;
+      }
+      if (jarEngine.demoEnabled) {
+        jarEngine.demoTimer = setInterval(function () {
+          const jarEl = document.getElementById('w-jar');
+          if (!jarEl || jarEl.classList.contains('hidden')) return;
+          const idx = jarEngine.demoIdx % JAR_DEMO_POOL.length;
+          jarEngine.demoIdx += 1;
+          // Drop Lion slightly less frequently than Roses/Perfumes just like the video
+          const chosen = idx === JAR_DEMO_POOL.length - 1 && jarEngine.demoIdx % 16 !== 0
+            ? JAR_DEMO_POOL[0]
+            : JAR_DEMO_POOL[idx];
+          enqueueJarDrop(chosen, false);
+          ensureJarLoop();
+        }, 1600);
+      }
+    }
+
+    function syncJarOverlayState(state, cfg, pointsUnit) {
+      jarEngine.maxItems = Math.max(40, Math.min(250, Number(cfg.jarMaxItems) || 160));
+      jarEngine.showToast = cfg.jarShowToast !== false;
+      jarEngine.pointsUnit = pointsUnit || 'Coins';
+      updateJarDemoLoop(Boolean(cfg.jarShowDemo));
+
+      const jarData = state.jar || { events: [], resetSeq: 0 };
+      const resetSeq = Number(jarData.resetSeq) || 0;
+      if (jarEngine.lastResetSeq !== -1 && resetSeq !== jarEngine.lastResetSeq) {
+        jarEngine.bodies = [];
+        jarEngine.pendingDrops = [];
+        jarEngine.lastEventId = 0;
+      }
+      jarEngine.lastResetSeq = resetSeq;
+
+      const events = Array.isArray(jarData.events) ? jarData.events : [];
+      if (!jarEngine.initialized) {
+        jarEngine.initialized = true;
+        events.forEach(function (ev) {
+          if (ev && Number(ev.id) > jarEngine.lastEventId) {
+            jarEngine.lastEventId = Number(ev.id);
+            enqueueJarDrop(ev, true);
+          }
+        });
+      } else {
+        events.forEach(function (ev) {
+          if (ev && Number(ev.id) > jarEngine.lastEventId) {
+            jarEngine.lastEventId = Number(ev.id);
+            enqueueJarDrop(ev, false);
+          }
+        });
+      }
+      ensureJarLoop();
     }
 
     // Zero-crop auto-fit scaling: standalone overlays cleanly fill any OBS / LIVE Studio viewport size
