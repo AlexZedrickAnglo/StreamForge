@@ -7,7 +7,6 @@
   <style>
     :root {
       --bg-card: rgba(20, 20, 24, 0.9);
-      --bg-row: rgba(255, 255, 255, 0.035);
       --border: rgba(255, 255, 255, 0.12);
       --border-subtle: rgba(255, 255, 255, 0.08);
       --text-primary: #FAFAFA;
@@ -57,11 +56,11 @@
     }
 
     .root.gift-spotlight-only {
-      width: 264px;
+      width: 268px;
     }
 
     .root.compact.gift-spotlight-only {
-      width: 228px;
+      width: 232px;
     }
 
     .widget {
@@ -71,6 +70,10 @@
       overflow: hidden;
       color: var(--card-text);
       transition: background-color 160ms ease, border-color 160ms ease, box-shadow 180ms ease;
+    }
+
+    .widget.floating-spotlight {
+      overflow: visible;
     }
 
     .widget-head {
@@ -96,7 +99,7 @@
     .widget-icon {
       width: 15px;
       height: 15px;
-      color: var(--accent);
+      color: var(--widget-accent, var(--accent));
       flex-shrink: 0;
     }
 
@@ -106,7 +109,7 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
       color: inherit;
-      opacity: 0.82;
+      opacity: 0.84;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -118,7 +121,7 @@
       font-size: 11px;
       font-weight: 600;
       color: inherit;
-      opacity: 0.85;
+      opacity: 0.88;
       padding: 2px 6px;
       border-radius: 5px;
       background: rgba(255, 255, 255, 0.07);
@@ -364,7 +367,7 @@
       font-size: 0;
       line-height: 0;
       background: currentColor;
-      opacity: 0.32;
+      opacity: 0.34;
       border-radius: 2px;
       margin: 2px 0;
     }
@@ -394,7 +397,7 @@
     .progress-fill {
       height: 100%;
       border-radius: 999px;
-      background: var(--accent);
+      background: var(--widget-accent, var(--accent));
       transition: width 260ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease;
     }
 
@@ -402,35 +405,37 @@
       background: var(--ok);
     }
 
-    /* Highest Combo & Biggest Gift Spotlight Cards */
+    /* Highest Combo & Biggest Gift Spotlight (Transparent Floating Icon + Tilted x100/Coins + Centered Name) */
     .gift-spotlight-body {
-      padding: 16px 14px 15px;
+      padding: 14px 12px 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
       gap: 10px;
+      background: transparent;
     }
 
     .compact .gift-spotlight-body {
-      padding: 12px 10px;
-      gap: 8px;
+      padding: 10px 8px;
+      gap: 7px;
     }
 
     .gift-spotlight-icon-wrap {
       position: relative;
-      width: 88px;
-      height: 88px;
+      width: 98px;
+      height: 98px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      background: transparent;
     }
 
     .compact .gift-spotlight-icon-wrap {
-      width: 72px;
-      height: 72px;
+      width: 80px;
+      height: 80px;
     }
 
     .gift-spotlight-img {
@@ -438,78 +443,97 @@
       height: 100%;
       object-fit: contain;
       display: block;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.55));
     }
 
     .gift-spotlight-fallback {
-      width: 72px;
-      height: 72px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      width: 78px;
+      height: 78px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: inherit;
-      opacity: 0.68;
+      opacity: 0.72;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.65));
     }
 
-    .gift-corner-badge {
+    .gift-tilted-corner {
       position: absolute;
-      right: -8px;
-      bottom: -4px;
+      right: -12px;
+      bottom: -6px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      line-height: 1;
+      background: transparent !important;
+      border: none !important;
+      transform: rotate(var(--badge-tilt, -10deg));
+      transform-origin: center center;
+      pointer-events: none;
+    }
+
+    .gift-tilted-main {
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-      font-size: 14px;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--badge-color, #FBBF24);
+      white-space: nowrap;
+      text-shadow:
+        -1.5px -1.5px 0 rgba(0, 0, 0, 0.92),
+         1.5px -1.5px 0 rgba(0, 0, 0, 0.92),
+        -1.5px  1.5px 0 rgba(0, 0, 0, 0.92),
+         1.5px  1.5px 0 rgba(0, 0, 0, 0.92),
+         0 3px 8px rgba(0, 0, 0, 0.75);
+    }
+
+    .compact .gift-tilted-main {
+      font-size: 20px;
+    }
+
+    .gift-tilted-coins {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
       font-weight: 800;
-      line-height: 1;
-      padding: 4px 7px;
-      border-radius: 6px;
-      background: rgba(9, 9, 11, 0.92);
-      color: #FAFAFA;
-      border: 1.5px solid var(--accent);
+      color: inherit;
+      margin-top: 2px;
       white-space: nowrap;
-      letter-spacing: -0.02em;
-    }
-
-    .gift-corner-sub {
-      position: absolute;
-      right: -6px;
-      top: -4px;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
-      font-size: 11px;
-      font-weight: 700;
-      line-height: 1;
-      padding: 3px 5px;
-      border-radius: 5px;
-      background: rgba(9, 9, 11, 0.88);
-      color: var(--gold);
-      border: 1px solid rgba(251, 191, 36, 0.45);
-      white-space: nowrap;
+      text-shadow:
+        -1px -1px 0 rgba(0, 0, 0, 0.92),
+         1px -1px 0 rgba(0, 0, 0, 0.92),
+        -1px  1px 0 rgba(0, 0, 0, 0.92),
+         1px  1px 0 rgba(0, 0, 0, 0.92),
+         0 2px 6px rgba(0, 0, 0, 0.75);
     }
 
     .gift-spotlight-user {
       width: 100%;
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 20px;
+      font-weight: 800;
       line-height: 1.2;
       text-align: center;
       color: inherit;
+      background: transparent;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       padding: 0 4px;
     }
 
-    .gift-spotlight-sub {
-      font-size: 12px;
-      font-weight: 500;
-      color: inherit;
-      opacity: 0.65;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
+    .text-outline-on .gift-spotlight-user,
+    .text-outline-on .win-current,
+    .text-outline-on .win-goal,
+    .text-outline-on .timer-num,
+    .text-outline-on .lb-name,
+    .text-outline-on .lb-score {
+      text-shadow:
+        -1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
+         1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
+        -1.5px  1.5px 0 rgba(0, 0, 0, 0.88),
+         1.5px  1.5px 0 rgba(0, 0, 0, 0.88),
+         0 2px 6px rgba(0, 0, 0, 0.7);
     }
 
     /* Leaderboard Rows */
@@ -680,7 +704,7 @@
 
     .lb-unit {
       color: inherit;
-      opacity: 0.68;
+      opacity: 0.72;
       font-weight: 500;
       font-size: 11px;
     }
@@ -708,7 +732,7 @@
       text-align: center;
       font-size: 12px;
       color: inherit;
-      opacity: 0.58;
+      opacity: 0.6;
     }
 
     .hidden { display: none !important; }
@@ -776,44 +800,45 @@
       </div>
     </section>
 
-    <section id="w-combo" class="widget hidden">
-      <div id="combo-head" class="widget-head">
+    <section id="w-combo" class="widget floating-spotlight hidden">
+      <div id="combo-head" class="widget-head hidden">
         <div class="widget-title-wrap">
           <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
           </svg>
           <span id="combo-title" class="widget-title">Highest Combo</span>
         </div>
-        <span id="combo-gift-pill" class="pill hidden">Gift</span>
       </div>
       <div class="gift-spotlight-body">
         <div class="gift-spotlight-icon-wrap">
           <div id="combo-icon-slot"></div>
-          <span id="combo-badge" class="gift-corner-badge hidden">x0</span>
+          <div id="combo-corner" class="gift-tilted-corner hidden">
+            <span id="combo-badge" class="gift-tilted-main">x0</span>
+            <span id="combo-coins" class="gift-tilted-coins hidden">0</span>
+          </div>
         </div>
-        <div id="combo-user" class="gift-spotlight-user">Waiting for gifts...</div>
-        <div id="combo-sub" class="gift-spotlight-sub hidden"></div>
+        <div id="combo-user" class="gift-spotlight-user"></div>
       </div>
     </section>
 
-    <section id="w-biggest" class="widget hidden">
-      <div id="biggest-head" class="widget-head">
+    <section id="w-biggest" class="widget floating-spotlight hidden">
+      <div id="biggest-head" class="widget-head hidden">
         <div class="widget-title-wrap">
           <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>
           </svg>
           <span id="biggest-title" class="widget-title">Biggest Gift</span>
         </div>
-        <span id="biggest-gift-pill" class="pill hidden">Gift</span>
       </div>
       <div class="gift-spotlight-body">
         <div class="gift-spotlight-icon-wrap">
           <div id="biggest-icon-slot"></div>
-          <span id="biggest-count-sub" class="gift-corner-sub hidden">x1</span>
-          <span id="biggest-badge" class="gift-corner-badge hidden">0 Points</span>
+          <div id="biggest-corner" class="gift-tilted-corner hidden">
+            <span id="biggest-badge" class="gift-tilted-main">0</span>
+            <span id="biggest-count-sub" class="gift-tilted-coins hidden">x1</span>
+          </div>
         </div>
-        <div id="biggest-user" class="gift-spotlight-user">Waiting for gifts...</div>
-        <div id="biggest-sub" class="gift-spotlight-sub hidden"></div>
+        <div id="biggest-user" class="gift-spotlight-user"></div>
       </div>
     </section>
 
@@ -877,20 +902,43 @@
       return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a.toFixed(3) + ')';
     }
 
-    function applyCardAppearance(el, cfg, opts) {
-      if (!el) return;
+    function getWidgetStyle(cfg, key) {
+      const map = cfg && cfg.widgetStyles && typeof cfg.widgetStyles === 'object' ? cfg.widgetStyles : {};
+      const ws = map[key] && typeof map[key] === 'object' ? map[key] : {};
+      const isSpotlight = key === 'combo' || key === 'biggest';
+      return {
+        bgOpacity: Number.isFinite(Number(ws.bgOpacity))
+          ? Math.max(0, Math.min(100, Number(ws.bgOpacity)))
+          : (key === 'timer' ? (Number(cfg.timerBgOpacity) ?? 90) : isSpotlight ? 0 : (Number(cfg.cardBgOpacity) ?? 90)),
+        bgColor: ws.bgColor || (key === 'timer' ? (cfg.timerBgColor || '#0F0F12') : (cfg.cardBgColor || '#141418')),
+        textColor: ws.textColor || (key === 'timer' ? (cfg.timerTextColor || '#FAFAFA') : (cfg.cardTextColor || '#FAFAFA')),
+        borderMode: ws.borderMode || (isSpotlight ? 'none' : (cfg.cardBorderMode || 'solid')),
+        borderColor: ws.borderColor || (isSpotlight ? '#38BDF8' : (cfg.cardBorderColor || '#2E2E36')),
+        accentColor: ws.accentColor || cfg.accentColor || '#2563EB',
+        showTitle: ws.showTitle !== undefined ? Boolean(ws.showTitle) : !isSpotlight,
+        nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
+        badgeColor: ws.badgeColor || '#FBBF24',
+        badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
+        showCoins: ws.showCoins !== false,
+        topLimit: Number.isFinite(Number(ws.topLimit)) ? Math.max(1, Math.min(10, Number(ws.topLimit))) : (Number(cfg.topLimit) || 5),
+        showAvatars: ws.showAvatars !== undefined ? Boolean(ws.showAvatars) : (cfg.showAvatars !== false),
+      };
+    }
+
+    function applyWidgetAppearance(el, ws, opts) {
+      if (!el || !ws) return;
       const o = opts || {};
-      const opacity = Number.isFinite(Number(o.opacity))
-        ? Math.max(0, Math.min(100, Number(o.opacity)))
-        : (Number.isFinite(Number(cfg.cardBgOpacity)) ? Math.max(0, Math.min(100, Number(cfg.cardBgOpacity))) : 90);
-      const bgHex = o.bgHex || cfg.cardBgColor || '#141418';
-      const textHex = o.textHex || cfg.cardTextColor || '#FAFAFA';
-      const borderMode = cfg.cardBorderMode || 'solid';
-      const borderHex = cfg.cardBorderColor || '#2E2E36';
+      const opacity = ws.bgOpacity;
+      const bgHex = ws.bgColor;
+      const textHex = ws.textColor;
+      const borderMode = ws.borderMode || 'solid';
+      const borderHex = ws.borderColor || '#2E2E36';
 
       el.style.color = textHex;
       el.style.setProperty('--card-text', textHex);
+      el.style.setProperty('--widget-accent', ws.accentColor || '#2563EB');
       el.style.backgroundColor = opacity <= 0 ? 'rgba(0, 0, 0, 0)' : hexToRgba(bgHex, opacity);
+      el.classList.toggle('text-outline-on', opacity <= 25);
 
       if (borderMode === 'none') {
         el.style.borderColor = 'transparent';
@@ -951,6 +999,7 @@
       timerEl.classList.toggle('hidden', !showTimer);
       if (!showTimer) return;
 
+      const ws = getWidgetStyle(cfg, 'timer');
       const t = latestState.timer || {
         running: false,
         mode: cfg.timerMode || 'countdown',
@@ -974,25 +1023,15 @@
       document.getElementById('timer-min').textContent = String(mins).padStart(2, '0');
       document.getElementById('timer-sec').textContent = String(secs).padStart(2, '0');
 
-      const opacity = Number.isFinite(Number(cfg.timerBgOpacity)) ? Math.max(0, Math.min(100, Number(cfg.timerBgOpacity))) : 90;
-      const bgHex = cfg.timerBgColor || '#0F0F12';
-      const textHex = cfg.timerTextColor || '#FAFAFA';
-      const showTitle = cfg.timerShowTitle !== false;
-
       const headEl = document.getElementById('timer-head');
       const bodyEl = document.getElementById('timer-body');
       const metaEl = document.getElementById('timer-meta');
       const floatAddEl = document.getElementById('timer-float-add');
 
-      timerEl.style.setProperty('--timer-text', textHex);
-      applyCardAppearance(timerEl, cfg, {
-        opacity,
-        bgHex,
-        textHex,
-        headEl,
-        footerEl: metaEl,
-      });
+      timerEl.style.setProperty('--timer-text', ws.textColor);
+      applyWidgetAppearance(timerEl, ws, { headEl, footerEl: metaEl });
 
+      const showTitle = ws.showTitle !== false;
       headEl.classList.toggle('hidden', !showTitle);
       metaEl.classList.toggle('hidden', !showTitle);
       bodyEl.classList.toggle('minimal', !showTitle);
@@ -1005,7 +1044,7 @@
       if (showTitle) {
         const titleEl = document.getElementById('timer-title');
         titleEl.textContent = cfg.timerTitle || 'Stream Timer';
-        titleEl.style.color = textHex;
+        titleEl.style.color = ws.textColor;
 
         const badge = document.getElementById('timer-badge');
         badge.classList.remove('done', 'live', 'warn');
@@ -1087,12 +1126,12 @@
       const box = document.createElement('div');
       box.className = 'gift-spotlight-fallback';
       const svg = createSvgEl('svg', {
-        width: '34',
-        height: '34',
+        width: '54',
+        height: '54',
         viewBox: '0 0 24 24',
         fill: 'none',
         stroke: 'currentColor',
-        'stroke-width': '1.7',
+        'stroke-width': '1.6',
         'stroke-linecap': 'round',
         'stroke-linejoin': 'round',
       });
@@ -1226,24 +1265,23 @@
       const showBiggest = MODE === 'biggest' || (MODE === 'all' && cfg.showBiggest !== false);
       const showLikers = MODE === 'likers' || (MODE === 'all' && cfg.showLikers !== false);
       const showCoins = MODE === 'coins' || (MODE === 'all' && cfg.showCoins !== false);
-      const nameSizePx = Math.max(12, Math.min(36, Number(cfg.giftCardNameSize) || 18)) + 'px';
       const pointsUnit = cfg.pointsUnit || 'Points';
 
       // Win Counter (xx/xx + Horizontal / Vertical)
       const winsEl = document.getElementById('w-wins');
       winsEl.classList.toggle('hidden', !showWins);
       if (showWins) {
+        const ws = getWidgetStyle(cfg, 'wins');
         const wins = Math.max(0, Number(cfg.wins) || 0);
         const goal = Math.max(1, Number(cfg.winGoal) || 10);
         const pct = Math.min(100, Math.round((wins / goal) * 100));
         const reached = wins >= goal;
         const isVertical = cfg.winLayout === 'vertical';
-        const showHead = cfg.winShowTitle !== false;
 
         winsEl.classList.toggle('win-vertical', isVertical);
         const winsHead = document.getElementById('wins-head');
-        winsHead.classList.toggle('hidden', !showHead);
-        applyCardAppearance(winsEl, cfg, { headEl: winsHead });
+        winsHead.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(winsEl, ws, { headEl: winsHead });
 
         document.getElementById('wins-title').textContent = cfg.winTitle || 'Win Goal';
         document.getElementById('wins-current').textContent = fmtTwoDigit(wins);
@@ -1255,7 +1293,7 @@
 
         const rem = document.getElementById('wins-remaining');
         rem.textContent = reached ? 'Goal Hit' : (goal - wins).toLocaleString() + ' to go';
-        rem.classList.toggle('hidden', isVertical && !showHead);
+        rem.classList.toggle('hidden', isVertical && !ws.showTitle);
 
         const track = document.getElementById('wins-progress-track');
         track.classList.toggle('hidden', cfg.showProgressBar === false);
@@ -1264,118 +1302,120 @@
         fill.classList.toggle('done', reached);
       }
 
-      // Highest Gift Combo Spotlight
+      // Highest Gift Combo Spotlight (Transparent Floating Icon + Tilted x100 & Coins + Centered Name)
       const comboEl = document.getElementById('w-combo');
       comboEl.classList.toggle('hidden', !showCombo);
       if (showCombo) {
+        const ws = getWidgetStyle(cfg, 'combo');
         const comboHead = document.getElementById('combo-head');
-        comboHead.classList.toggle('hidden', cfg.comboShowTitle === false);
-        applyCardAppearance(comboEl, cfg, { headEl: comboHead });
+        comboHead.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(comboEl, ws, { headEl: comboHead });
+        comboEl.style.setProperty('--badge-color', ws.badgeColor);
+        comboEl.style.setProperty('--badge-tilt', ws.badgeTilt + 'deg');
         document.getElementById('combo-title').textContent = cfg.comboTitle || 'Highest Combo';
 
         const hc = state.highestCombo || null;
         const slot = document.getElementById('combo-icon-slot');
+        const corner = document.getElementById('combo-corner');
         const cBadge = document.getElementById('combo-badge');
+        const cCoins = document.getElementById('combo-coins');
         const cUser = document.getElementById('combo-user');
-        const cSub = document.getElementById('combo-sub');
-        const cPill = document.getElementById('combo-gift-pill');
 
-        cUser.style.fontSize = nameSizePx;
+        cUser.style.fontSize = ws.nameSize + 'px';
         if (hc && hc.comboCount > 0) {
           renderGiftIconSlot(slot, hc.imageUrl, hc.giftName);
           cBadge.textContent = 'x' + fmtNum(hc.comboCount);
-          cBadge.classList.remove('hidden');
+          if (ws.showCoins && Number(hc.totalCoins) > 0) {
+            cCoins.textContent = fmtNum(hc.totalCoins) + ' ' + pointsUnit;
+            cCoins.classList.remove('hidden');
+          } else {
+            cCoins.classList.add('hidden');
+          }
+          corner.classList.remove('hidden');
           cUser.textContent = hc.nickname || hc.user || 'Viewer';
-          cSub.textContent = hc.giftName || '';
-          cSub.classList.toggle('hidden', !hc.giftName);
-          cPill.textContent = hc.giftName || 'Combo';
-          cPill.classList.toggle('hidden', !hc.giftName);
         } else {
           renderGiftIconSlot(slot, '', '');
-          cBadge.classList.add('hidden');
-          cUser.textContent = 'Waiting for gifts...';
-          cSub.classList.add('hidden');
-          cPill.classList.add('hidden');
+          corner.classList.add('hidden');
+          cUser.textContent = '';
         }
       }
 
-      // Biggest Gift Spotlight (same rule as Gift Combo)
+      // Biggest Gift Spotlight (Same Transparent Floating Icon + Tilted Coins + Centered Name)
       const biggestEl = document.getElementById('w-biggest');
       biggestEl.classList.toggle('hidden', !showBiggest);
       if (showBiggest) {
+        const ws = getWidgetStyle(cfg, 'biggest');
         const biggestHead = document.getElementById('biggest-head');
-        biggestHead.classList.toggle('hidden', cfg.biggestShowTitle === false);
-        applyCardAppearance(biggestEl, cfg, { headEl: biggestHead });
+        biggestHead.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(biggestEl, ws, { headEl: biggestHead });
+        biggestEl.style.setProperty('--badge-color', ws.badgeColor);
+        biggestEl.style.setProperty('--badge-tilt', ws.badgeTilt + 'deg');
         document.getElementById('biggest-title').textContent = cfg.biggestTitle || 'Biggest Gift';
 
         const bg = state.biggestGift || null;
         const slot = document.getElementById('biggest-icon-slot');
+        const corner = document.getElementById('biggest-corner');
         const bBadge = document.getElementById('biggest-badge');
         const bCountSub = document.getElementById('biggest-count-sub');
         const bUser = document.getElementById('biggest-user');
-        const bSub = document.getElementById('biggest-sub');
-        const bPill = document.getElementById('biggest-gift-pill');
 
-        bUser.style.fontSize = nameSizePx;
+        bUser.style.fontSize = ws.nameSize + 'px';
         if (bg && bg.totalCoins > 0) {
           renderGiftIconSlot(slot, bg.imageUrl, bg.giftName);
           bBadge.textContent = fmtNum(bg.totalCoins) + ' ' + pointsUnit;
-          bBadge.classList.remove('hidden');
           if (bg.comboCount > 1) {
             bCountSub.textContent = 'x' + fmtNum(bg.comboCount);
             bCountSub.classList.remove('hidden');
           } else {
             bCountSub.classList.add('hidden');
           }
+          corner.classList.remove('hidden');
           bUser.textContent = bg.nickname || bg.user || 'Viewer';
-          bSub.textContent = bg.giftName || '';
-          bSub.classList.toggle('hidden', !bg.giftName);
-          bPill.textContent = bg.giftName || 'Gift';
-          bPill.classList.toggle('hidden', !bg.giftName);
         } else {
           renderGiftIconSlot(slot, '', '');
-          bBadge.classList.add('hidden');
-          bCountSub.classList.add('hidden');
-          bUser.textContent = 'Waiting for gifts...';
-          bSub.classList.add('hidden');
-          bPill.classList.add('hidden');
+          corner.classList.add('hidden');
+          bUser.textContent = '';
         }
       }
 
-      const limit = Math.max(1, Math.min(10, Number(cfg.topLimit) || 5));
-
+      // Top Likers Leaderboard (Individual Style + Top 1..10 + Crown #1 Bigger + Red Heart)
       const likersEl = document.getElementById('w-likers');
       likersEl.classList.toggle('hidden', !showLikers);
       if (showLikers) {
+        const ws = getWidgetStyle(cfg, 'likers');
         const likersHead = document.getElementById('likers-head');
-        applyCardAppearance(likersEl, cfg, { headEl: likersHead });
+        likersHead.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(likersEl, ws, { headEl: likersHead });
         document.getElementById('likers-title').textContent = cfg.likersTitle || 'Top Likers';
-        document.getElementById('likers-count').textContent = 'Top ' + limit;
+        document.getElementById('likers-count').textContent = 'Top ' + ws.topLimit;
         renderLeaderboard(
           document.getElementById('likers-list'),
-          (state.topLikers || []).slice(0, limit),
+          (state.topLikers || []).slice(0, ws.topLimit),
           'likes',
           'likes',
           '',
-          cfg.showAvatars !== false,
+          ws.showAvatars,
           'No likes yet'
         );
       }
 
+      // Top Supporters Leaderboard (Individual Style + Top 1..10 + Crown #1 Bigger + Points)
       const coinsEl = document.getElementById('w-coins');
       coinsEl.classList.toggle('hidden', !showCoins);
       if (showCoins) {
+        const ws = getWidgetStyle(cfg, 'coins');
         const coinsHead = document.getElementById('coins-head');
-        applyCardAppearance(coinsEl, cfg, { headEl: coinsHead });
+        coinsHead.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(coinsEl, ws, { headEl: coinsHead });
         document.getElementById('coins-title').textContent = cfg.coinsTitle || 'Top Supporters';
-        document.getElementById('coins-count').textContent = 'Top ' + limit;
+        document.getElementById('coins-count').textContent = 'Top ' + ws.topLimit;
         renderLeaderboard(
           document.getElementById('coins-list'),
-          (state.topCoins || []).slice(0, limit),
+          (state.topCoins || []).slice(0, ws.topLimit),
           'coins',
           'points',
           pointsUnit,
-          cfg.showAvatars !== false,
+          ws.showAvatars,
           'No gifts yet'
         );
       }
