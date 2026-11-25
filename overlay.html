@@ -74,12 +74,20 @@
       padding: 18px;
     }
 
+    .root.wins-only {
+      width: 196px;
+    }
+
+    .root.compact.wins-only {
+      width: 168px;
+    }
+
     .root.wins-vertical-only {
-      width: 164px;
+      width: 132px;
     }
 
     .root.compact.wins-vertical-only {
-      width: 142px;
+      width: 116px;
     }
 
     .root.gift-spotlight-only {
@@ -296,7 +304,7 @@
     .win-score-row {
       display: flex;
       align-items: baseline;
-      justify-content: space-between;
+      justify-content: center;
       gap: 8px;
     }
 
@@ -305,38 +313,39 @@
       font-variant-numeric: tabular-nums;
       display: inline-flex;
       align-items: baseline;
-      gap: 4px;
+      justify-content: center;
+      gap: 3px;
       line-height: 1;
       color: inherit;
     }
 
     .win-current {
-      font-size: 36px;
+      font-size: 40px;
       font-weight: 800;
       letter-spacing: -0.03em;
       color: inherit;
     }
 
     .compact .win-current {
-      font-size: 28px;
+      font-size: 32px;
     }
 
     .win-sep {
-      font-size: 24px;
-      opacity: 0.5;
+      font-size: 28px;
+      opacity: 0.55;
       font-weight: 600;
       color: inherit;
     }
 
     .win-goal {
-      font-size: 26px;
-      opacity: 0.78;
+      font-size: 32px;
+      opacity: 0.85;
       font-weight: 700;
       color: inherit;
     }
 
     .compact .win-goal {
-      font-size: 21px;
+      font-size: 25px;
     }
 
     .win-pct {
@@ -1306,6 +1315,7 @@
       const cfg = state.config;
       const root = document.getElementById('root');
       root.classList.toggle('compact', Boolean(cfg.compact));
+      root.classList.toggle('wins-only', MODE === 'wins' && cfg.winLayout !== 'vertical');
       root.classList.toggle('wins-vertical-only', MODE === 'wins' && cfg.winLayout === 'vertical');
       root.classList.toggle('gift-spotlight-only', MODE === 'combo' || MODE === 'biggest');
       if (cfg.accentColor) {
@@ -1321,39 +1331,31 @@
       const showCoins = MODE === 'coins' || (MODE === 'all' && cfg.showCoins !== false);
       const pointsUnit = cfg.pointsUnit || 'Points';
 
-      // Win Counter (xx/xx + Horizontal / Vertical)
+      // Win Counter (number-only 0/10 — horizontal or vertical)
       const winsEl = document.getElementById('w-wins');
       winsEl.classList.toggle('hidden', !showWins);
       if (showWins) {
         const ws = getWidgetStyle(cfg, 'wins');
-        const wins = Math.max(0, Number(cfg.wins) || 0);
-        const goal = Math.max(1, Number(cfg.winGoal) || 10);
-        const pct = Math.min(100, Math.round((wins / goal) * 100));
-        const reached = wins >= goal;
+        const wins = Math.max(0, Math.floor(Number(cfg.wins) || 0));
+        const goal = Math.max(1, Math.floor(Number(cfg.winGoal) || 10));
         const isVertical = cfg.winLayout === 'vertical';
 
         winsEl.classList.toggle('win-vertical', isVertical);
         const winsHead = document.getElementById('wins-head');
-        winsHead.classList.toggle('hidden', !ws.showTitle);
+        winsHead.classList.add('hidden');
         applyWidgetAppearance(winsEl, ws, { headEl: winsHead });
 
-        document.getElementById('wins-title').textContent = cfg.winTitle || 'Win Goal';
-        document.getElementById('wins-current').textContent = fmtTwoDigit(wins);
-        document.getElementById('wins-goal').textContent = fmtTwoDigit(goal);
+        document.getElementById('wins-current').textContent = String(wins);
+        document.getElementById('wins-goal').textContent = String(goal);
 
         const badge = document.getElementById('wins-badge');
-        badge.textContent = reached ? 'GOAL HIT' : pct + '%';
-        badge.classList.toggle('done', reached);
+        badge.classList.add('hidden');
 
         const rem = document.getElementById('wins-remaining');
-        rem.textContent = reached ? 'Goal Hit' : (goal - wins).toLocaleString() + ' to go';
-        rem.classList.toggle('hidden', isVertical && !ws.showTitle);
+        rem.classList.add('hidden');
 
         const track = document.getElementById('wins-progress-track');
-        track.classList.toggle('hidden', cfg.showProgressBar === false);
-        const fill = document.getElementById('wins-progress-fill');
-        fill.style.width = pct + '%';
-        fill.classList.toggle('done', reached);
+        track.classList.add('hidden');
       }
 
       // Highest Gift Combo Spotlight (Top Header + Floating Icon + Tilted x100 & Coins + Centered Name)
