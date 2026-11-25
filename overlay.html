@@ -946,7 +946,9 @@
         borderMode: ws.borderMode || (isSpotlight ? 'none' : (cfg.cardBorderMode || 'solid')),
         borderColor: ws.borderColor || (isSpotlight ? '#38BDF8' : (cfg.cardBorderColor || '#2E2E36')),
         accentColor: ws.accentColor || cfg.accentColor || '#2563EB',
-        showTitle: ws.showTitle !== undefined ? Boolean(ws.showTitle) : true,
+        showTitle: isSpotlight && cfg.spotlightHeaderMigrated !== true
+          ? true
+          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : true),
         nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
         badgeColor: ws.badgeColor || '#FBBF24',
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
@@ -1187,10 +1189,14 @@
         img.src = targetSrc;
         img.alt = giftName || 'Gift';
         img.referrerPolicy = 'no-referrer';
+        img.onload = function () {
+          fitStandaloneViewport();
+        };
         img.onerror = function () {
           slotEl.dataset.renderedSrc = '';
           slotEl.textContent = '';
           slotEl.appendChild(createGiftFallbackNode());
+          fitStandaloneViewport();
         };
         slotEl.appendChild(img);
       } else {
@@ -1463,37 +1469,53 @@
     }
 
     // Zero-crop auto-fit scaling: standalone overlays cleanly fill any OBS / LIVE Studio viewport size
+    let _lastFitScale = '';
     function fitStandaloneViewport() {
       const isStandalone = MODE !== 'all';
       document.body.classList.toggle('standalone-fit', isStandalone);
       const root = document.getElementById('root');
       if (!root) return;
       if (!isStandalone) {
-        root.style.zoom = '';
-        root.style.transform = '';
+        if (_lastFitScale !== '') {
+          root.style.zoom = '';
+          root.style.transform = '';
+          _lastFitScale = '';
+        }
         return;
       }
-      root.style.zoom = '1';
-      root.style.transform = '';
       const vw = Math.max(64, window.innerWidth || 0);
       const vh = Math.max(64, window.innerHeight || 0);
+      const prevZoom = root.style.zoom;
+      const prevTransform = root.style.transform;
+      root.style.zoom = '1';
+      root.style.transform = '';
       const natW = Math.max(1, root.offsetWidth || root.scrollWidth);
       const natH = Math.max(1, root.offsetHeight || root.scrollHeight);
       const scale = Math.max(0.25, Math.min(6, Math.min(vw / natW, vh / natH)));
+      const nextScale = scale.toFixed(4);
       if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '1.5')) {
-        root.style.zoom = scale.toFixed(4);
+        if (prevZoom !== nextScale || root.style.zoom !== nextScale) {
+          root.style.zoom = nextScale;
+        }
+        root.style.transform = '';
       } else {
+        root.style.zoom = '';
         root.style.transformOrigin = 'center center';
-        root.style.transform = 'scale(' + scale.toFixed(4) + ')';
+        const nextTransform = 'scale(' + nextScale + ')';
+        if (prevTransform !== nextTransform || root.style.transform !== nextTransform) {
+          root.style.transform = nextTransform;
+        }
       }
+      _lastFitScale = nextScale;
     }
 
     window.addEventListener('resize', fitStandaloneViewport);
     if (typeof ResizeObserver !== 'undefined') {
       try {
-        new ResizeObserver(fitStandaloneViewport).observe(document.getElementById('root'));
+        new ResizeObserver(fitStandaloneViewport).observe(document.documentElement);
       } catch (_) {}
     }
+    requestAnimationFrame(fitStandaloneViewport);
 
     let ws = null;
     let hbTimer = null;
