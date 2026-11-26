@@ -402,6 +402,13 @@
       border-color: rgba(251, 191, 36, 0.34);
     }
 
+    .pill.sub {
+      color: #FB7185;
+      opacity: 1;
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.36);
+    }
+
     /* Stream Timer Body */
     .timer-body {
       padding: 14px 16px 13px;
@@ -503,6 +510,12 @@
       border-radius: 4px;
       background: rgba(34, 197, 94, 0.16);
       border: 1px solid rgba(34, 197, 94, 0.34);
+    }
+
+    .timer-float-add.sub {
+      color: #FB7185;
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.36);
     }
 
     /* Win Counter Body (Horizontal xx/xx & Vertical stacked) */
@@ -1422,7 +1435,7 @@
       bodyEl.classList.toggle('minimal', !showTitle);
 
       const estServerNow = Date.now() - clockOffsetMs;
-      const recentAdd = t.lastAdd && t.lastAdd.seconds > 0 && (estServerNow - Number(t.lastAdd.at || 0)) < 3500
+      const recentAdd = t.lastAdd && Number(t.lastAdd.seconds) !== 0 && (estServerNow - Number(t.lastAdd.at || 0)) < 3500
         ? t.lastAdd
         : null;
 
@@ -1432,10 +1445,11 @@
         titleEl.style.color = ws.textColor;
 
         const badge = document.getElementById('timer-badge');
-        badge.classList.remove('done', 'live', 'warn');
+        badge.classList.remove('done', 'live', 'warn', 'sub');
         if (recentAdd) {
-          badge.textContent = '+' + fmtSecondsShort(recentAdd.seconds);
-          badge.classList.add('done');
+          const isSub = Number(recentAdd.seconds) < 0;
+          badge.textContent = (isSub ? '-' : '+') + fmtSecondsShort(Math.abs(Number(recentAdd.seconds) || 0));
+          badge.classList.add(isSub ? 'sub' : 'done');
         } else if (t.running && !(t.mode === 'countdown' && rawSec <= 0)) {
           badge.textContent = 'LIVE';
           badge.classList.add('live');
@@ -1448,18 +1462,25 @@
 
         const rateEl = document.getElementById('timer-rate');
         const spc = Number(cfg.timerSecondsPerCoin) || 0;
+        const coinSym = cfg.timerCoinSign === 'sub' ? '-' : '+';
         const spl = Number(cfg.timerSecondsPerLikeStep) || 0;
+        const likeSym = cfg.timerLikeSign === 'sub' ? '-' : '+';
         const lStep = Math.max(1, Math.floor(Number(cfg.timerLikeStep) || 100));
         const spf = Number(cfg.timerSecondsPerFollow) || 0;
+        const followSym = cfg.timerFollowSign === 'sub' ? '-' : '+';
         const coinOn = cfg.timerAddOnCoins !== false && spc > 0;
         const likeOn = Boolean(cfg.timerAddOnLikes) && spl > 0;
         const followOn = Boolean(cfg.timerAddOnFollows) && spf > 0;
+        const activeGiftRules = Array.isArray(cfg.timerGiftRules)
+          ? cfg.timerGiftRules.filter(function (r) { return r && r.enabled !== false && Number(r.deltaSeconds) !== 0; }).length
+          : 0;
         const activeRules = [];
-        if (coinOn) activeRules.push({ full: '1c = +' + fmtSecondsShort(spc), short: '1c +' + fmtSecondsShort(spc) });
-        if (likeOn) activeRules.push({ full: fmtNum(lStep) + ' likes = +' + fmtSecondsShort(spl), short: fmtNum(lStep) + 'L +' + fmtSecondsShort(spl) });
-        if (followOn) activeRules.push({ full: '1 follow = +' + fmtSecondsShort(spf), short: '1F +' + fmtSecondsShort(spf) });
+        if (coinOn) activeRules.push({ full: '1c = ' + coinSym + fmtSecondsShort(spc), short: '1c ' + coinSym + fmtSecondsShort(spc) });
+        if (likeOn) activeRules.push({ full: fmtNum(lStep) + ' likes = ' + likeSym + fmtSecondsShort(spl), short: fmtNum(lStep) + 'L ' + likeSym + fmtSecondsShort(spl) });
+        if (followOn) activeRules.push({ full: '1 follow = ' + followSym + fmtSecondsShort(spf), short: '1F ' + followSym + fmtSecondsShort(spf) });
+        if (activeGiftRules > 0) activeRules.push({ full: activeGiftRules + ' gift ' + (activeGiftRules === 1 ? 'rule' : 'rules'), short: activeGiftRules + 'G' });
         if (activeRules.length === 0) {
-          rateEl.textContent = 'Time add off';
+          rateEl.textContent = 'Time rules off';
         } else if (activeRules.length === 1) {
           rateEl.textContent = activeRules[0].full;
         } else {
@@ -1470,6 +1491,8 @@
         const totalAdded = Number(t.totalAddedSeconds) || 0;
         if (totalAdded > 0) {
           modeMetaEl.textContent = '+' + fmtSecondsShort(totalAdded) + ' added';
+        } else if (totalAdded < 0) {
+          modeMetaEl.textContent = '-' + fmtSecondsShort(Math.abs(totalAdded)) + ' removed';
         } else {
           modeMetaEl.textContent = t.mode === 'countup' ? 'Countup' : 'Countdown';
         }
@@ -1477,9 +1500,12 @@
         floatAddEl.classList.add('hidden');
       } else {
         if (recentAdd) {
-          floatAddEl.textContent = '+' + fmtSecondsShort(recentAdd.seconds);
+          const isSub = Number(recentAdd.seconds) < 0;
+          floatAddEl.textContent = (isSub ? '-' : '+') + fmtSecondsShort(Math.abs(Number(recentAdd.seconds) || 0));
+          floatAddEl.classList.toggle('sub', isSub);
           floatAddEl.classList.remove('hidden');
         } else {
+          floatAddEl.classList.remove('sub');
           floatAddEl.classList.add('hidden');
         }
       }
