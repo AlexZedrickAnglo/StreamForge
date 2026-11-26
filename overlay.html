@@ -1458,10 +1458,22 @@
 
         const rateEl = document.getElementById('timer-rate');
         const spc = Number(cfg.timerSecondsPerCoin) || 0;
-        if (cfg.timerAddOnCoins !== false && spc > 0) {
-          rateEl.textContent = '1c = +' + fmtSecondsShort(spc);
+        const spl = Number(cfg.timerSecondsPerLikeStep) || 0;
+        const lStep = Math.max(1, Math.floor(Number(cfg.timerLikeStep) || 100));
+        const spf = Number(cfg.timerSecondsPerFollow) || 0;
+        const coinOn = cfg.timerAddOnCoins !== false && spc > 0;
+        const likeOn = Boolean(cfg.timerAddOnLikes) && spl > 0;
+        const followOn = Boolean(cfg.timerAddOnFollows) && spf > 0;
+        const activeRules = [];
+        if (coinOn) activeRules.push({ full: '1c = +' + fmtSecondsShort(spc), short: '1c +' + fmtSecondsShort(spc) });
+        if (likeOn) activeRules.push({ full: fmtNum(lStep) + ' likes = +' + fmtSecondsShort(spl), short: fmtNum(lStep) + 'L +' + fmtSecondsShort(spl) });
+        if (followOn) activeRules.push({ full: '1 follow = +' + fmtSecondsShort(spf), short: '1F +' + fmtSecondsShort(spf) });
+        if (activeRules.length === 0) {
+          rateEl.textContent = 'Time add off';
+        } else if (activeRules.length === 1) {
+          rateEl.textContent = activeRules[0].full;
         } else {
-          rateEl.textContent = 'Coin add off';
+          rateEl.textContent = activeRules.map(function (r) { return r.short; }).join(' · ');
         }
 
         const modeMetaEl = document.getElementById('timer-mode-meta');
