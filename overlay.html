@@ -2054,10 +2054,13 @@
       jarEngine.bodies.push({
         x: x,
         y: y,
-        vx: settled ? 0 : (Math.random() - 0.5) * 70,
-        vy: settled ? 40 : 60 + Math.random() * 55,
-        angle: (Math.random() - 0.5) * 0.9,
-        omega: settled ? 0 : (Math.random() - 0.5) * 5.2,
+        px: x,
+        py: y,
+        vx: settled ? 0 : (Math.random() - 0.5) * 60,
+        vy: settled ? 20 : 60 + Math.random() * 50,
+        angle: (Math.random() - 0.5) * 0.75,
+        omega: settled ? 0 : (Math.random() - 0.5) * 2.6,
+        contacts: 0,
         r: r,
         invMass: 1 / (r * r),
         imageUrl: item.imageUrl || '',
@@ -2102,17 +2105,22 @@
       for (let s = 0; s < substeps; s++) {
         for (let i = 0; i < n; i++) {
           const b = bodies[i];
+          b.px = b.x;
+          b.py = b.y;
+          b.contacts = 0;
           b.vy += gravity * sdt;
-          b.vx *= 0.996;
-          b.vy *= 0.996;
-          b.omega *= 0.975;
+          b.vx *= 0.992;
+          b.vy *= 0.994;
+          b.omega *= 0.96;
+          if (b.omega > 5.5) b.omega = 5.5;
+          else if (b.omega < -5.5) b.omega = -5.5;
           b.x += b.vx * sdt;
           b.y += b.vy * sdt;
           b.angle += b.omega * sdt;
         }
 
         // Pairwise circle-circle collision resolution
-        for (let iter = 0; iter < 5; iter++) {
+        for (let iter = 0; iter < 6; iter++) {
           for (let i = 0; i < n; i++) {
             const a = bodies[i];
             for (let j = i + 1; j < n; j++) {
@@ -2133,27 +2141,42 @@
                 a.y -= ny * corrA;
                 b.x += nx * corrB;
                 b.y += ny * corrB;
+                a.contacts += 1;
+                b.contacts += 1;
 
                 const rvx = b.vx - a.vx;
                 const rvy = b.vy - a.vy;
                 const vn = rvx * nx + rvy * ny;
                 if (vn < 0) {
-                  const restitution = vn < -80 ? 0.22 : 0.04;
+                  const restitution = vn < -95 ? 0.2 : 0;
                   const imp = (-(1 + restitution) * vn) / invSum;
                   a.vx -= imp * nx * a.invMass;
                   a.vy -= imp * ny * a.invMass;
                   b.vx += imp * nx * b.invMass;
                   b.vy += imp * ny * b.invMass;
 
-                  // Tangential friction & realistic roll spin
-                  const tx = -ny;
-                  const ty = nx;
-                  const vt = rvx * tx + rvy * ty;
-                  const fric = vt * 0.08;
-                  a.vx += fric * tx * 0.5;
-                  b.vx -= fric * tx * 0.5;
-                  a.omega -= (vt / Math.max(12, a.r)) * 0.06;
-                  b.omega += (vt / Math.max(12, b.r)) * 0.06;
+                  // Energy-dissipative surface friction only on first iteration (prevents resting spin-up)
+                  if (iter === 0) {
+                    const tx = -ny;
+                    const ty = nx;
+                    const vt = rvx * tx + rvy * ty;
+                    if (Math.abs(vn) > 38 || Math.abs(vt) > 32) {
+                      const vSurf = vt - a.omega * a.r - b.omega * b.r;
+                      const maxJt = Math.abs(imp) * 0.25;
+                      const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.35) / invSum));
+                      a.vx -= jt * tx * a.invMass;
+                      a.vy -= jt * ty * a.invMass;
+                      b.vx += jt * tx * b.invMass;
+                      b.vy += jt * ty * b.invMass;
+                      a.omega -= ((jt * a.invMass) / Math.max(14, a.r)) * 0.7;
+                      b.omega -= ((jt * b.invMass) / Math.max(14, b.r)) * 0.7;
+                    } else {
+                      a.vx *= 0.94;
+                      b.vx *= 0.94;
+                      a.omega *= 0.78;
+                      b.omega *= 0.78;
+                    }
+                  }
                 }
               }
             }
@@ -2169,24 +2192,24 @@
               const maxX = 160 + halfAllow;
               if (b.x < minX) {
                 b.x = minX;
-                if (b.vx < 0) b.vx = -b.vx * 0.25;
+                if (b.vx < 0) b.vx = -b.vx * 0.2;
+                b.omega *= 0.85;
               } else if (b.x > maxX) {
                 b.x = maxX;
-                if (b.vx > 0) b.vx = -b.vx * 0.25;
+                if (b.vx > 0) b.vx = -b.vx * 0.2;
+                b.omega *= 0.85;
               }
             } else {
               if (b.x - b.r < leftWall) {
                 b.x = leftWall + b.r;
-                if (b.vx < 0) {
-                  b.vx = -b.vx * 0.22;
-                  b.omega += (b.vy / Math.max(12, b.r)) * 0.08;
-                }
+                b.contacts += 1;
+                if (b.vx < 0) b.vx = Math.abs(b.vx) > 50 ? -b.vx * 0.18 : 0;
+                b.omega *= 0.8;
               } else if (b.x + b.r > rightWall) {
                 b.x = rightWall - b.r;
-                if (b.vx > 0) {
-                  b.vx = -b.vx * 0.22;
-                  b.omega -= (b.vy / Math.max(12, b.r)) * 0.08;
-                }
+                b.contacts += 1;
+                if (b.vx > 0) b.vx = Math.abs(b.vx) > 50 ? -b.vx * 0.18 : 0;
+                b.omega *= 0.8;
               }
             }
 
@@ -2201,11 +2224,14 @@
                 const ny = dy / dist;
                 b.x = blCx + nx * maxR;
                 b.y = bCy + ny * maxR;
+                b.contacts += 1;
                 const vn = b.vx * nx + b.vy * ny;
                 if (vn > 0) {
-                  b.vx -= 1.2 * vn * nx;
-                  b.vy -= 1.2 * vn * ny;
+                  const rest = vn > 70 ? 1.15 : 1.0;
+                  b.vx -= rest * vn * nx;
+                  b.vy -= rest * vn * ny;
                 }
+                b.omega *= 0.8;
               }
             }
             // Rounded bottom-right corner arc
@@ -2219,32 +2245,47 @@
                 const ny = dy / dist;
                 b.x = brCx + nx * maxR;
                 b.y = bCy + ny * maxR;
+                b.contacts += 1;
                 const vn = b.vx * nx + b.vy * ny;
                 if (vn > 0) {
-                  b.vx -= 1.2 * vn * nx;
-                  b.vy -= 1.2 * vn * ny;
+                  const rest = vn > 70 ? 1.15 : 1.0;
+                  b.vx -= rest * vn * nx;
+                  b.vy -= rest * vn * ny;
                 }
+                b.omega *= 0.8;
               }
             }
 
             // Flat glass bottom floor
             if (b.y + b.r > bottomY) {
               b.y = bottomY - b.r;
+              b.contacts += 1;
               if (b.vy > 0) {
-                b.vy = b.vy > 75 ? -b.vy * 0.2 : 0;
+                b.vy = b.vy > 90 ? -b.vy * 0.16 : 0;
               }
-              b.vx *= 0.86;
-              b.omega *= 0.82;
+              b.vx *= 0.82;
+              b.omega *= 0.72;
             }
           }
         }
 
-        // Gentle sleep damping so settled piles stay calm with zero jitter
+        // Contact-aware sleep damping so settled piles stop spinning & stay completely calm
         for (let i = 0; i < n; i++) {
           const b = bodies[i];
-          if (Math.abs(b.vx) < 2.2) b.vx = 0;
-          if (Math.abs(b.vy) < 2.2) b.vy = 0;
-          if (Math.abs(b.omega) < 0.04) b.omega = 0;
+          if (b.contacts > 0) {
+            const moved = Math.hypot(b.x - b.px, b.y - b.py);
+            b.omega *= 0.84;
+            if (moved < 0.25) {
+              b.vx *= 0.65;
+              b.vy *= 0.65;
+              b.omega *= 0.5;
+            }
+            if (Math.abs(b.vy) < 6) b.vy = 0;
+          }
+          if (Math.abs(b.vx) < 4) b.vx = 0;
+          if (Math.abs(b.omega) < 0.08) b.omega = 0;
+          else if (b.omega > 5.5) b.omega = 5.5;
+          else if (b.omega < -5.5) b.omega = -5.5;
         }
       }
     }
