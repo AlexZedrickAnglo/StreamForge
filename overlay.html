@@ -217,11 +217,6 @@
       justify-content: center;
     }
 
-    .compact .jar-stage {
-      width: 320px;
-      height: 332px;
-    }
-
     .jar-vessel {
       position: relative;
       width: 320px;
@@ -229,16 +224,11 @@
       flex-shrink: 0;
     }
 
-    .compact .jar-vessel {
-      transform: scale(0.87);
-      transform-origin: center center;
-    }
-
     .jar-svg-layer {
       position: absolute;
       inset: 0;
-      width: 320px;
-      height: 380px;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
       display: block;
     }
@@ -246,8 +236,8 @@
     .jar-canvas {
       position: absolute;
       inset: 0;
-      width: 320px;
-      height: 380px;
+      width: 100%;
+      height: 100%;
       display: block;
     }
 
@@ -1159,8 +1149,8 @@
             <!-- Glass neck throat -->
             <rect x="82" y="34" width="156" height="36" rx="8" fill="url(#jarMouthGrad)"/>
             <!-- Back rim ellipse -->
-            <ellipse cx="160" cy="36" rx="82" ry="11" fill="rgba(12,14,18,0.42)" stroke="rgba(255,255,255,0.52)" stroke-width="2"/>
-            <ellipse cx="160" cy="36" rx="72" ry="7.5" fill="rgba(0,0,0,0.28)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+            <ellipse cx="160" cy="36" rx="82" ry="11" fill="rgba(12,14,18,0.42)" stroke="rgba(255,255,255,0.52)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+            <ellipse cx="160" cy="36" rx="72" ry="7.5" fill="rgba(0,0,0,0.28)" stroke="rgba(255,255,255,0.22)" stroke-width="1" vector-effect="non-scaling-stroke"/>
             <!-- Subtle base glass floor ellipse -->
             <ellipse cx="160" cy="355" rx="94" ry="8" fill="rgba(255,255,255,0.10)"/>
           </svg>
@@ -1186,18 +1176,18 @@
             <path d="M48 118 C48 104 66 96 76 86 L80 94 C70 104 62 112 62 126 L62 322 C62 336 68 346 78 352 L64 352 C52 344 48 334 48 318 Z" fill="url(#jarShineLeft)"/>
             <path d="M272 118 C272 104 256 96 246 86 L243 94 C252 104 260 112 260 126 L260 322 C260 336 254 346 244 352 L258 352 C268 344 272 334 272 318 Z" fill="url(#jarShineRight)"/>
             <!-- Crisp shoulder highlight arc -->
-            <path d="M56 112 C62 96 78 88 92 78" stroke="rgba(255,255,255,0.52)" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M264 112 C258 96 242 88 228 78" stroke="rgba(255,255,255,0.38)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M56 112 C62 96 78 88 92 78" stroke="rgba(255,255,255,0.52)" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M264 112 C258 96 242 88 228 78" stroke="rgba(255,255,255,0.38)" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
             <!-- Threaded Mason Jar glass collar rings -->
-            <path d="M77 44 C105 51 215 51 243 44" stroke="rgba(255,255,255,0.58)" stroke-width="3.2" stroke-linecap="round"/>
-            <path d="M76 53 C106 60 214 60 244 53" stroke="rgba(255,255,255,0.48)" stroke-width="3" stroke-linecap="round"/>
-            <path d="M79 62 C108 68 212 68 241 62" stroke="rgba(255,255,255,0.42)" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M77 44 C105 51 215 51 243 44" stroke="rgba(255,255,255,0.58)" stroke-width="3.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M76 53 C106 60 214 60 244 53" stroke="rgba(255,255,255,0.48)" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M79 62 C108 68 212 68 241 62" stroke="rgba(255,255,255,0.42)" stroke-width="2.6" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
             <!-- Front mouth lip curve -->
-            <path d="M78 37 C106 47 214 47 242 37" stroke="rgba(255,255,255,0.68)" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M78 37 C106 47 214 47 242 37" stroke="rgba(255,255,255,0.68)" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
             <!-- Thick curved glass bottom reflection -->
-            <path d="M62 344 C94 362 226 362 258 344" stroke="rgba(255,255,255,0.42)" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M62 344 C94 362 226 362 258 344" stroke="rgba(255,255,255,0.42)" stroke-width="3.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
             <!-- Main outer glass border stroke -->
-            <path id="jar-glass-outline" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66" stroke="rgba(255,255,255,0.52)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path id="jar-glass-outline" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66" stroke="rgba(255,255,255,0.52)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
           </svg>
         </div>
       </div>
@@ -1784,7 +1774,7 @@
         fill.classList.toggle('done', reached);
       }
 
-      // Realistic Glass Gift Jar (2D Rigid-Body Physics + Toast + Customizable Size)
+      // Realistic Glass Gift Jar (2D Rigid-Body Physics + Toast + Vessel-Only Enlarge)
       const jarEl = document.getElementById('w-jar');
       jarEl.classList.toggle('hidden', !showJar);
       if (showJar) {
@@ -1793,21 +1783,28 @@
         const jarTitleEl = document.getElementById('jar-title');
         jarTitleEl.textContent = cfg.jarTitle || 'Gift Jar';
         jarTitleEl.classList.toggle('hidden', !ws.showTitle);
-        const jarScalePct = Math.max(50, Math.min(200, Math.round(Number(cfg.jarScale) || 100)));
-        const effJarScale = (jarScalePct / 100) * (cfg.compact ? 0.87 : 1);
-        jarEngine.scale = effJarScale;
+        const jarScalePct = Math.max(100, Math.min(200, Math.round(Number(cfg.jarScale) || 100)));
+        const nextJarScale = jarScalePct / 100;
+        if (Math.abs(nextJarScale - jarEngine.scale) > 0.0001) {
+          resizeJarBodies(jarEngine.bodies, jarEngine.scale, nextJarScale);
+          jarEngine.scale = nextJarScale;
+        }
+        const vesselW = Math.round(320 * nextJarScale);
+        const vesselH = Math.round(380 * nextJarScale);
+        const stageW = vesselW + 48;
         const jarStageEl = jarEl.querySelector('.jar-stage');
         const jarVesselEl = jarEl.querySelector('.jar-vessel');
         if (jarStageEl) {
-          jarStageEl.style.width = Math.round(368 * effJarScale) + 'px';
-          jarStageEl.style.height = Math.round(380 * effJarScale) + 'px';
+          jarStageEl.style.width = stageW + 'px';
+          jarStageEl.style.height = vesselH + 'px';
         }
         if (jarVesselEl) {
-          jarVesselEl.style.transform = 'scale(' + effJarScale.toFixed(3) + ')';
-          jarVesselEl.style.transformOrigin = 'center center';
+          jarVesselEl.style.width = vesselW + 'px';
+          jarVesselEl.style.height = vesselH + 'px';
+          jarVesselEl.style.transform = '';
         }
         if (MODE === 'jar') {
-          root.style.width = Math.round(392 * effJarScale) + 'px';
+          root.style.width = (stageW + 24) + 'px';
         } else {
           root.style.width = '';
         }
@@ -1963,7 +1960,7 @@
       { giftName: 'Lion', unitCoins: 29999, count: 1, user: 'kinggifter', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4fb89af2082a290b37d704e20f4fe729~tplv-obj.webp' },
     ];
 
-    const JAR_MAX_FILL_AREA = 34500;
+    const JAR_HARD_BODY_LIMIT = 500;
 
     const jarEngine = {
       bodies: [],
@@ -1973,8 +1970,8 @@
       lastResetSeq: -1,
       initialized: false,
       running: false,
-      maxItems: 160,
       scale: 1,
+      evictCooldown: 0,
       showToast: true,
       demoEnabled: false,
       pointsUnit: 'Coins',
@@ -1985,12 +1982,40 @@
       nextSpawnAt: 0,
     };
 
+    function getJarScale() {
+      return Math.max(1, Math.min(2, Number(jarEngine.scale) || 1));
+    }
+
+    function resizeJarBodies(bodies, prevScale, nextScale) {
+      const ps = Math.max(1, Math.min(2, Number(prevScale) || 1));
+      const ns = Math.max(1, Math.min(2, Number(nextScale) || 1));
+      if (!Array.isArray(bodies) || Math.abs(ns - ps) < 0.0001) return;
+      const prevCx = 160 * ps;
+      const nextCx = 160 * ns;
+      const prevBottom = 356 * ps;
+      const nextBottom = 356 * ns;
+      const leftWall = 42 * ns;
+      const rightWall = 278 * ns;
+      const rimY = 68 * ns;
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        const minX = leftWall + b.r;
+        const maxX = rightWall - b.r;
+        b.x = Math.max(minX, Math.min(maxX, nextCx + (b.x - prevCx)));
+        const minY = rimY + b.r;
+        const maxY = nextBottom - b.r;
+        b.y = Math.max(minY, Math.min(maxY, nextBottom - (prevBottom - b.y)));
+        b.px = b.x;
+        b.py = b.y;
+      }
+    }
+
     function findLeastValueJarIndex(bodies, excludeFresh) {
       let bestIdx = -1;
       let bestCoins = Infinity;
       for (let i = 0; i < bodies.length; i++) {
         const b = bodies[i];
-        if (excludeFresh && (b.age || 0) < 60) continue;
+        if (excludeFresh && (b.age || 0) < 55) continue;
         const c = Number(b.unitCoins) || 0;
         if (c < bestCoins) {
           bestCoins = c;
@@ -1998,14 +2023,6 @@
         }
       }
       return bestIdx;
-    }
-
-    function computeJarArea(bodies) {
-      let area = 0;
-      for (let i = 0; i < bodies.length; i++) {
-        area += Math.PI * bodies[i].r * bodies[i].r;
-      }
-      return area;
     }
 
     function jarRadiusForCoins(unitCoins) {
@@ -2094,28 +2111,29 @@
 
     function spawnJarBody(item, settled) {
       const r = jarRadiusForCoins(item.unitCoins);
-      const maxCap = Math.max(40, Math.min(250, Number(jarEngine.maxItems) || 160));
-      const newArea = Math.PI * r * r;
-      let totalArea = computeJarArea(jarEngine.bodies);
-      while (
-        jarEngine.bodies.length >= maxCap ||
-        (jarEngine.bodies.length > 0 && totalArea + newArea > JAR_MAX_FILL_AREA)
-      ) {
-        // Delete the least-value gift (oldest tie-break) so the jar never overflows
+      const s = getJarScale();
+      const cx = 160 * s;
+      const leftWall = 42 * s;
+      const rightWall = 278 * s;
+      const bottomY = 356 * s;
+      while (jarEngine.bodies.length >= JAR_HARD_BODY_LIMIT) {
         let evictIdx = findLeastValueJarIndex(jarEngine.bodies, true);
         if (evictIdx < 0) evictIdx = findLeastValueJarIndex(jarEngine.bodies, false);
         if (evictIdx < 0) break;
-        totalArea -= Math.PI * jarEngine.bodies[evictIdx].r * jarEngine.bodies[evictIdx].r;
         jarEngine.bodies.splice(evictIdx, 1);
       }
       if (item.imageUrl) getJarCachedImg(item.imageUrl);
-      const halfMouth = Math.max(10, 62 - Math.min(r, 48));
+      const halfMouth = Math.max(10, 62 * s - Math.min(r, 48 * s));
+      const innerMinX = leftWall + r + 8;
+      const innerSpanX = Math.max(8, (rightWall - r - 8) - innerMinX);
+      const settledMinY = Math.min(bottomY - r - 12, 130 * s + r);
+      const settledSpanY = Math.max(12, (bottomY - r - 6) - settledMinY);
       const x = settled
-        ? 54 + r + Math.random() * Math.max(10, 212 - r * 2)
-        : 160 + (Math.random() * 2 - 1) * halfMouth;
+        ? innerMinX + Math.random() * innerSpanX
+        : cx + (Math.random() * 2 - 1) * halfMouth;
       const y = settled
-        ? 140 + Math.random() * 190
-        : 22 - Math.random() * 16;
+        ? settledMinY + Math.random() * settledSpanY
+        : 22 * s - Math.random() * 16;
       jarEngine.bodies.push({
         x: x,
         y: y,
@@ -2158,10 +2176,15 @@
       const substeps = 2;
       const sdt = Math.min(0.033, dt) / substeps;
       const gravity = 960;
-      const leftWall = 42;
-      const rightWall = 278;
-      const bottomY = 356;
-      const cornerR = 34;
+      const scale = getJarScale();
+      const cx = 160 * scale;
+      const leftWall = 42 * scale;
+      const rightWall = 278 * scale;
+      const bottomY = 356 * scale;
+      const cornerR = 34 * scale;
+      const neckY = 98 * scale;
+      const rimY = 68 * scale;
+      const overflowY = 96 * scale;
       const blCx = leftWall + cornerR;
       const brCx = rightWall - cornerR;
       const bCy = bottomY - cornerR;
@@ -2248,14 +2271,14 @@
             }
           }
 
-          // Jar walls, neck funnel, floor, and rounded bottom corners
+          // Jar walls, neck funnel, floor, and rounded bottom corners (scaled by jar vessel size)
           for (let i = 0; i < n; i++) {
             const b = bodies[i];
             // Funnel through neck mouth when entering top
-            if (b.y < 98) {
-              const halfAllow = Math.max(0, 74 - Math.min(b.r, 68));
-              const minX = 160 - halfAllow;
-              const maxX = 160 + halfAllow;
+            if (b.y < neckY) {
+              const halfAllow = Math.max(0, 74 * scale - Math.min(b.r, 68 * scale));
+              const minX = cx - halfAllow;
+              const maxX = cx + halfAllow;
               if (b.x < minX) {
                 b.x = minX;
                 if (b.vx < 0) b.vx = -b.vx * 0.2;
@@ -2334,8 +2357,9 @@
             }
 
             // Hard neck ceiling for settled gifts so nothing can ever pop out of the jar
-            if ((b.age || 0) > 65 && b.y - b.r < 68) {
-              b.y = 68 + b.r;
+            if ((b.age || 0) > 55 && b.y - b.r < rimY) {
+              b.y = rimY + b.r;
+              b.contacts += 1;
               if (b.vy < 0) b.vy = 0;
             }
           }
@@ -2365,24 +2389,33 @@
         bodies[i].age = (bodies[i].age || 0) + 1;
       }
 
-      // Live overflow guard: evict least-value gift whenever pile rises into the neck or exceeds jar capacity
-      for (let evictPass = 0; evictPass < 4 && bodies.length > 1; evictPass++) {
-        const overflowArea = computeJarArea(bodies) > JAR_MAX_FILL_AREA;
-        const overflowTop = bodies.some(function (b) { return (b.age || 0) > 65 && b.y - b.r < 92; });
-        if (!overflowArea && !overflowTop) break;
-        let evictIdx = findLeastValueJarIndex(bodies, true);
-        if (evictIdx < 0) evictIdx = findLeastValueJarIndex(bodies, false);
-        if (evictIdx < 0) break;
-        bodies.splice(evictIdx, 1);
+      // Overflow-only deletion: remove the least-value gift strictly when the pile physically overflows the jar
+      if (jarEngine.evictCooldown > 0) {
+        jarEngine.evictCooldown -= 1;
+      } else if (bodies.length > 1) {
+        const isOverflowing = bodies.some(function (b) {
+          return (b.age || 0) > 55 && b.contacts > 0 && b.vy <= 35 && (b.y - b.r) < overflowY;
+        });
+        if (isOverflowing) {
+          let evictIdx = findLeastValueJarIndex(bodies, true);
+          if (evictIdx < 0) evictIdx = findLeastValueJarIndex(bodies, false);
+          if (evictIdx >= 0) {
+            bodies.splice(evictIdx, 1);
+            jarEngine.evictCooldown = 2;
+          }
+        }
       }
     }
 
     function drawJarCanvas() {
       const canvas = document.getElementById('jar-canvas');
       if (!canvas) return;
-      const dpr = Math.min(3, (window.devicePixelRatio || 1) * Math.max(1, jarEngine.scale || 1));
-      const targetW = Math.round(320 * dpr);
-      const targetH = Math.round(380 * dpr);
+      const s = getJarScale();
+      const worldW = Math.round(320 * s);
+      const worldH = Math.round(380 * s);
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const targetW = Math.round(worldW * dpr);
+      const targetH = Math.round(worldH * dpr);
       if (canvas.width !== targetW || canvas.height !== targetH) {
         canvas.width = targetW;
         canvas.height = targetH;
@@ -2391,21 +2424,21 @@
       if (!ctx) return;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, 320, 380);
+      ctx.clearRect(0, 0, worldW, worldH);
 
-      // Clip strictly inside the Mason Jar interior (mouth -> shoulders -> body -> rounded bottom)
+      // Clip strictly inside the scaled Mason Jar interior while icons draw at fixed unscaled size
       ctx.save();
       ctx.beginPath();
-      ctx.moveTo(84, 32);
-      ctx.lineTo(236, 32);
-      ctx.lineTo(236, 66);
-      ctx.bezierCurveTo(236, 82, 281, 92, 281, 122);
-      ctx.lineTo(281, 322);
-      ctx.bezierCurveTo(281, 347, 260, 362, 232, 362);
-      ctx.lineTo(88, 362);
-      ctx.bezierCurveTo(60, 362, 39, 347, 39, 322);
-      ctx.lineTo(39, 122);
-      ctx.bezierCurveTo(39, 92, 84, 82, 84, 66);
+      ctx.moveTo(84 * s, 32 * s);
+      ctx.lineTo(236 * s, 32 * s);
+      ctx.lineTo(236 * s, 66 * s);
+      ctx.bezierCurveTo(236 * s, 82 * s, 281 * s, 92 * s, 281 * s, 122 * s);
+      ctx.lineTo(281 * s, 322 * s);
+      ctx.bezierCurveTo(281 * s, 347 * s, 260 * s, 362 * s, 232 * s, 362 * s);
+      ctx.lineTo(88 * s, 362 * s);
+      ctx.bezierCurveTo(60 * s, 362 * s, 39 * s, 347 * s, 39 * s, 322 * s);
+      ctx.lineTo(39 * s, 122 * s);
+      ctx.bezierCurveTo(39 * s, 92 * s, 84 * s, 82 * s, 84 * s, 66 * s);
       ctx.closePath();
       ctx.clip();
 
@@ -2484,7 +2517,6 @@
     }
 
     function syncJarOverlayState(state, cfg, pointsUnit) {
-      jarEngine.maxItems = Math.max(40, Math.min(250, Number(cfg.jarMaxItems) || 160));
       jarEngine.showToast = cfg.jarShowToast !== false;
       jarEngine.pointsUnit = pointsUnit || 'Coins';
       updateJarDemoLoop(Boolean(cfg.jarShowDemo));
