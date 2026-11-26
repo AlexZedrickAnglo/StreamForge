@@ -1687,12 +1687,12 @@
       const showCoins = MODE === 'coins' || (MODE === 'all' && cfg.showCoins !== false);
       const pointsUnit = cfg.pointsUnit || 'Points';
 
-      // Win Counter (number-only 0/10 — horizontal or vertical)
+      // Win Counter (number-only 0/10 — allows negative values, horizontal or vertical)
       const winsEl = document.getElementById('w-wins');
       winsEl.classList.toggle('hidden', !showWins);
       if (showWins) {
         const ws = getWidgetStyle(cfg, 'wins');
-        const wins = Math.max(0, Math.floor(Number(cfg.wins) || 0));
+        const wins = Math.trunc(Number(cfg.wins) || 0);
         const goal = Math.max(1, Math.floor(Number(cfg.winGoal) || 10));
         const isVertical = cfg.winLayout === 'vertical';
 
