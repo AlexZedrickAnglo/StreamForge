@@ -1772,7 +1772,7 @@
         fill.classList.toggle('done', reached);
       }
 
-      // Realistic Glass Gift Jar (2D Rigid-Body Physics + Toast)
+      // Realistic Glass Gift Jar (2D Rigid-Body Physics + Toast + Customizable Size)
       const jarEl = document.getElementById('w-jar');
       jarEl.classList.toggle('hidden', !showJar);
       if (showJar) {
@@ -1781,6 +1781,24 @@
         const jarTitleEl = document.getElementById('jar-title');
         jarTitleEl.textContent = cfg.jarTitle || 'Gift Jar';
         jarTitleEl.classList.toggle('hidden', !ws.showTitle);
+        const jarScalePct = Math.max(50, Math.min(200, Math.round(Number(cfg.jarScale) || 100)));
+        const effJarScale = (jarScalePct / 100) * (cfg.compact ? 0.87 : 1);
+        jarEngine.scale = effJarScale;
+        const jarStageEl = jarEl.querySelector('.jar-stage');
+        const jarVesselEl = jarEl.querySelector('.jar-vessel');
+        if (jarStageEl) {
+          jarStageEl.style.width = Math.round(368 * effJarScale) + 'px';
+          jarStageEl.style.height = Math.round(380 * effJarScale) + 'px';
+        }
+        if (jarVesselEl) {
+          jarVesselEl.style.transform = 'scale(' + effJarScale.toFixed(3) + ')';
+          jarVesselEl.style.transformOrigin = 'center center';
+        }
+        if (MODE === 'jar') {
+          root.style.width = Math.round(392 * effJarScale) + 'px';
+        } else {
+          root.style.width = '';
+        }
         const outlineEl = document.getElementById('jar-glass-outline');
         if (outlineEl) {
           if (ws.borderMode === 'neon') {
@@ -1795,6 +1813,8 @@
           }
         }
         syncJarOverlayState(state, cfg, pointsUnit);
+      } else if (MODE !== 'jar') {
+        root.style.width = '';
       }
 
       // Highest Gift Combo Spotlight (Top Header + Floating Icon + Tilted x100 & Coins + Centered Name)
@@ -1931,6 +1951,8 @@
       { giftName: 'Lion', unitCoins: 29999, count: 1, user: 'kinggifter', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4fb89af2082a290b37d704e20f4fe729~tplv-obj.webp' },
     ];
 
+    const JAR_MAX_FILL_AREA = 34500;
+
     const jarEngine = {
       bodies: [],
       pendingDrops: [],
@@ -1940,6 +1962,7 @@
       initialized: false,
       running: false,
       maxItems: 160,
+      scale: 1,
       showToast: true,
       demoEnabled: false,
       pointsUnit: 'Coins',
@@ -1949,6 +1972,29 @@
       lastTime: 0,
       nextSpawnAt: 0,
     };
+
+    function findLeastValueJarIndex(bodies, excludeFresh) {
+      let bestIdx = -1;
+      let bestCoins = Infinity;
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        if (excludeFresh && (b.age || 0) < 60) continue;
+        const c = Number(b.unitCoins) || 0;
+        if (c < bestCoins) {
+          bestCoins = c;
+          bestIdx = i;
+        }
+      }
+      return bestIdx;
+    }
+
+    function computeJarArea(bodies) {
+      let area = 0;
+      for (let i = 0; i < bodies.length; i++) {
+        area += Math.PI * bodies[i].r * bodies[i].r;
+      }
+      return area;
+    }
 
     function jarRadiusForCoins(unitCoins) {
       const c = Math.max(0, Number(unitCoins) || 0);
@@ -2037,10 +2083,17 @@
     function spawnJarBody(item, settled) {
       const r = jarRadiusForCoins(item.unitCoins);
       const maxCap = Math.max(40, Math.min(250, Number(jarEngine.maxItems) || 160));
-      while (jarEngine.bodies.length >= maxCap) {
-        // Prefer evicting oldest small items so big showcase gifts stay visible longer
-        let evictIdx = jarEngine.bodies.findIndex(function (b) { return b.r <= 18; });
-        if (evictIdx < 0) evictIdx = 0;
+      const newArea = Math.PI * r * r;
+      let totalArea = computeJarArea(jarEngine.bodies);
+      while (
+        jarEngine.bodies.length >= maxCap ||
+        (jarEngine.bodies.length > 0 && totalArea + newArea > JAR_MAX_FILL_AREA)
+      ) {
+        // Delete the least-value gift (oldest tie-break) so the jar never overflows
+        let evictIdx = findLeastValueJarIndex(jarEngine.bodies, true);
+        if (evictIdx < 0) evictIdx = findLeastValueJarIndex(jarEngine.bodies, false);
+        if (evictIdx < 0) break;
+        totalArea -= Math.PI * jarEngine.bodies[evictIdx].r * jarEngine.bodies[evictIdx].r;
         jarEngine.bodies.splice(evictIdx, 1);
       }
       if (item.imageUrl) getJarCachedImg(item.imageUrl);
@@ -2061,6 +2114,7 @@
         angle: (Math.random() - 0.5) * 0.75,
         omega: settled ? 0 : (Math.random() - 0.5) * 2.6,
         contacts: 0,
+        age: settled ? 80 : 0,
         r: r,
         invMass: 1 / (r * r),
         imageUrl: item.imageUrl || '',
@@ -2266,6 +2320,12 @@
               b.vx *= 0.82;
               b.omega *= 0.72;
             }
+
+            // Hard neck ceiling for settled gifts so nothing can ever pop out of the jar
+            if ((b.age || 0) > 65 && b.y - b.r < 68) {
+              b.y = 68 + b.r;
+              if (b.vy < 0) b.vy = 0;
+            }
           }
         }
 
@@ -2288,12 +2348,27 @@
           else if (b.omega < -5.5) b.omega = -5.5;
         }
       }
+
+      for (let i = 0; i < bodies.length; i++) {
+        bodies[i].age = (bodies[i].age || 0) + 1;
+      }
+
+      // Live overflow guard: evict least-value gift whenever pile rises into the neck or exceeds jar capacity
+      for (let evictPass = 0; evictPass < 4 && bodies.length > 1; evictPass++) {
+        const overflowArea = computeJarArea(bodies) > JAR_MAX_FILL_AREA;
+        const overflowTop = bodies.some(function (b) { return (b.age || 0) > 65 && b.y - b.r < 92; });
+        if (!overflowArea && !overflowTop) break;
+        let evictIdx = findLeastValueJarIndex(bodies, true);
+        if (evictIdx < 0) evictIdx = findLeastValueJarIndex(bodies, false);
+        if (evictIdx < 0) break;
+        bodies.splice(evictIdx, 1);
+      }
     }
 
     function drawJarCanvas() {
       const canvas = document.getElementById('jar-canvas');
       if (!canvas) return;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const dpr = Math.min(3, (window.devicePixelRatio || 1) * Math.max(1, jarEngine.scale || 1));
       const targetW = Math.round(320 * dpr);
       const targetH = Math.round(380 * dpr);
       if (canvas.width !== targetW || canvas.height !== targetH) {
@@ -2454,7 +2529,8 @@
       root.style.transform = '';
       const natW = Math.max(1, root.offsetWidth || root.scrollWidth);
       const natH = Math.max(1, root.offsetHeight || root.scrollHeight);
-      const scale = Math.max(0.25, Math.min(6, Math.min(vw / natW, vh / natH)));
+      const maxScale = MODE === 'jar' ? 1 : 6;
+      const scale = Math.max(0.25, Math.min(maxScale, Math.min(vw / natW, vh / natH)));
       const nextScale = scale.toFixed(4);
       if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '1.5')) {
         if (prevZoom !== nextScale || root.style.zoom !== nextScale) {
