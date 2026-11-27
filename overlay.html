@@ -1628,8 +1628,9 @@
     const CLOUD_SB_URL = "https://eqcimeczulbkmatdbnie.supabase.co";
     const CLOUD_SB_KEY = "sb_publishable_BfwBTX4NzKuJURYLjDBn_g_6i17jD_O";
     const qp = new URLSearchParams(window.location.search || '');
-    const reqMode = String(qp.get('mode') || 'all').toLowerCase();
-    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'roulette', 'giftboard', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
+    const rawReqMode = String(qp.get('mode') || 'all').toLowerCase();
+    const reqMode = rawReqMode === 'giftboard' ? 'giftboard_plus' : rawReqMode;
+    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'roulette', 'giftboard_plus', 'giftboard_minus', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
     document.getElementById('root').dataset.mode = MODE;
     const ROOM_TOKEN = String(qp.get('room') || '').trim();
     const VALID_ROOM = /^[a-zA-Z0-9_-]{8,64}$/.test(ROOM_TOKEN);
@@ -1661,8 +1662,19 @@
       const map = cfg && cfg.widgetStyles && typeof cfg.widgetStyles === 'object' ? cfg.widgetStyles : {};
       const ws = map[key] && typeof map[key] === 'object' ? map[key] : {};
       const isSpotlight = key === 'combo' || key === 'biggest';
-      const isTransparentDefault = isSpotlight || key === 'jar' || key === 'giftboard';
-      const defaultAccent = key === 'likegoal' ? '#EF4444' : key === 'followgoal' ? '#38BDF8' : key === 'giftboard' ? '#4ADE80' : (cfg.accentColor || '#2563EB');
+      const isGiftBoard = key === 'giftboard' || key === 'giftboard_plus' || key === 'giftboard_minus';
+      const isTransparentDefault = isSpotlight || key === 'jar' || isGiftBoard;
+      const defaultAccent =
+        key === 'likegoal'
+          ? '#EF4444'
+          : key === 'followgoal'
+            ? '#38BDF8'
+            : key === 'giftboard_minus'
+              ? '#FB7185'
+              : isGiftBoard
+                ? '#4ADE80'
+                : (cfg.accentColor || '#2563EB');
+      const defaultGbValColor = key === 'giftboard_minus' ? '#FB7185' : '#4ADE80';
       return {
         bgOpacity: Number.isFinite(Number(ws.bgOpacity))
           ? Math.max(0, Math.min(100, Number(ws.bgOpacity)))
@@ -1670,11 +1682,11 @@
         bgColor: ws.bgColor || (key === 'timer' ? (cfg.timerBgColor || '#0F0F12') : (cfg.cardBgColor || '#141418')),
         textColor: ws.textColor || (key === 'timer' ? (cfg.timerTextColor || '#FAFAFA') : (cfg.cardTextColor || '#FAFAFA')),
         borderMode: ws.borderMode || (isTransparentDefault ? 'none' : (cfg.cardBorderMode || 'solid')),
-        borderColor: ws.borderColor || (isTransparentDefault ? '#38BDF8' : (cfg.cardBorderColor || '#2E2E36')),
+        borderColor: ws.borderColor || (isTransparentDefault ? defaultGbValColor : (cfg.cardBorderColor || '#2E2E36')),
         accentColor: ws.accentColor || defaultAccent,
         showTitle: isSpotlight && cfg.spotlightHeaderMigrated !== true
           ? true
-          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : (key !== 'jar' && key !== 'wins' && key !== 'giftboard')),
+          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : (key !== 'jar' && key !== 'wins' && !isGiftBoard)),
         nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
         badgeColor: ws.badgeColor || '#FBBF24',
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
@@ -1686,6 +1698,7 @@
         textSize: Number.isFinite(Number(ws.textSize)) ? Math.max(14, Math.min(44, Math.round(Number(ws.textSize)))) : 24,
         iconSize: Number.isFinite(Number(ws.iconSize)) ? Math.max(32, Math.min(96, Math.round(Number(ws.iconSize)))) : 56,
         itemGap: Number.isFinite(Number(ws.itemGap)) ? Math.max(6, Math.min(40, Math.round(Number(ws.itemGap)))) : 16,
+        valueColor: ws.valueColor || defaultGbValColor,
         posColor: ws.posColor || '#4ADE80',
         negColor: ws.negColor || '#FB7185',
         autoSignColor: ws.autoSignColor !== false,
@@ -2068,7 +2081,7 @@
       root.classList.toggle('wins-vertical-only', MODE === 'wins' && cfg.winLayout === 'vertical');
       root.classList.toggle('gift-spotlight-only', MODE === 'combo' || MODE === 'biggest');
       root.classList.toggle('jar-only', MODE === 'jar');
-      root.classList.toggle('giftboard-only', MODE === 'giftboard');
+      root.classList.toggle('giftboard-only', MODE === 'giftboard_plus' || MODE === 'giftboard_minus' || MODE === 'giftboard');
       if (cfg.accentColor) {
         document.documentElement.style.setProperty('--accent', cfg.accentColor);
       }
@@ -2080,7 +2093,11 @@
       const showFollowGoal = MODE === 'followgoal' || (MODE === 'all' && cfg.showFollowGoal !== false);
       const showJar = MODE === 'jar' || (MODE === 'all' && cfg.showJar === true);
       const showRoulette = MODE === 'roulette' || (MODE === 'all' && cfg.showRoulette === true);
-      const showGiftBoard = MODE === 'giftboard' || (MODE === 'all' && cfg.showGiftBoard === true);
+      const showGiftBoard =
+        MODE === 'giftboard_plus' ||
+        MODE === 'giftboard_minus' ||
+        MODE === 'giftboard' ||
+        (MODE === 'all' && cfg.showGiftBoard === true);
       const showCombo = MODE === 'combo' || (MODE === 'all' && cfg.showCombo !== false);
       const showBiggest = MODE === 'biggest' || (MODE === 'all' && cfg.showBiggest !== false);
       const showLikers = MODE === 'likers' || (MODE === 'all' && cfg.showLikers !== false);
@@ -2349,53 +2366,79 @@
         syncRouletteOverlayState(state, cfg);
       }
 
-      // Gift Board (+/- Vertical or Horizontal Display)
+      // Gift Board Plus (+) or Minus (-) Vertical / Horizontal Display
       const gbEl = document.getElementById('w-giftboard');
       gbEl.classList.toggle('hidden', !showGiftBoard);
       if (showGiftBoard) {
-        const ws = getWidgetStyle(cfg, 'giftboard');
+        const isMinusBoard = MODE === 'giftboard_minus';
+        const styleKey = isMinusBoard ? 'giftboard_minus' : 'giftboard_plus';
+        const ws = getWidgetStyle(cfg, styleKey);
         applyWidgetAppearance(gbEl, ws, {});
         gbEl.style.setProperty('--gb-text-size', ws.textSize + 'px');
         gbEl.style.setProperty('--gb-icon-size', ws.iconSize + 'px');
         gbEl.style.setProperty('--gb-gap', ws.itemGap + 'px');
 
+        const boardTitle = isMinusBoard
+          ? (cfg.giftBoardMinusTitle || 'Minus Gifts')
+          : (cfg.giftBoardPlusTitle || 'Plus Gifts');
         const titleEl = document.getElementById('gb-title');
-        titleEl.textContent = cfg.giftBoardTitle || 'Gift Board';
+        titleEl.textContent = boardTitle;
         titleEl.classList.toggle('hidden', !ws.showTitle);
 
         const listEl = document.getElementById('gb-list');
-        const isHoriz = cfg.giftBoardLayout === 'horizontal';
+        const boardLayout = isMinusBoard ? cfg.giftBoardMinusLayout : cfg.giftBoardPlusLayout;
+        const isHoriz = boardLayout === 'horizontal';
         listEl.classList.toggle('gb-horizontal', isHoriz);
         listEl.classList.toggle('gb-vertical', !isHoriz);
 
-        const rawItems = Array.isArray(cfg.giftBoardItems)
-          ? cfg.giftBoardItems.filter(function (it) { return it && it.enabled !== false && it.giftName && it.text; })
+        const showNames = Boolean(isMinusBoard ? cfg.giftBoardMinusShowNames : cfg.giftBoardPlusShowNames);
+        const showSample = isMinusBoard
+          ? cfg.giftBoardMinusShowSample !== false
+          : cfg.giftBoardPlusShowSample !== false;
+        const sourceList = isMinusBoard ? cfg.giftBoardMinusItems : cfg.giftBoardPlusItems;
+        const rawItems = Array.isArray(sourceList)
+          ? sourceList.filter(function (it) { return it && it.enabled !== false && it.giftName && it.text; })
           : [];
         const items = rawItems.length > 0
           ? rawItems
-          : (cfg.giftBoardShowSample !== false
-              ? [
-                  {
-                    id: 'sample_pos',
-                    giftName: 'Rose',
-                    imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
-                    text: '+1',
-                  },
-                  {
-                    id: 'sample_neg',
-                    giftName: 'Heart Me',
-                    imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d56945782445b0b8c8658ed44f894c7b~tplv-resize:258:258.webp',
-                    text: '-1',
-                  },
-                ]
+          : (showSample
+              ? (isMinusBoard
+                  ? [
+                      {
+                        id: 'sample_neg_1',
+                        giftName: 'Heart Me',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d56945782445b0b8c8658ed44f894c7b~tplv-resize:258:258.webp',
+                        text: '-1',
+                      },
+                      {
+                        id: 'sample_neg_2',
+                        giftName: 'Perfume',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/20b8f61246c7b6032777bb81bf4ee055~tplv-obj.webp',
+                        text: '-5',
+                      },
+                    ]
+                  : [
+                      {
+                        id: 'sample_pos_1',
+                        giftName: 'Rose',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
+                        text: '+1',
+                      },
+                      {
+                        id: 'sample_pos_2',
+                        giftName: 'Finger Heart',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/a4c4dc437fd3a6632aba149769491f49.png~tplv-obj.webp',
+                        text: '+5',
+                      },
+                    ])
               : []);
 
+        const valColor = ws.valueColor || (isMinusBoard ? '#FB7185' : '#4ADE80');
         const sig = JSON.stringify({
+          styleKey,
           isHoriz,
-          showNames: Boolean(cfg.giftBoardShowNames),
-          autoSign: ws.autoSignColor,
-          posColor: ws.posColor,
-          negColor: ws.negColor,
+          showNames,
+          valColor,
           textColor: ws.textColor,
           items: items.map(function (x) { return [x.id, x.giftName, x.imageUrl, x.text]; }),
         });
@@ -2436,18 +2479,11 @@
 
             const valEl = document.createElement('span');
             valEl.className = 'gb-value';
-            const txt = String(it.text || '').trim();
-            valEl.textContent = txt;
-            if (ws.autoSignColor) {
-              if (txt.startsWith('+')) valEl.style.color = ws.posColor || '#4ADE80';
-              else if (txt.startsWith('-')) valEl.style.color = ws.negColor || '#FB7185';
-              else valEl.style.color = ws.textColor || '#FAFAFA';
-            } else {
-              valEl.style.color = ws.textColor || '#FAFAFA';
-            }
+            valEl.textContent = String(it.text || '').trim();
+            valEl.style.color = valColor;
             textCol.appendChild(valEl);
 
-            if (cfg.giftBoardShowNames) {
+            if (showNames) {
               const nameEl = document.createElement('span');
               nameEl.className = 'gb-gift-name';
               nameEl.textContent = it.giftName || '';
@@ -3086,7 +3122,7 @@
       rafId: null,
       targetRowIndex: 2,
       endY: 0,
-      durationMs: 3200,
+      durationMs: 3000,
       startedAtLocal: 0,
       lastCenterIdx: -1,
       rowEls: [],
@@ -3094,13 +3130,26 @@
       renderedSignature: '',
     };
 
+    // Velocity-continuous 2-phase easing: full steady speed until 2/3 (2.0s of a 3.0s spin), then smooth deceleration to landing at 3.0s
+    function rouletteEase(p) {
+      if (p <= 0) return 0;
+      if (p >= 1) return 1;
+      const split = 2 / 3;
+      const v0 = 3 / (2 * split + 1); // 9/7 for split=2/3
+      if (p <= split) {
+        return v0 * p;
+      }
+      const u = (p - split) / (1 - split);
+      return v0 * split + (v0 * (1 - split) / 3) * (1 - Math.pow(1 - u, 3));
+    }
+
     function buildRouletteTrack(items, winnerIndex, isSpinning) {
       const track = document.getElementById('roulette-track');
       if (!track) return;
       const safeItems = Array.isArray(items) && items.length > 0 ? items : ROULETTE_IDLE_SAMPLES;
       const count = safeItems.length;
       const winIdx = Math.max(0, Math.min(count - 1, Number(winnerIndex) || 0));
-      const loops = isSpinning ? Math.max(4, Math.ceil(28 / count)) : 1;
+      const loops = isSpinning ? Math.max(5, Math.ceil(36 / count)) : 1;
       const targetRow = isSpinning ? loops * count + winIdx : Math.max(2, count + winIdx);
       const totalRows = targetRow + 5;
 
@@ -3154,7 +3203,7 @@
       const elapsed = Math.max(0, Date.now() - rouletteEngine.startedAtLocal);
       const dur = Math.max(100, rouletteEngine.durationMs);
       const p = Math.min(1, elapsed / dur);
-      const eased = 1 - Math.pow(1 - p, 4);
+      const eased = rouletteEase(p);
       const y = rouletteEngine.endY * eased;
       track.style.transform = 'translate3d(0,' + (-y).toFixed(2) + 'px,0)';
 
@@ -3280,7 +3329,7 @@
         }
         rouletteEngine.activeSpinId = activeSpin.id;
         rouletteEngine.renderedSignature = 'spin_' + activeSpin.id;
-        rouletteEngine.durationMs = Math.max(100, Number(activeSpin.durationMs) || 3200);
+        rouletteEngine.durationMs = Math.max(100, Number(activeSpin.durationMs) || 3000);
         const serverNow = Number(rState.serverNow) || Date.now();
         const serverElapsed = activeSpin.startedAt ? Math.max(0, serverNow - Number(activeSpin.startedAt)) : 0;
         rouletteEngine.startedAtLocal = Date.now() - serverElapsed;
