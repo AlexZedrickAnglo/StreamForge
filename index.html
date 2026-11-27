@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; connect-src wss://eqcimeczulbkmatdbnie.supabase.co;" />
   <title>StreamForge Overlay — all</title>
   <style>
     :root {
@@ -74,20 +76,260 @@
       padding: 18px;
     }
 
+    body.standalone-fit .root.wins-only,
+    .root.wins-only {
+      width: 196px;
+    }
+
+    body.standalone-fit .root.compact.wins-only,
+    .root.compact.wins-only {
+      width: 168px;
+    }
+
+    body.standalone-fit .root.wins-vertical-only,
     .root.wins-vertical-only {
-      width: 164px;
+      width: 132px;
     }
 
+    body.standalone-fit .root.compact.wins-vertical-only,
     .root.compact.wins-vertical-only {
-      width: 142px;
+      width: 116px;
     }
 
+    body.standalone-fit .root.gift-spotlight-only,
     .root.gift-spotlight-only {
       width: 236px;
     }
 
+    body.standalone-fit .root.compact.gift-spotlight-only,
     .root.compact.gift-spotlight-only {
       width: 204px;
+    }
+
+    body.standalone-fit .root.jar-only,
+    .root.jar-only {
+      width: 392px;
+    }
+
+    body.standalone-fit .root.compact.jar-only,
+    .root.compact.jar-only {
+      width: 344px;
+    }
+
+    .root.all-wide-roulette {
+      width: 636px;
+      max-width: none;
+    }
+
+    /* Like Goal & Follower Goal Bar */
+    .goal-body {
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .compact .goal-body {
+      padding: 10px 11px 11px;
+      gap: 7px;
+    }
+
+    .goal-values-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .goal-fraction {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      line-height: 1;
+      color: inherit;
+    }
+
+    .goal-current {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: inherit;
+    }
+
+    .compact .goal-current {
+      font-size: 21px;
+    }
+
+    .goal-sep {
+      font-size: 16px;
+      opacity: 0.5;
+      font-weight: 600;
+    }
+
+    .goal-target {
+      font-size: 18px;
+      font-weight: 700;
+      opacity: 0.78;
+    }
+
+    .compact .goal-target {
+      font-size: 15px;
+    }
+
+    .goal-remaining {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.75;
+      white-space: nowrap;
+    }
+
+    .goal-bar-track {
+      width: 100%;
+      height: 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+    }
+
+    .goal-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--widget-accent, var(--accent));
+      transition: width 280ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease;
+    }
+
+    .goal-bar-fill.done {
+      background: var(--ok);
+    }
+
+    /* Realistic Glass Mason Gift Jar + Floating Donation Toast */
+    .jar-widget {
+      overflow: visible !important;
+      padding: 4px 0 6px;
+    }
+
+    .jar-top-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--card-text, #FAFAFA);
+      margin-bottom: 4px;
+    }
+
+    .jar-stage {
+      position: relative;
+      width: 368px;
+      height: 380px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .jar-vessel {
+      position: relative;
+      width: 320px;
+      height: 380px;
+      flex-shrink: 0;
+    }
+
+    .jar-svg-layer {
+      position: absolute;
+      left: var(--jar-ox, 0px);
+      top: 0;
+      width: var(--jar-w, 320px);
+      height: 100%;
+      pointer-events: none;
+      display: block;
+    }
+
+    .jar-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .jar-toast {
+      position: absolute;
+      left: 50%;
+      top: 10px;
+      z-index: 6;
+      max-width: 356px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px 8px 9px;
+      border-radius: 14px;
+      background: rgba(18, 18, 22, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+      color: #FAFAFA;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -8px) scale(0.96);
+      transition: opacity 220ms ease, transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .jar-toast.visible {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    .jar-toast-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      flex-shrink: 0;
+      background: #27272A;
+    }
+
+    .jar-toast-avatar-fb {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #27272A;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #FAFAFA;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .jar-toast-gift-img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .jar-toast-muted {
+      font-weight: 500;
+      color: #D4D4D8;
+    }
+
+    .jar-toast-coins {
+      color: #FBBF24;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
     }
 
     .widget {
@@ -175,6 +417,13 @@
       opacity: 1;
       background: rgba(251, 191, 36, 0.14);
       border-color: rgba(251, 191, 36, 0.34);
+    }
+
+    .pill.sub {
+      color: #FB7185;
+      opacity: 1;
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.36);
     }
 
     /* Stream Timer Body */
@@ -280,6 +529,12 @@
       border: 1px solid rgba(34, 197, 94, 0.34);
     }
 
+    .timer-float-add.sub {
+      color: #FB7185;
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.36);
+    }
+
     /* Win Counter Body (Horizontal xx/xx & Vertical stacked) */
     .win-body {
       padding: 14px 14px 13px;
@@ -296,7 +551,7 @@
     .win-score-row {
       display: flex;
       align-items: baseline;
-      justify-content: space-between;
+      justify-content: center;
       gap: 8px;
     }
 
@@ -305,38 +560,39 @@
       font-variant-numeric: tabular-nums;
       display: inline-flex;
       align-items: baseline;
-      gap: 4px;
+      justify-content: center;
+      gap: 3px;
       line-height: 1;
       color: inherit;
     }
 
     .win-current {
-      font-size: 36px;
+      font-size: 40px;
       font-weight: 800;
       letter-spacing: -0.03em;
       color: inherit;
     }
 
     .compact .win-current {
-      font-size: 28px;
+      font-size: 32px;
     }
 
     .win-sep {
-      font-size: 24px;
-      opacity: 0.5;
+      font-size: 28px;
+      opacity: 0.55;
       font-weight: 600;
       color: inherit;
     }
 
     .win-goal {
-      font-size: 26px;
-      opacity: 0.78;
+      font-size: 32px;
+      opacity: 0.85;
       font-weight: 700;
       color: inherit;
     }
 
     .compact .win-goal {
-      font-size: 21px;
+      font-size: 25px;
     }
 
     .win-pct {
@@ -568,11 +824,17 @@
 
     .text-outline-on .gift-spotlight-top-title,
     .text-outline-on .gift-spotlight-user,
+    .text-outline-on .jar-top-title,
+    .text-outline-on .goal-current,
+    .text-outline-on .goal-target,
     .text-outline-on .win-current,
     .text-outline-on .win-goal,
     .text-outline-on .timer-num,
     .text-outline-on .lb-name,
-    .text-outline-on .lb-score {
+    .text-outline-on .lb-score,
+    .text-outline-on .gb-value,
+    .text-outline-on .gb-gift-name,
+    .text-outline-on .gb-top-title {
       text-shadow:
         -1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
          1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
@@ -780,6 +1042,499 @@
       opacity: 0.6;
     }
 
+    /* Vertical & Horizontal Macro Roulette Widget */
+    body.standalone-fit .root.roulette-horiz-only,
+    body.standalone-fit .root.compact.roulette-horiz-only,
+    .root.roulette-horiz-only {
+      width: auto;
+      max-width: none;
+    }
+
+    .roulette-widget {
+      width: 340px;
+      transition: opacity 0.24s ease, transform 0.24s ease;
+    }
+
+    .roulette-widget.is-horizontal {
+      width: 600px;
+    }
+
+    .roulette-widget.roulette-idle-hidden {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+      pointer-events: none;
+    }
+
+    .roulette-trigger-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 12.5px;
+      font-weight: 600;
+      min-height: 36px;
+    }
+
+    .roulette-trigger-img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .roulette-trigger-text {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .roulette-trigger-muted {
+      opacity: 0.68;
+      font-weight: 500;
+    }
+
+    .roulette-viewport {
+      position: relative;
+      height: 240px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.22);
+    }
+
+    .roulette-widget.is-horizontal .roulette-viewport {
+      height: 112px;
+    }
+
+    .roulette-mask-top,
+    .roulette-mask-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 62px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .roulette-mask-top {
+      top: 0;
+      background: linear-gradient(180deg, rgba(10, 10, 13, 0.88) 0%, rgba(10, 10, 13, 0) 100%);
+    }
+
+    .roulette-mask-bottom {
+      bottom: 0;
+      background: linear-gradient(0deg, rgba(10, 10, 13, 0.88) 0%, rgba(10, 10, 13, 0) 100%);
+    }
+
+    .roulette-widget.is-horizontal .roulette-mask-top,
+    .roulette-widget.is-horizontal .roulette-mask-bottom {
+      top: 0;
+      bottom: 0;
+      height: 100%;
+      width: 84px;
+    }
+
+    .roulette-widget.is-horizontal .roulette-mask-top {
+      left: 0;
+      right: auto;
+      background: linear-gradient(90deg, rgba(10, 10, 13, 0.9) 0%, rgba(10, 10, 13, 0) 100%);
+    }
+
+    .roulette-widget.is-horizontal .roulette-mask-bottom {
+      right: 0;
+      left: auto;
+      background: linear-gradient(270deg, rgba(10, 10, 13, 0.9) 0%, rgba(10, 10, 13, 0) 100%);
+    }
+
+    .roulette-center-band {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 96px;
+      height: 48px;
+      border-top: 2px solid var(--widget-accent, var(--accent));
+      border-bottom: 2px solid var(--widget-accent, var(--accent));
+      background: rgba(255, 255, 255, 0.06);
+      pointer-events: none;
+      z-index: 4;
+      transition: border-color 0.18s ease, background-color 0.18s ease;
+    }
+
+    .roulette-widget.is-horizontal .roulette-center-band {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: 148px;
+      height: 100%;
+      transform: translateX(-50%);
+      border-top: none;
+      border-bottom: none;
+      border-left: 2px solid var(--widget-accent, var(--accent));
+      border-right: 2px solid var(--widget-accent, var(--accent));
+    }
+
+    .roulette-widget.is-landed .roulette-center-band {
+      border-color: var(--ok);
+      background: rgba(34, 197, 94, 0.16);
+    }
+
+    .roulette-pointer-left,
+    .roulette-pointer-right {
+      position: absolute;
+      top: 50%;
+      width: 0;
+      height: 0;
+      transform: translateY(-50%);
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+    }
+
+    .roulette-pointer-left {
+      left: 2px;
+      border-left: 9px solid var(--widget-accent, var(--accent));
+    }
+
+    .roulette-pointer-right {
+      right: 2px;
+      border-right: 9px solid var(--widget-accent, var(--accent));
+    }
+
+    .roulette-widget.is-horizontal .roulette-pointer-left,
+    .roulette-widget.is-horizontal .roulette-pointer-right {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+    }
+
+    .roulette-widget.is-horizontal .roulette-pointer-left {
+      top: 2px;
+      bottom: auto;
+      border-top: 9px solid var(--widget-accent, var(--accent));
+      border-bottom: none;
+    }
+
+    .roulette-widget.is-horizontal .roulette-pointer-right {
+      top: auto;
+      bottom: 2px;
+      border-bottom: 9px solid var(--widget-accent, var(--accent));
+      border-top: none;
+    }
+
+    .roulette-widget.is-landed .roulette-pointer-left {
+      border-left-color: var(--ok);
+    }
+
+    .roulette-widget.is-landed .roulette-pointer-right {
+      border-right-color: var(--ok);
+    }
+
+    .roulette-widget.is-horizontal.is-landed .roulette-pointer-left {
+      border-left-color: transparent;
+      border-top-color: var(--ok);
+    }
+
+    .roulette-widget.is-horizontal.is-landed .roulette-pointer-right {
+      border-right-color: transparent;
+      border-bottom-color: var(--ok);
+    }
+
+    .roulette-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      will-change: transform;
+      z-index: 2;
+    }
+
+    .roulette-widget.is-horizontal .roulette-track {
+      display: flex;
+      flex-direction: row;
+      right: auto;
+      height: 100%;
+    }
+
+    .roulette-slot {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      opacity: 0.56;
+      transition: opacity 0.1s ease, color 0.1s ease;
+    }
+
+    .roulette-widget.roulette-hide-keys .roulette-slot {
+      justify-content: center;
+      text-align: center;
+    }
+
+    .roulette-widget.is-horizontal .roulette-slot {
+      width: 148px;
+      height: 112px;
+      flex-shrink: 0;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 10px;
+      border-bottom: none;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: center;
+    }
+
+    .roulette-slot.is-center {
+      opacity: 1;
+    }
+
+    .roulette-slot.is-winner {
+      opacity: 1;
+      color: #FAFAFA;
+    }
+
+    .roulette-slot-label {
+      flex: 1;
+      min-width: 0;
+      font-size: 14.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .roulette-widget.is-horizontal .roulette-slot-label {
+      flex: 0 1 auto;
+      width: 100%;
+      font-size: 14px;
+      line-height: 1.25;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .roulette-slot-key {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+
+    .roulette-widget.roulette-hide-keys .roulette-slot-key {
+      display: none;
+    }
+
+    .roulette-slot.is-winner .roulette-slot-key {
+      border-color: rgba(34, 197, 94, 0.55);
+      background: rgba(34, 197, 94, 0.22);
+      color: #4ADE80;
+    }
+
+    .roulette-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 13px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .roulette-footer-status {
+      opacity: 0.78;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .roulette-widget.is-landed .roulette-footer-status {
+      opacity: 1;
+      color: #4ADE80;
+    }
+
+    /* Gift Board (+/-) Vertical & Horizontal Widget */
+    body.standalone-fit .root.giftboard-only,
+    body.standalone-fit .root.compact.giftboard-only,
+    .root.giftboard-only {
+      width: auto;
+      max-width: none;
+    }
+
+    .giftboard-widget {
+      width: auto;
+      display: inline-flex;
+      flex-direction: column;
+    }
+
+    .gb-body {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .gb-top-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: center;
+      color: inherit;
+    }
+
+    .gb-list {
+      display: flex;
+      align-items: center;
+      gap: var(--gb-gap, 16px);
+    }
+
+    .gb-list.gb-vertical {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .gb-list.gb-vertical.gb-pos-left {
+      align-items: flex-end;
+    }
+
+    .gb-list.gb-vertical.gb-pos-top,
+    .gb-list.gb-vertical.gb-pos-bottom,
+    .gb-list.gb-vertical.gb-pos-below {
+      align-items: center;
+    }
+
+    .gb-list.gb-horizontal {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gb-item {
+      display: flex;
+      align-items: center;
+      gap: var(--gb-text-gap, 10px);
+      flex-shrink: 0;
+    }
+
+    .gb-list.gb-pos-right .gb-item {
+      flex-direction: row;
+      text-align: left;
+    }
+
+    .gb-list.gb-pos-left .gb-item {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .gb-list.gb-pos-top .gb-item {
+      flex-direction: column-reverse;
+      justify-content: center;
+      text-align: center;
+      min-width: 64px;
+    }
+
+    .gb-list.gb-pos-bottom .gb-item,
+    .gb-list.gb-pos-below .gb-item {
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      min-width: 64px;
+    }
+
+    .gb-list.gb-pos-right .gb-text-col {
+      align-items: flex-start;
+    }
+
+    .gb-list.gb-pos-left .gb-text-col {
+      align-items: flex-end;
+    }
+
+    .gb-list.gb-pos-top .gb-text-col,
+    .gb-list.gb-pos-bottom .gb-text-col,
+    .gb-list.gb-pos-below .gb-text-col {
+      align-items: center;
+    }
+
+    .gb-icon-wrap {
+      width: var(--gb-icon-size, 56px);
+      height: var(--gb-icon-size, 56px);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .gb-icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
+    }
+
+    .gb-icon-fallback {
+      width: 82%;
+      height: 82%;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 800;
+      color: inherit;
+    }
+
+    .gb-text-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .gb-list.gb-horizontal.gb-pos-top .gb-text-col,
+    .gb-list.gb-horizontal.gb-pos-bottom .gb-text-col,
+    .gb-list.gb-horizontal.gb-pos-below .gb-text-col {
+      align-items: center;
+    }
+
+    .gb-value {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: var(--gb-text-size, 24px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .gb-gift-name {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.8;
+      white-space: nowrap;
+      color: inherit;
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -845,6 +1600,128 @@
       </div>
     </section>
 
+    <section id="w-likegoal" class="widget hidden">
+      <div id="likegoal-head" class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="currentColor" style="color: var(--heart);">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span id="likegoal-title" class="widget-title">Like Goal</span>
+        </div>
+        <span id="likegoal-badge" class="pill">0%</span>
+      </div>
+      <div class="goal-body">
+        <div class="goal-values-row">
+          <div class="goal-fraction">
+            <span id="likegoal-current" class="goal-current">0</span>
+            <span class="goal-sep">/</span>
+            <span id="likegoal-target" class="goal-target">10,000</span>
+          </div>
+          <span id="likegoal-remaining" class="goal-remaining">10,000 left</span>
+        </div>
+        <div class="goal-bar-track">
+          <div id="likegoal-fill" class="goal-bar-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="w-followgoal" class="widget hidden">
+      <div id="followgoal-head" class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+          </svg>
+          <span id="followgoal-title" class="widget-title">Follower Goal</span>
+        </div>
+        <span id="followgoal-badge" class="pill">0%</span>
+      </div>
+      <div class="goal-body">
+        <div class="goal-values-row">
+          <div class="goal-fraction">
+            <span id="followgoal-current" class="goal-current">0</span>
+            <span class="goal-sep">/</span>
+            <span id="followgoal-target" class="goal-target">100</span>
+          </div>
+          <span id="followgoal-remaining" class="goal-remaining">100 left</span>
+        </div>
+        <div class="goal-bar-track">
+          <div id="followgoal-fill" class="goal-bar-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="w-jar" class="widget jar-widget hidden">
+      <div id="jar-title" class="jar-top-title hidden">Gift Jar</div>
+      <div class="jar-stage">
+        <div id="jar-toast" class="jar-toast" aria-live="polite"></div>
+        <div class="jar-vessel">
+          <!-- Back Translucent Glass Jar Layer -->
+          <svg id="jar-svg-back" class="jar-svg-layer" viewBox="0 0 320 380" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="jarGlassBackGrad" x1="34" y1="70" x2="286" y2="362" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.16)"/>
+                <stop offset="28%" stop-color="rgba(215,224,235,0.06)"/>
+                <stop offset="72%" stop-color="rgba(215,224,235,0.05)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.15)"/>
+              </linearGradient>
+              <linearGradient id="jarMouthGrad" x1="76" y1="30" x2="244" y2="74" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.28)"/>
+                <stop offset="50%" stop-color="rgba(180,192,208,0.14)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.28)"/>
+              </linearGradient>
+            </defs>
+            <!-- Outer glass silhouette -->
+            <path id="jar-body-fill" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66 Z" fill="url(#jarGlassBackGrad)"/>
+            <!-- Glass neck throat -->
+            <rect x="82" y="34" width="156" height="36" rx="8" fill="url(#jarMouthGrad)"/>
+            <!-- Back rim ellipse -->
+            <ellipse cx="160" cy="36" rx="82" ry="11" fill="rgba(12,14,18,0.42)" stroke="rgba(255,255,255,0.52)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+            <ellipse cx="160" cy="36" rx="72" ry="7.5" fill="rgba(0,0,0,0.28)" stroke="rgba(255,255,255,0.22)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+            <!-- Subtle base glass floor ellipse -->
+            <ellipse cx="160" cy="355" rx="94" ry="8" fill="rgba(255,255,255,0.10)"/>
+          </svg>
+
+          <!-- 60 FPS Rigid-Body Gift Physics Canvas -->
+          <canvas id="jar-canvas" class="jar-canvas" width="320" height="380"></canvas>
+
+          <!-- Front Glass Specular Shine, Screw Threads & Rim Layer -->
+          <svg id="jar-svg-front" class="jar-svg-layer" viewBox="0 0 320 380" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="jarShineLeft" x1="42" y1="106" x2="72" y2="106" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.34)"/>
+                <stop offset="48%" stop-color="rgba(255,255,255,0.10)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+              </linearGradient>
+              <linearGradient id="jarShineRight" x1="252" y1="106" x2="278" y2="106" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+                <stop offset="55%" stop-color="rgba(255,255,255,0.12)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.30)"/>
+              </linearGradient>
+            </defs>
+            <!-- Left & Right vertical specular glass reflections -->
+            <path d="M48 118 C48 104 66 96 76 86 L80 94 C70 104 62 112 62 126 L62 322 C62 336 68 346 78 352 L64 352 C52 344 48 334 48 318 Z" fill="url(#jarShineLeft)"/>
+            <path d="M272 118 C272 104 256 96 246 86 L243 94 C252 104 260 112 260 126 L260 322 C260 336 254 346 244 352 L258 352 C268 344 272 334 272 318 Z" fill="url(#jarShineRight)"/>
+            <!-- Crisp shoulder highlight arc -->
+            <path d="M56 112 C62 96 78 88 92 78" stroke="rgba(255,255,255,0.52)" stroke-width="2.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M264 112 C258 96 242 88 228 78" stroke="rgba(255,255,255,0.38)" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <!-- Threaded Mason Jar glass collar rings -->
+            <path d="M77 44 C105 51 215 51 243 44" stroke="rgba(255,255,255,0.58)" stroke-width="3.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M76 53 C106 60 214 60 244 53" stroke="rgba(255,255,255,0.48)" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M79 62 C108 68 212 68 241 62" stroke="rgba(255,255,255,0.42)" stroke-width="2.6" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <!-- Front mouth lip curve -->
+            <path d="M78 37 C106 47 214 47 242 37" stroke="rgba(255,255,255,0.68)" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <!-- Thick curved glass bottom reflection -->
+            <path d="M62 344 C94 362 226 362 258 344" stroke="rgba(255,255,255,0.42)" stroke-width="3.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <!-- Main outer glass border stroke -->
+            <path id="jar-glass-outline" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66" stroke="rgba(255,255,255,0.52)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+          </svg>
+
+          <!-- Spilled Gifts Layer (draws overflowing gifts tumbling over the rim & rolling outside the glass) -->
+          <canvas id="jar-canvas-spill" class="jar-canvas" width="320" height="380"></canvas>
+        </div>
+      </div>
+    </section>
+
     <section id="w-combo" class="widget floating-spotlight hidden">
       <div class="gift-spotlight-body">
         <div id="combo-title" class="gift-spotlight-top-title">Highest Combo</div>
@@ -898,14 +1775,51 @@
       </div>
       <div id="coins-list" class="lb-list"></div>
     </section>
+
+    <section id="w-roulette" class="widget roulette-widget hidden">
+      <div id="roulette-head" class="widget-head">
+        <div class="widget-title-wrap">
+          <svg class="widget-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span id="roulette-title" class="widget-title">Macro Roulette</span>
+        </div>
+        <span id="roulette-badge" class="pill">READY</span>
+      </div>
+      <div id="roulette-trigger-bar" class="roulette-trigger-bar hidden">
+        <img id="roulette-gift-img" class="roulette-trigger-img hidden" alt="" referrerpolicy="no-referrer" />
+        <span id="roulette-trigger-text" class="roulette-trigger-text"></span>
+      </div>
+      <div class="roulette-viewport">
+        <div class="roulette-mask-top"></div>
+        <div class="roulette-mask-bottom"></div>
+        <div class="roulette-center-band">
+          <span class="roulette-pointer-left"></span>
+          <span class="roulette-pointer-right"></span>
+        </div>
+        <div id="roulette-track" class="roulette-track"></div>
+      </div>
+      <div id="roulette-footer" class="roulette-footer">
+        <span id="roulette-footer-status" class="roulette-footer-status">Waiting for gift trigger</span>
+        <span id="roulette-queue-pill" class="pill hidden">+0 queued</span>
+      </div>
+    </section>
+
+    <section id="w-giftboard" class="widget giftboard-widget hidden">
+      <div id="gb-body" class="gb-body">
+        <div id="gb-title" class="gb-top-title hidden">Gift Board</div>
+        <div id="gb-list" class="gb-list gb-vertical"></div>
+      </div>
+    </section>
   </div>
 
   <script>
     const CLOUD_SB_URL = "https://eqcimeczulbkmatdbnie.supabase.co";
     const CLOUD_SB_KEY = "sb_publishable_BfwBTX4NzKuJURYLjDBn_g_6i17jD_O";
     const qp = new URLSearchParams(window.location.search || '');
-    const reqMode = String(qp.get('mode') || 'all').toLowerCase();
-    const MODE = ['all', 'timer', 'wins', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
+    const rawReqMode = String(qp.get('mode') || 'all').toLowerCase();
+    const reqMode = rawReqMode === 'giftboard' ? 'giftboard_plus' : rawReqMode;
+    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'roulette', 'giftboard_plus', 'giftboard_minus', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
     document.getElementById('root').dataset.mode = MODE;
     const ROOM_TOKEN = String(qp.get('room') || '').trim();
     const VALID_ROOM = /^[a-zA-Z0-9_-]{8,64}$/.test(ROOM_TOKEN);
@@ -924,8 +1838,41 @@
       return safe < 100 ? String(safe).padStart(2, '0') : safe.toLocaleString();
     }
 
+    const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+    const ALLOWED_IMG_HOST_SUFFIXES = [
+      '.tiktokcdn.com',
+      '.tiktokcdn-us.com',
+      '.tiktokcdn-eu.com',
+      '.tiktokcdn-in.com',
+      '.ibytedtos.com',
+      '.ibyteimg.com',
+      '.muscdn.com',
+      '.byteimg.com',
+      '.ttwstatic.com',
+      '.tiktokv.com',
+      '.tiktok.com',
+    ];
+
+    function safeHex(val, fallback) {
+      return typeof val === 'string' && HEX_RE.test(val.trim()) ? val.trim() : fallback;
+    }
+
+    function isAllowedOverlayImageUrl(rawUrl) {
+      if (typeof rawUrl !== 'string') return false;
+      const s = rawUrl.trim();
+      if (!s.startsWith('https://')) return false;
+      try {
+        const parsed = new URL(s);
+        if (parsed.protocol !== 'https:') return false;
+        const host = parsed.hostname.toLowerCase();
+        return ALLOWED_IMG_HOST_SUFFIXES.some((sfx) => host === sfx.slice(1) || host.endsWith(sfx));
+      } catch (_) {
+        return false;
+      }
+    }
+
     function hexToRgba(hex, opacityPct) {
-      const clean = typeof hex === 'string' && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#141418';
+      const clean = safeHex(hex, '#141418');
       const r = parseInt(clean.slice(1, 3), 16);
       const g = parseInt(clean.slice(3, 5), 16);
       const b = parseInt(clean.slice(5, 7), 16);
@@ -937,22 +1884,63 @@
       const map = cfg && cfg.widgetStyles && typeof cfg.widgetStyles === 'object' ? cfg.widgetStyles : {};
       const ws = map[key] && typeof map[key] === 'object' ? map[key] : {};
       const isSpotlight = key === 'combo' || key === 'biggest';
+      const isGiftBoard = key === 'giftboard' || key === 'giftboard_plus' || key === 'giftboard_minus';
+      const isTransparentDefault = isSpotlight || key === 'jar' || isGiftBoard;
+      const defaultAccent =
+        key === 'likegoal'
+          ? '#EF4444'
+          : key === 'followgoal'
+            ? '#38BDF8'
+            : key === 'giftboard_minus'
+              ? '#FB7185'
+              : isGiftBoard
+                ? '#4ADE80'
+                : safeHex(cfg.accentColor, '#2563EB');
+      const defaultGbValColor = key === 'giftboard_minus' ? '#FB7185' : '#4ADE80';
+      const rawTimerOp = Number(cfg.timerBgOpacity);
+      const rawCardOp = Number(cfg.cardBgOpacity);
+      const fallbackBgOpacity =
+        key === 'timer'
+          ? (Number.isFinite(rawTimerOp) ? Math.max(0, Math.min(100, rawTimerOp)) : 90)
+          : isTransparentDefault
+            ? 0
+            : (Number.isFinite(rawCardOp) ? Math.max(0, Math.min(100, rawCardOp)) : 90);
+      const rawBorderMode = String(ws.borderMode || (isTransparentDefault ? 'none' : (cfg.cardBorderMode || 'solid'))).toLowerCase();
       return {
         bgOpacity: Number.isFinite(Number(ws.bgOpacity))
           ? Math.max(0, Math.min(100, Number(ws.bgOpacity)))
-          : (key === 'timer' ? (Number(cfg.timerBgOpacity) ?? 90) : isSpotlight ? 0 : (Number(cfg.cardBgOpacity) ?? 90)),
-        bgColor: ws.bgColor || (key === 'timer' ? (cfg.timerBgColor || '#0F0F12') : (cfg.cardBgColor || '#141418')),
-        textColor: ws.textColor || (key === 'timer' ? (cfg.timerTextColor || '#FAFAFA') : (cfg.cardTextColor || '#FAFAFA')),
-        borderMode: ws.borderMode || (isSpotlight ? 'none' : (cfg.cardBorderMode || 'solid')),
-        borderColor: ws.borderColor || (isSpotlight ? '#38BDF8' : (cfg.cardBorderColor || '#2E2E36')),
-        accentColor: ws.accentColor || cfg.accentColor || '#2563EB',
-        showTitle: ws.showTitle !== undefined ? Boolean(ws.showTitle) : true,
+          : fallbackBgOpacity,
+        bgColor: safeHex(ws.bgColor, key === 'timer' ? safeHex(cfg.timerBgColor, '#0F0F12') : safeHex(cfg.cardBgColor, '#141418')),
+        textColor: safeHex(ws.textColor, key === 'timer' ? safeHex(cfg.timerTextColor, '#FAFAFA') : safeHex(cfg.cardTextColor, '#FAFAFA')),
+        borderMode: ['none', 'solid', 'neon'].includes(rawBorderMode) ? rawBorderMode : 'solid',
+        borderColor: safeHex(ws.borderColor, isTransparentDefault ? defaultGbValColor : safeHex(cfg.cardBorderColor, '#2E2E36')),
+        accentColor: safeHex(ws.accentColor, defaultAccent),
+        showTitle: isSpotlight && cfg.spotlightHeaderMigrated !== true
+          ? true
+          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : (key !== 'jar' && key !== 'wins' && !isGiftBoard)),
         nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
-        badgeColor: ws.badgeColor || '#FBBF24',
+        badgeColor: safeHex(ws.badgeColor, '#FBBF24'),
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
         showCoins: ws.showCoins !== false,
-        topLimit: Number.isFinite(Number(ws.topLimit)) ? Math.max(1, Math.min(10, Number(ws.topLimit))) : (Number(cfg.topLimit) || 5),
+        topLimit: Number.isFinite(Number(ws.topLimit))
+          ? Math.max(3, Math.min(10, Math.round(Number(ws.topLimit))))
+          : Math.max(3, Math.min(10, Math.round(Number(cfg.topLimit) || 5))),
         showAvatars: ws.showAvatars !== undefined ? Boolean(ws.showAvatars) : (cfg.showAvatars !== false),
+        textSize: Number.isFinite(Number(ws.textSize)) ? Math.max(14, Math.min(44, Math.round(Number(ws.textSize)))) : 24,
+        iconSize: Number.isFinite(Number(ws.iconSize)) ? Math.max(32, Math.min(96, Math.round(Number(ws.iconSize)))) : 56,
+        itemGap: Number.isFinite(Number(ws.itemGap)) ? Math.max(0, Math.min(100, Math.round(Number(ws.itemGap)))) : 16,
+        textGap: Number.isFinite(Number(ws.textGap)) ? Math.max(0, Math.min(64, Math.round(Number(ws.textGap)))) : 10,
+        textPosition: (function () {
+          const tp = String(ws.textPosition || '').toLowerCase();
+          if (tp === 'up' || tp === 'above' || tp === 'top') return 'top';
+          if (tp === 'down' || tp === 'below' || tp === 'bottom') return 'bottom';
+          if (tp === 'left' || tp === 'right') return tp;
+          return 'right';
+        })(),
+        valueColor: safeHex(ws.valueColor, defaultGbValColor),
+        posColor: safeHex(ws.posColor, '#4ADE80'),
+        negColor: safeHex(ws.negColor, '#FB7185'),
+        autoSignColor: ws.autoSignColor !== false,
       };
     }
 
@@ -960,10 +1948,10 @@
       if (!el || !ws) return;
       const o = opts || {};
       const opacity = ws.bgOpacity;
-      const bgHex = ws.bgColor;
-      const textHex = ws.textColor;
-      const borderMode = ws.borderMode || 'solid';
-      const borderHex = ws.borderColor || '#2E2E36';
+      const bgHex = safeHex(ws.bgColor, '#141418');
+      const textHex = safeHex(ws.textColor, '#FAFAFA');
+      const borderMode = ['none', 'solid', 'neon'].includes(ws.borderMode) ? ws.borderMode : 'solid';
+      const borderHex = safeHex(ws.borderColor, '#2E2E36');
 
       el.style.color = textHex;
       el.style.setProperty('--card-text', textHex);
@@ -1068,7 +2056,8 @@
       bodyEl.classList.toggle('minimal', !showTitle);
 
       const estServerNow = Date.now() - clockOffsetMs;
-      const recentAdd = t.lastAdd && t.lastAdd.seconds > 0 && (estServerNow - Number(t.lastAdd.at || 0)) < 3500
+      const addAge = t.lastAdd ? estServerNow - Number(t.lastAdd.at || 0) : -1;
+      const recentAdd = t.lastAdd && Number(t.lastAdd.seconds) !== 0 && addAge >= 0 && addAge < 3500
         ? t.lastAdd
         : null;
 
@@ -1078,10 +2067,11 @@
         titleEl.style.color = ws.textColor;
 
         const badge = document.getElementById('timer-badge');
-        badge.classList.remove('done', 'live', 'warn');
+        badge.classList.remove('done', 'live', 'warn', 'sub');
         if (recentAdd) {
-          badge.textContent = '+' + fmtSecondsShort(recentAdd.seconds);
-          badge.classList.add('done');
+          const isSub = Number(recentAdd.seconds) < 0;
+          badge.textContent = (isSub ? '-' : '+') + fmtSecondsShort(Math.abs(Number(recentAdd.seconds) || 0));
+          badge.classList.add(isSub ? 'sub' : 'done');
         } else if (t.running && !(t.mode === 'countdown' && rawSec <= 0)) {
           badge.textContent = 'LIVE';
           badge.classList.add('live');
@@ -1094,16 +2084,37 @@
 
         const rateEl = document.getElementById('timer-rate');
         const spc = Number(cfg.timerSecondsPerCoin) || 0;
-        if (cfg.timerAddOnCoins !== false && spc > 0) {
-          rateEl.textContent = '1c = +' + fmtSecondsShort(spc);
+        const coinSym = cfg.timerCoinSign === 'sub' ? '-' : '+';
+        const spl = Number(cfg.timerSecondsPerLikeStep) || 0;
+        const likeSym = cfg.timerLikeSign === 'sub' ? '-' : '+';
+        const lStep = Math.max(1, Math.floor(Number(cfg.timerLikeStep) || 100));
+        const spf = Number(cfg.timerSecondsPerFollow) || 0;
+        const followSym = cfg.timerFollowSign === 'sub' ? '-' : '+';
+        const coinOn = cfg.timerAddOnCoins !== false && spc > 0;
+        const likeOn = Boolean(cfg.timerAddOnLikes) && spl > 0;
+        const followOn = Boolean(cfg.timerAddOnFollows) && spf > 0;
+        const activeGiftRules = Array.isArray(cfg.timerGiftRules)
+          ? cfg.timerGiftRules.filter(function (r) { return r && r.enabled !== false && Number(r.deltaSeconds) !== 0; }).length
+          : 0;
+        const activeRules = [];
+        if (coinOn) activeRules.push({ full: '1c = ' + coinSym + fmtSecondsShort(spc), short: '1c ' + coinSym + fmtSecondsShort(spc) });
+        if (likeOn) activeRules.push({ full: fmtNum(lStep) + ' likes = ' + likeSym + fmtSecondsShort(spl), short: fmtNum(lStep) + 'L ' + likeSym + fmtSecondsShort(spl) });
+        if (followOn) activeRules.push({ full: '1 follow = ' + followSym + fmtSecondsShort(spf), short: '1F ' + followSym + fmtSecondsShort(spf) });
+        if (activeGiftRules > 0) activeRules.push({ full: activeGiftRules + ' gift ' + (activeGiftRules === 1 ? 'rule' : 'rules'), short: activeGiftRules + 'G' });
+        if (activeRules.length === 0) {
+          rateEl.textContent = 'Time rules off';
+        } else if (activeRules.length === 1) {
+          rateEl.textContent = activeRules[0].full;
         } else {
-          rateEl.textContent = 'Coin add off';
+          rateEl.textContent = activeRules.map(function (r) { return r.short; }).join(' · ');
         }
 
         const modeMetaEl = document.getElementById('timer-mode-meta');
         const totalAdded = Number(t.totalAddedSeconds) || 0;
         if (totalAdded > 0) {
           modeMetaEl.textContent = '+' + fmtSecondsShort(totalAdded) + ' added';
+        } else if (totalAdded < 0) {
+          modeMetaEl.textContent = '-' + fmtSecondsShort(Math.abs(totalAdded)) + ' removed';
         } else {
           modeMetaEl.textContent = t.mode === 'countup' ? 'Countup' : 'Countdown';
         }
@@ -1111,13 +2122,32 @@
         floatAddEl.classList.add('hidden');
       } else {
         if (recentAdd) {
-          floatAddEl.textContent = '+' + fmtSecondsShort(recentAdd.seconds);
+          const isSub = Number(recentAdd.seconds) < 0;
+          floatAddEl.textContent = (isSub ? '-' : '+') + fmtSecondsShort(Math.abs(Number(recentAdd.seconds) || 0));
+          floatAddEl.classList.toggle('sub', isSub);
           floatAddEl.classList.remove('hidden');
         } else {
+          floatAddEl.classList.remove('sub');
           floatAddEl.classList.add('hidden');
         }
       }
     }
+
+    const SAMPLE_COMBO_GIFT = {
+      giftName: 'Rose',
+      imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
+      comboCount: 100,
+      totalCoins: 100,
+      nickname: 'SampleGifter',
+    };
+    const SAMPLE_BIGGEST_GIFT = {
+      giftName: 'Galaxy',
+      imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/79a02148079526539f7599150da9fd28.png~tplv-obj.webp',
+      comboCount: 1,
+      unitCoins: 1000,
+      totalCoins: 1000,
+      nickname: 'TopGifter',
+    };
 
     function createSvgEl(tag, attrs) {
       const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -1175,7 +2205,7 @@
     }
 
     function renderGiftIconSlot(slotEl, imageUrl, giftName) {
-      const targetSrc = imageUrl && imageUrl.startsWith('https://') ? imageUrl : '';
+      const targetSrc = isAllowedOverlayImageUrl(imageUrl) ? imageUrl : '';
       if (slotEl.dataset.renderedSrc === targetSrc && slotEl.firstChild) {
         return;
       }
@@ -1187,10 +2217,14 @@
         img.src = targetSrc;
         img.alt = giftName || 'Gift';
         img.referrerPolicy = 'no-referrer';
+        img.onload = function () {
+          fitStandaloneViewport();
+        };
         img.onerror = function () {
           slotEl.dataset.renderedSrc = '';
           slotEl.textContent = '';
           slotEl.appendChild(createGiftFallbackNode());
+          fitStandaloneViewport();
         };
         slotEl.appendChild(img);
       } else {
@@ -1201,7 +2235,7 @@
     function createAvatarNode(entry) {
       const label = (entry.nickname || entry.user || '?').trim();
       const initials = label.slice(0, 2).toUpperCase();
-      if (entry.avatarUrl && entry.avatarUrl.startsWith('https://')) {
+      if (isAllowedOverlayImageUrl(entry.avatarUrl)) {
         const img = document.createElement('img');
         img.className = 'lb-avatar';
         img.src = entry.avatarUrl;
@@ -1283,54 +2317,179 @@
       const cfg = state.config;
       const root = document.getElementById('root');
       root.classList.toggle('compact', Boolean(cfg.compact));
+      root.classList.toggle('wins-only', MODE === 'wins' && cfg.winLayout !== 'vertical');
       root.classList.toggle('wins-vertical-only', MODE === 'wins' && cfg.winLayout === 'vertical');
       root.classList.toggle('gift-spotlight-only', MODE === 'combo' || MODE === 'biggest');
+      root.classList.toggle('jar-only', MODE === 'jar');
+      root.classList.toggle('giftboard-only', MODE === 'giftboard_plus' || MODE === 'giftboard_minus' || MODE === 'giftboard');
+      root.classList.toggle('roulette-horiz-only', MODE === 'roulette' && cfg.rouletteLayout === 'horizontal');
+      const showRoulettePre = MODE === 'roulette' || (MODE === 'all' && cfg.showRoulette === true);
+      root.classList.toggle('all-wide-roulette', MODE === 'all' && showRoulettePre && cfg.rouletteLayout === 'horizontal');
       if (cfg.accentColor) {
-        document.documentElement.style.setProperty('--accent', cfg.accentColor);
+        document.documentElement.style.setProperty('--accent', safeHex(cfg.accentColor, '#2563EB'));
       }
 
       renderTimerTick();
 
       const showWins = MODE === 'wins' || (MODE === 'all' && cfg.showWins !== false);
+      const showLikeGoal = MODE === 'likegoal' || (MODE === 'all' && cfg.showLikeGoal !== false);
+      const showFollowGoal = MODE === 'followgoal' || (MODE === 'all' && cfg.showFollowGoal !== false);
+      const showJar = MODE === 'jar' || (MODE === 'all' && cfg.showJar === true);
+      const showRoulette = MODE === 'roulette' || (MODE === 'all' && cfg.showRoulette === true);
+      const showGiftBoard =
+        MODE === 'giftboard_plus' ||
+        MODE === 'giftboard_minus' ||
+        MODE === 'giftboard' ||
+        (MODE === 'all' && cfg.showGiftBoard === true);
       const showCombo = MODE === 'combo' || (MODE === 'all' && cfg.showCombo !== false);
       const showBiggest = MODE === 'biggest' || (MODE === 'all' && cfg.showBiggest !== false);
       const showLikers = MODE === 'likers' || (MODE === 'all' && cfg.showLikers !== false);
       const showCoins = MODE === 'coins' || (MODE === 'all' && cfg.showCoins !== false);
       const pointsUnit = cfg.pointsUnit || 'Points';
 
-      // Win Counter (xx/xx + Horizontal / Vertical)
+      // Win Counter (number-only 0/10 — allows negative values, horizontal or vertical)
       const winsEl = document.getElementById('w-wins');
       winsEl.classList.toggle('hidden', !showWins);
       if (showWins) {
         const ws = getWidgetStyle(cfg, 'wins');
-        const wins = Math.max(0, Number(cfg.wins) || 0);
-        const goal = Math.max(1, Number(cfg.winGoal) || 10);
-        const pct = Math.min(100, Math.round((wins / goal) * 100));
-        const reached = wins >= goal;
+        const wins = Math.trunc(Number(cfg.wins) || 0);
+        const goal = Math.max(1, Math.floor(Number(cfg.winGoal) || 10));
         const isVertical = cfg.winLayout === 'vertical';
 
         winsEl.classList.toggle('win-vertical', isVertical);
         const winsHead = document.getElementById('wins-head');
-        winsHead.classList.toggle('hidden', !ws.showTitle);
+        winsHead.classList.add('hidden');
         applyWidgetAppearance(winsEl, ws, { headEl: winsHead });
 
-        document.getElementById('wins-title').textContent = cfg.winTitle || 'Win Goal';
-        document.getElementById('wins-current').textContent = fmtTwoDigit(wins);
-        document.getElementById('wins-goal').textContent = fmtTwoDigit(goal);
+        document.getElementById('wins-current').textContent = String(wins);
+        document.getElementById('wins-goal').textContent = String(goal);
 
         const badge = document.getElementById('wins-badge');
-        badge.textContent = reached ? 'GOAL HIT' : pct + '%';
-        badge.classList.toggle('done', reached);
+        badge.classList.add('hidden');
 
         const rem = document.getElementById('wins-remaining');
-        rem.textContent = reached ? 'Goal Hit' : (goal - wins).toLocaleString() + ' to go';
-        rem.classList.toggle('hidden', isVertical && !ws.showTitle);
+        rem.classList.add('hidden');
 
         const track = document.getElementById('wins-progress-track');
-        track.classList.toggle('hidden', cfg.showProgressBar === false);
-        const fill = document.getElementById('wins-progress-fill');
+        track.classList.add('hidden');
+      }
+
+      // Like Goal Bar
+      const likeGoalEl = document.getElementById('w-likegoal');
+      likeGoalEl.classList.toggle('hidden', !showLikeGoal);
+      if (showLikeGoal) {
+        const ws = getWidgetStyle(cfg, 'likegoal');
+        const headEl = document.getElementById('likegoal-head');
+        headEl.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(likeGoalEl, ws, { headEl });
+
+        const lg = state.likeGoal || { current: cfg.likeGoalCount || 0, target: cfg.likeGoalTarget || 10000 };
+        const cur = Math.max(0, Math.floor(Number(lg.current) || 0));
+        const target = Math.max(1, Math.floor(Number(lg.target) || 10000));
+        const reached = cur >= target;
+        const pct = reached ? 100 : Math.min(99, Math.floor((cur / target) * 100));
+
+        document.getElementById('likegoal-title').textContent = cfg.likeGoalTitle || 'Like Goal';
+        document.getElementById('likegoal-current').textContent = cur.toLocaleString();
+        document.getElementById('likegoal-target').textContent = target.toLocaleString();
+        const badge = document.getElementById('likegoal-badge');
+        badge.textContent = reached ? 'GOAL HIT' : pct + '%';
+        badge.classList.toggle('done', reached);
+        document.getElementById('likegoal-remaining').textContent = reached
+          ? 'Goal Reached'
+          : (target - cur).toLocaleString() + ' left';
+        const fill = document.getElementById('likegoal-fill');
         fill.style.width = pct + '%';
         fill.classList.toggle('done', reached);
+      }
+
+      // Follower Goal Bar
+      const followGoalEl = document.getElementById('w-followgoal');
+      followGoalEl.classList.toggle('hidden', !showFollowGoal);
+      if (showFollowGoal) {
+        const ws = getWidgetStyle(cfg, 'followgoal');
+        const headEl = document.getElementById('followgoal-head');
+        headEl.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(followGoalEl, ws, { headEl });
+
+        const fg = state.followGoal || { current: cfg.followGoalCount || 0, target: cfg.followGoalTarget || 100 };
+        const cur = Math.max(0, Math.floor(Number(fg.current) || 0));
+        const target = Math.max(1, Math.floor(Number(fg.target) || 100));
+        const reached = cur >= target;
+        const pct = reached ? 100 : Math.min(99, Math.floor((cur / target) * 100));
+
+        document.getElementById('followgoal-title').textContent = cfg.followGoalTitle || 'Follower Goal';
+        document.getElementById('followgoal-current').textContent = cur.toLocaleString();
+        document.getElementById('followgoal-target').textContent = target.toLocaleString();
+        const badge = document.getElementById('followgoal-badge');
+        badge.textContent = reached ? 'GOAL HIT' : pct + '%';
+        badge.classList.toggle('done', reached);
+        document.getElementById('followgoal-remaining').textContent = reached
+          ? 'Goal Reached'
+          : (target - cur).toLocaleString() + ' left';
+        const fill = document.getElementById('followgoal-fill');
+        fill.style.width = pct + '%';
+        fill.classList.toggle('done', reached);
+      }
+
+      // Realistic Glass Gift Jar (2D Rigid-Body Physics + Toast + Vessel-Only Enlarge)
+      const jarEl = document.getElementById('w-jar');
+      jarEl.classList.toggle('hidden', !showJar);
+      if (showJar) {
+        const ws = getWidgetStyle(cfg, 'jar');
+        applyWidgetAppearance(jarEl, ws, {});
+        const jarTitleEl = document.getElementById('jar-title');
+        jarTitleEl.textContent = cfg.jarTitle || 'Gift Jar';
+        jarTitleEl.classList.toggle('hidden', !ws.showTitle);
+        const jarScalePct = Math.max(100, Math.min(200, Math.round(Number(cfg.jarScale) || 100)));
+        const nextJarScale = jarScalePct / 100;
+        const nextSpillWidth =
+          cfg.jarSpillWidth !== undefined && cfg.jarSpillWidth !== null && Number.isFinite(Number(cfg.jarSpillWidth))
+            ? Math.max(0, Math.min(480, Math.round(Number(cfg.jarSpillWidth))))
+            : 180;
+        if (Math.abs(nextJarScale - jarEngine.scale) > 0.0001 || nextSpillWidth !== jarEngine.spillWidth) {
+          resizeJarBodies(jarEngine.bodies, jarEngine.scale, nextJarScale, jarEngine.spillWidth, nextSpillWidth);
+          jarEngine.scale = nextJarScale;
+          jarEngine.spillWidth = nextSpillWidth;
+        }
+        const jarW = Math.round(320 * nextJarScale);
+        const vesselH = Math.round(380 * nextJarScale);
+        const vesselW = jarW + nextSpillWidth * 2;
+        const stageW = Math.max(vesselW, jarW + 48);
+        const jarStageEl = jarEl.querySelector('.jar-stage');
+        const jarVesselEl = jarEl.querySelector('.jar-vessel');
+        if (jarStageEl) {
+          jarStageEl.style.width = stageW + 'px';
+          jarStageEl.style.height = vesselH + 'px';
+        }
+        if (jarVesselEl) {
+          jarVesselEl.style.width = vesselW + 'px';
+          jarVesselEl.style.height = vesselH + 'px';
+          jarVesselEl.style.setProperty('--jar-ox', nextSpillWidth + 'px');
+          jarVesselEl.style.setProperty('--jar-w', jarW + 'px');
+          jarVesselEl.style.transform = '';
+        }
+        if (MODE === 'jar') {
+          root.style.width = (stageW + 24) + 'px';
+        } else {
+          root.style.width = '';
+        }
+        const outlineEl = document.getElementById('jar-glass-outline');
+        if (outlineEl) {
+          if (ws.borderMode === 'neon') {
+            outlineEl.setAttribute('stroke', ws.borderColor || '#38BDF8');
+            outlineEl.style.filter = 'drop-shadow(0 0 6px ' + (ws.borderColor || '#38BDF8') + ')';
+          } else if (ws.borderMode === 'solid') {
+            outlineEl.setAttribute('stroke', ws.borderColor || 'rgba(255,255,255,0.65)');
+            outlineEl.style.filter = '';
+          } else {
+            outlineEl.setAttribute('stroke', 'rgba(255,255,255,0.52)');
+            outlineEl.style.filter = '';
+          }
+        }
+        syncJarOverlayState(state, cfg, pointsUnit);
+      } else if (MODE !== 'jar') {
+        root.style.width = '';
       }
 
       // Highest Gift Combo Spotlight (Top Header + Floating Icon + Tilted x100 & Coins + Centered Name)
@@ -1346,7 +2505,9 @@
         titleEl.textContent = cfg.comboTitle || 'Highest Combo';
         titleEl.classList.toggle('hidden', !ws.showTitle);
 
-        const hc = state.highestCombo || null;
+        const hc = state.highestCombo && state.highestCombo.comboCount > 0
+          ? state.highestCombo
+          : (cfg.spotlightShowSample !== false ? SAMPLE_COMBO_GIFT : null);
         const slot = document.getElementById('combo-icon-slot');
         const corner = document.getElementById('combo-corner');
         const cBadge = document.getElementById('combo-badge');
@@ -1372,41 +2533,32 @@
         }
       }
 
-      // Biggest Gift Spotlight (Top Header + Floating Icon + Tilted Coins & Count + Centered Name)
+      // Biggest Gift Spotlight (Top Header + Floating Icon + Centered Sender Name ONLY — no coins badge)
       const biggestEl = document.getElementById('w-biggest');
       biggestEl.classList.toggle('hidden', !showBiggest);
       if (showBiggest) {
         const ws = getWidgetStyle(cfg, 'biggest');
         applyWidgetAppearance(biggestEl, ws, {});
-        biggestEl.style.setProperty('--badge-color', ws.badgeColor);
-        biggestEl.style.setProperty('--badge-tilt', ws.badgeTilt + 'deg');
 
         const titleEl = document.getElementById('biggest-title');
         titleEl.textContent = cfg.biggestTitle || 'Biggest Gift';
         titleEl.classList.toggle('hidden', !ws.showTitle);
 
-        const bg = state.biggestGift || null;
+        const bg =
+          state.biggestGift && (Number(state.biggestGift.unitCoins) > 0 || Number(state.biggestGift.totalCoins) > 0)
+            ? state.biggestGift
+            : (cfg.spotlightShowSample !== false ? SAMPLE_BIGGEST_GIFT : null);
         const slot = document.getElementById('biggest-icon-slot');
         const corner = document.getElementById('biggest-corner');
-        const bBadge = document.getElementById('biggest-badge');
-        const bCountSub = document.getElementById('biggest-count-sub');
         const bUser = document.getElementById('biggest-user');
 
+        corner.classList.add('hidden');
         bUser.style.fontSize = ws.nameSize + 'px';
-        if (bg && bg.totalCoins > 0) {
+        if (bg) {
           renderGiftIconSlot(slot, bg.imageUrl, bg.giftName);
-          bBadge.textContent = fmtNum(bg.totalCoins) + ' ' + pointsUnit;
-          if (bg.comboCount > 1) {
-            bCountSub.textContent = 'x' + fmtNum(bg.comboCount);
-            bCountSub.classList.remove('hidden');
-          } else {
-            bCountSub.classList.add('hidden');
-          }
-          corner.classList.remove('hidden');
           bUser.textContent = bg.nickname || bg.user || 'Viewer';
         } else {
           renderGiftIconSlot(slot, '', '');
-          corner.classList.add('hidden');
           bUser.textContent = '';
         }
       }
@@ -1453,6 +2605,156 @@
         );
       }
 
+      // Vertical Macro Roulette
+      const rouletteEl = document.getElementById('w-roulette');
+      rouletteEl.classList.toggle('hidden', !showRoulette);
+      if (showRoulette) {
+        const ws = getWidgetStyle(cfg, 'roulette');
+        const headEl = document.getElementById('roulette-head');
+        const footerEl = document.getElementById('roulette-footer');
+        headEl.classList.toggle('hidden', !ws.showTitle);
+        applyWidgetAppearance(rouletteEl, ws, { headEl, footerEl });
+        syncRouletteOverlayState(state, cfg);
+      }
+
+      // Gift Board Plus (+) or Minus (-) Vertical / Horizontal Display
+      const gbEl = document.getElementById('w-giftboard');
+      gbEl.classList.toggle('hidden', !showGiftBoard);
+      if (showGiftBoard) {
+        const isMinusBoard = MODE === 'giftboard_minus';
+        const styleKey = isMinusBoard ? 'giftboard_minus' : 'giftboard_plus';
+        const ws = getWidgetStyle(cfg, styleKey);
+        applyWidgetAppearance(gbEl, ws, {});
+        gbEl.style.setProperty('--gb-text-size', ws.textSize + 'px');
+        gbEl.style.setProperty('--gb-icon-size', ws.iconSize + 'px');
+        gbEl.style.setProperty('--gb-gap', ws.itemGap + 'px');
+        gbEl.style.setProperty('--gb-text-gap', ws.textGap + 'px');
+
+        const boardTitle = isMinusBoard
+          ? (cfg.giftBoardMinusTitle || 'Minus Gifts')
+          : (cfg.giftBoardPlusTitle || 'Plus Gifts');
+        const titleEl = document.getElementById('gb-title');
+        titleEl.textContent = boardTitle;
+        titleEl.classList.toggle('hidden', !ws.showTitle);
+
+        const listEl = document.getElementById('gb-list');
+        const boardLayout = isMinusBoard ? cfg.giftBoardMinusLayout : cfg.giftBoardPlusLayout;
+        const isHoriz = boardLayout === 'horizontal';
+        const textPos = ws.textPosition || 'right';
+        listEl.classList.toggle('gb-horizontal', isHoriz);
+        listEl.classList.toggle('gb-vertical', !isHoriz);
+        listEl.classList.toggle('gb-pos-left', textPos === 'left');
+        listEl.classList.toggle('gb-pos-right', textPos === 'right');
+        listEl.classList.toggle('gb-pos-top', textPos === 'top');
+        listEl.classList.toggle('gb-pos-bottom', textPos === 'bottom');
+        listEl.classList.toggle('gb-pos-below', textPos === 'bottom');
+
+        const showNames = Boolean(isMinusBoard ? cfg.giftBoardMinusShowNames : cfg.giftBoardPlusShowNames);
+        const showSample = isMinusBoard
+          ? cfg.giftBoardMinusShowSample !== false
+          : cfg.giftBoardPlusShowSample !== false;
+        const sourceList = isMinusBoard ? cfg.giftBoardMinusItems : cfg.giftBoardPlusItems;
+        const rawItems = Array.isArray(sourceList)
+          ? sourceList.filter(function (it) { return it && it.enabled !== false && it.giftName && it.text; })
+          : [];
+        const items = rawItems.length > 0
+          ? rawItems
+          : (showSample
+              ? (isMinusBoard
+                  ? [
+                      {
+                        id: 'sample_neg_1',
+                        giftName: 'Heart Me',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d56945782445b0b8c8658ed44f894c7b~tplv-resize:258:258.webp',
+                        text: '-1',
+                      },
+                      {
+                        id: 'sample_neg_2',
+                        giftName: 'Perfume',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/20b8f61246c7b6032777bb81bf4ee055~tplv-obj.webp',
+                        text: '-5',
+                      },
+                    ]
+                  : [
+                      {
+                        id: 'sample_pos_1',
+                        giftName: 'Rose',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
+                        text: '+1',
+                      },
+                      {
+                        id: 'sample_pos_2',
+                        giftName: 'Finger Heart',
+                        imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/a4c4dc437fd3a6632aba149769491f49.png~tplv-obj.webp',
+                        text: '+5',
+                      },
+                    ])
+              : []);
+
+        const valColor = ws.valueColor || (isMinusBoard ? '#FB7185' : '#4ADE80');
+        const sig = JSON.stringify({
+          styleKey,
+          isHoriz,
+          showNames,
+          valColor,
+          textColor: ws.textColor,
+          items: items.map(function (x) { return [x.id, x.giftName, x.imageUrl, x.text]; }),
+        });
+        if (listEl.dataset.sig !== sig) {
+          listEl.dataset.sig = sig;
+          listEl.textContent = '';
+          const frag = document.createDocumentFragment();
+          items.forEach(function (it) {
+            const row = document.createElement('div');
+            row.className = 'gb-item';
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'gb-icon-wrap';
+            if (isAllowedOverlayImageUrl(it.imageUrl)) {
+              const img = document.createElement('img');
+              img.className = 'gb-icon-img';
+              img.src = it.imageUrl;
+              img.alt = it.giftName || 'Gift';
+              img.referrerPolicy = 'no-referrer';
+              img.onerror = function () {
+                iconWrap.textContent = '';
+                const fb = document.createElement('span');
+                fb.className = 'gb-icon-fallback';
+                fb.textContent = String(it.giftName || 'G').slice(0, 2).toUpperCase();
+                iconWrap.appendChild(fb);
+              };
+              iconWrap.appendChild(img);
+            } else {
+              const fb = document.createElement('span');
+              fb.className = 'gb-icon-fallback';
+              fb.textContent = String(it.giftName || 'G').slice(0, 2).toUpperCase();
+              iconWrap.appendChild(fb);
+            }
+            row.appendChild(iconWrap);
+
+            const textCol = document.createElement('div');
+            textCol.className = 'gb-text-col';
+
+            const valEl = document.createElement('span');
+            valEl.className = 'gb-value';
+            valEl.textContent = String(it.text || '').trim();
+            valEl.style.color = valColor;
+            textCol.appendChild(valEl);
+
+            if (showNames) {
+              const nameEl = document.createElement('span');
+              nameEl.className = 'gb-gift-name';
+              nameEl.textContent = it.giftName || '';
+              textCol.appendChild(nameEl);
+            }
+
+            row.appendChild(textCol);
+            frag.appendChild(row);
+          });
+          listEl.appendChild(frag);
+        }
+      }
+
       if (MODE !== 'all') {
         const activeStyle = getWidgetStyle(cfg, MODE);
         root.classList.toggle('has-neon-glow', activeStyle.borderMode === 'neon');
@@ -1462,41 +2764,1160 @@
       fitStandaloneViewport();
     }
 
+    // 60 FPS 2D Rigid-Body Gift Jar Physics Engine (Pure Canvas — Zero External Dependencies)
+    const JAR_DEMO_POOL = [
+      { giftName: 'Rose', unitCoins: 1, count: 4, user: 'lucky7', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp' },
+      { giftName: 'Heart Me', unitCoins: 1, count: 4, user: 'bigtipper', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d56945782445b0b8c8658ed44f894c7b~tplv-resize:258:258.webp' },
+      { giftName: 'Finger Heart', unitCoins: 5, count: 3, user: 'streamerfan', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/a4c4dc437fd3a6632aba149769491f49.png~tplv-obj.webp' },
+      { giftName: 'Perfume', unitCoins: 20, count: 1, user: 'lucky7', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/20b8f61246c7b6032777bb81bf4ee055~tplv-obj.webp' },
+      { giftName: 'Hand Heart', unitCoins: 100, count: 1, user: 'bigtipper', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/374dfe46d5b09ce1db19be06202d34f5.png~tplv-obj.webp' },
+      { giftName: 'Sunglasses', unitCoins: 199, count: 1, user: 'vipfan', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/08af67ab13a8053269bf539fd27f3873.png~tplv-obj.webp' },
+      { giftName: 'Galaxy', unitCoins: 1000, count: 1, user: 'whale99', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/79a02148079526539f7599150da9fd28.png~tplv-obj.webp' },
+      { giftName: 'Lion', unitCoins: 29999, count: 1, user: 'kinggifter', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4fb89af2082a290b37d704e20f4fe729~tplv-obj.webp' },
+    ];
+
+    const JAR_HARD_BODY_LIMIT = 500;
+    const JAR_MAX_IMG_CACHE = 250;
+    const JAR_MAX_PENDING_DROPS = 120;
+
+    const jarEngine = {
+      bodies: [],
+      pendingDrops: [],
+      imgCache: new Map(),
+      lastEventId: 0,
+      lastResetSeq: -1,
+      initialized: false,
+      running: false,
+      scale: 1,
+      spillWidth: 180,
+      maxItems: 160,
+      evictCooldown: 0,
+      showToast: true,
+      demoEnabled: false,
+      pointsUnit: 'Coins',
+      toastTimer: null,
+      demoTimer: null,
+      demoIdx: 0,
+      lastTime: 0,
+      nextSpawnAt: 0,
+    };
+
+    function getJarScale() {
+      return Math.max(1, Math.min(2, Number(jarEngine.scale) || 1));
+    }
+
+    function getJarSpillWidth() {
+      const raw = Number(jarEngine.spillWidth);
+      return Number.isFinite(raw) ? Math.max(0, Math.min(480, Math.round(raw))) : 180;
+    }
+
+    function getJarOuterHalfW(y, scale) {
+      if (y < 40 * scale) return 0;
+      if (y < 68 * scale) return 84 * scale;
+      if (y < 122 * scale) {
+        const t = (y - 68 * scale) / (54 * scale);
+        return (84 + 40 * t) * scale;
+      }
+      return 124 * scale;
+    }
+
+    function resizeJarBodies(bodies, prevScale, nextScale, prevSpillArg, nextSpillArg) {
+      const ps = Math.max(1, Math.min(2, Number(prevScale) || 1));
+      const ns = Math.max(1, Math.min(2, Number(nextScale) || 1));
+      const pSpill = prevSpillArg !== undefined ? Math.max(0, Math.min(480, Math.round(Number(prevSpillArg) || 0))) : getJarSpillWidth();
+      const nSpill = nextSpillArg !== undefined ? Math.max(0, Math.min(480, Math.round(Number(nextSpillArg) || 0))) : pSpill;
+      if (!Array.isArray(bodies) || (Math.abs(ns - ps) < 0.0001 && pSpill === nSpill)) return;
+      const prevCx = pSpill + 160 * ps;
+      const nextCx = nSpill + 160 * ns;
+      const prevBottom = 356 * ps;
+      const nextBottom = 356 * ns;
+      const nextOuterFloor = 366 * ns;
+      const leftWall = nSpill + 42 * ns;
+      const rightWall = nSpill + 278 * ns;
+      const rimY = 68 * ns;
+      const nextWorldW = 320 * ns + nSpill * 2;
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        if (b.spilled && nSpill > 0) {
+          const shiftedX = nextCx + (b.x - prevCx);
+          b.x = Math.max(b.r, Math.min(nextWorldW - b.r, shiftedX));
+          b.y = Math.max(b.r + 4, Math.min(nextOuterFloor - b.r, nextOuterFloor - (366 * ps - b.y)));
+          const oh = getJarOuterHalfW(b.y, ns);
+          if (oh > 0) {
+            if (b.x < nextCx && b.x + b.r > nextCx - oh) b.x = Math.max(b.r, nextCx - oh - b.r);
+            else if (b.x >= nextCx && b.x - b.r < nextCx + oh) b.x = Math.min(nextWorldW - b.r, nextCx + oh + b.r);
+          }
+        } else {
+          b.spilled = false;
+          const minX = leftWall + b.r;
+          const maxX = rightWall - b.r;
+          b.x = Math.max(minX, Math.min(maxX, nextCx + (b.x - prevCx)));
+          const minY = rimY + b.r;
+          const maxY = nextBottom - b.r;
+          b.y = Math.max(minY, Math.min(maxY, nextBottom - (prevBottom - b.y)));
+        }
+        b.px = b.x;
+        b.py = b.y;
+      }
+    }
+
+    function findLeastValueJarIndex(bodies, excludeFresh) {
+      let bestIdx = -1;
+      let bestCoins = Infinity;
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        if (excludeFresh && (b.age || 0) < 55) continue;
+        const c = Number(b.unitCoins) || 0;
+        if (c < bestCoins) {
+          bestCoins = c;
+          bestIdx = i;
+        }
+      }
+      return bestIdx;
+    }
+
+    function jarRadiusForCoins(unitCoins) {
+      const c = Math.max(0, Number(unitCoins) || 0);
+      if (c >= 5000) return 52;
+      if (c >= 1000) return 38;
+      if (c >= 200) return 27;
+      if (c >= 50) return 22;
+      if (c >= 10) return 17;
+      return 13.5;
+    }
+
+    function getJarCachedImg(url) {
+      if (!isAllowedOverlayImageUrl(url)) return null;
+      let entry = jarEngine.imgCache.get(url);
+      if (!entry) {
+        if (jarEngine.imgCache.size >= JAR_MAX_IMG_CACHE) {
+          const oldestKey = jarEngine.imgCache.keys().next().value;
+          if (oldestKey !== undefined) jarEngine.imgCache.delete(oldestKey);
+        }
+        const img = new Image();
+        img.referrerPolicy = 'no-referrer';
+        entry = { img, loaded: false, failed: false };
+        img.onload = function () { entry.loaded = true; };
+        img.onerror = function () { entry.failed = true; };
+        img.src = url;
+        jarEngine.imgCache.set(url, entry);
+      }
+      return entry.loaded && !entry.failed ? entry.img : null;
+    }
+
+    function showJarToast(ev) {
+      if (!jarEngine.showToast || !ev) return;
+      const toast = document.getElementById('jar-toast');
+      if (!toast) return;
+      toast.textContent = '';
+
+      const labelName = String(ev.nickname || ev.user || 'Viewer').trim();
+      if (isAllowedOverlayImageUrl(ev.avatarUrl)) {
+        const av = document.createElement('img');
+        av.className = 'jar-toast-avatar';
+        av.src = ev.avatarUrl;
+        av.alt = '';
+        av.referrerPolicy = 'no-referrer';
+        av.onerror = function () {
+          const fb = document.createElement('span');
+          fb.className = 'jar-toast-avatar-fb';
+          fb.textContent = labelName.slice(0, 2).toUpperCase();
+          av.replaceWith(fb);
+        };
+        toast.appendChild(av);
+      } else {
+        const fb = document.createElement('span');
+        fb.className = 'jar-toast-avatar-fb';
+        fb.textContent = labelName.slice(0, 2).toUpperCase();
+        toast.appendChild(fb);
+      }
+
+      const nameEl = document.createElement('span');
+      nameEl.textContent = labelName;
+      toast.appendChild(nameEl);
+
+      const verbEl = document.createElement('span');
+      verbEl.className = 'jar-toast-muted';
+      verbEl.textContent = 'donated';
+      toast.appendChild(verbEl);
+
+      if (isAllowedOverlayImageUrl(ev.imageUrl)) {
+        const gi = document.createElement('img');
+        gi.className = 'jar-toast-gift-img';
+        gi.src = ev.imageUrl;
+        gi.alt = ev.giftName || 'Gift';
+        gi.referrerPolicy = 'no-referrer';
+        gi.onerror = function () {
+          gi.remove();
+        };
+        toast.appendChild(gi);
+      }
+
+      const giftEl = document.createElement('span');
+      const cnt = Math.max(1, Number(ev.count) || 1);
+      giftEl.textContent = (ev.giftName || 'Gift') + (cnt > 1 ? ' x' + fmtNum(cnt) : '');
+      toast.appendChild(giftEl);
+
+      const tot = Math.max(0, Number(ev.totalCoins) || (Number(ev.unitCoins) || 0) * cnt);
+      if (tot > 0) {
+        const cEl = document.createElement('span');
+        cEl.className = 'jar-toast-coins';
+        cEl.textContent = '(' + fmtNum(tot) + ' ' + (tot === 1 ? 'Coin' : 'Coins') + ')';
+        toast.appendChild(cEl);
+      }
+
+      toast.classList.add('visible');
+      if (jarEngine.toastTimer) clearTimeout(jarEngine.toastTimer);
+      jarEngine.toastTimer = setTimeout(function () {
+        toast.classList.remove('visible');
+      }, 3600);
+    }
+
+    function spawnJarBody(item, settled) {
+      const r = jarRadiusForCoins(item.unitCoins);
+      const s = getJarScale();
+      const ox = getJarSpillWidth();
+      const cx = ox + 160 * s;
+      const leftWall = ox + 42 * s;
+      const rightWall = ox + 278 * s;
+      const bottomY = 356 * s;
+      const bodyLimit = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Number(jarEngine.maxItems) || 160));
+      while (jarEngine.bodies.length >= bodyLimit) {
+        let evictIdx = findLeastValueJarIndex(jarEngine.bodies, true);
+        if (evictIdx < 0) evictIdx = findLeastValueJarIndex(jarEngine.bodies, false);
+        if (evictIdx < 0) break;
+        jarEngine.bodies.splice(evictIdx, 1);
+      }
+      if (item.imageUrl) getJarCachedImg(item.imageUrl);
+      const halfMouth = Math.max(10, 62 * s - Math.min(r, 48 * s));
+      const innerMinX = leftWall + r + 8;
+      const innerSpanX = Math.max(8, (rightWall - r - 8) - innerMinX);
+      const settledMinY = Math.min(bottomY - r - 12, 130 * s + r);
+      const settledSpanY = Math.max(12, (bottomY - r - 6) - settledMinY);
+      const x = settled
+        ? innerMinX + Math.random() * innerSpanX
+        : cx + (Math.random() * 2 - 1) * halfMouth;
+      const y = settled
+        ? settledMinY + Math.random() * settledSpanY
+        : 22 * s - Math.random() * 16;
+      jarEngine.bodies.push({
+        x: x,
+        y: y,
+        px: x,
+        py: y,
+        vx: settled ? 0 : (Math.random() - 0.5) * 60,
+        vy: settled ? 20 : 60 + Math.random() * 50,
+        angle: (Math.random() - 0.5) * 0.75,
+        omega: settled ? 0 : (Math.random() - 0.5) * 2.6,
+        contacts: 0,
+        age: settled ? 80 : 0,
+        spilled: false,
+        r: r,
+        invMass: 1 / (r * r),
+        imageUrl: item.imageUrl || '',
+        giftName: item.giftName || 'Gift',
+        unitCoins: Number(item.unitCoins) || 0,
+      });
+    }
+
+    function enqueueJarDrop(ev, silentReplay) {
+      const cnt = Math.max(1, Math.min(14, Number(ev.count) || 1));
+      if (silentReplay) {
+        const capReplay = Math.min(cnt, 6);
+        for (let i = 0; i < capReplay; i++) {
+          spawnJarBody(ev, true);
+        }
+        return;
+      }
+      showJarToast(ev);
+      for (let i = 0; i < cnt; i++) {
+        jarEngine.pendingDrops.push({
+          imageUrl: ev.imageUrl || '',
+          giftName: ev.giftName || 'Gift',
+          unitCoins: Number(ev.unitCoins) || 0,
+        });
+      }
+      if (jarEngine.pendingDrops.length > JAR_MAX_PENDING_DROPS) {
+        jarEngine.pendingDrops.splice(0, jarEngine.pendingDrops.length - JAR_MAX_PENDING_DROPS);
+      }
+    }
+
+    function stepJarPhysics(dt) {
+      const substeps = 2;
+      const sdt = Math.min(0.033, dt) / substeps;
+      const gravity = 960;
+      const scale = getJarScale();
+      const spillPx = getJarSpillWidth();
+      const allowSpill = spillPx > 0;
+      const ox = spillPx;
+      const worldW = 320 * scale + spillPx * 2;
+      const cx = ox + 160 * scale;
+      const leftWall = ox + 42 * scale;
+      const rightWall = ox + 278 * scale;
+      const bottomY = 356 * scale;
+      const outerFloorY = 366 * scale;
+      const cornerR = 34 * scale;
+      const neckY = 98 * scale;
+      const rimY = 68 * scale;
+      const rimLipY = 54 * scale;
+      const overflowY = 96 * scale;
+      const blCx = leftWall + cornerR;
+      const brCx = rightWall - cornerR;
+      const bCy = bottomY - cornerR;
+      const bodies = jarEngine.bodies;
+      const n = bodies.length;
+
+      for (let s = 0; s < substeps; s++) {
+        for (let i = 0; i < n; i++) {
+          const b = bodies[i];
+          b.px = b.x;
+          b.py = b.y;
+          b.contacts = 0;
+          b.vy += gravity * sdt;
+          if (allowSpill && !b.spilled && b.y < 64 * scale && (b.age || 0) > 16) {
+            const dir = b.x > cx ? 1 : b.x < cx ? -1 : (i % 2 === 0 ? 1 : -1);
+            b.vx += dir * 320 * sdt;
+          }
+          b.vx *= b.spilled ? 0.996 : 0.992;
+          b.vy *= 0.994;
+          b.omega *= b.spilled ? 0.98 : 0.96;
+          if (b.omega > 5.5) b.omega = 5.5;
+          else if (b.omega < -5.5) b.omega = -5.5;
+          b.x += b.vx * sdt;
+          b.y += b.vy * sdt;
+          b.angle += b.omega * sdt;
+        }
+
+        // Pairwise circle-circle collision resolution
+        for (let iter = 0; iter < 6; iter++) {
+          for (let i = 0; i < n; i++) {
+            const a = bodies[i];
+            for (let j = i + 1; j < n; j++) {
+              const b = bodies[j];
+              // Glass walls separate inside gifts from spilled outside gifts below the mouth lip
+              if ((!a.spilled) !== (!b.spilled) && (a.y > rimY || b.y > rimY)) continue;
+              const dx = b.x - a.x;
+              const dy = b.y - a.y;
+              const minD = a.r + b.r;
+              const distSq = dx * dx + dy * dy;
+              if (distSq < minD * minD && distSq > 0.0001) {
+                const dist = Math.sqrt(distSq);
+                const nx = dx / dist;
+                const ny = dy / dist;
+                const overlap = minD - dist;
+                const invSum = a.invMass + b.invMass;
+                const corrA = (overlap * a.invMass) / invSum;
+                const corrB = (overlap * b.invMass) / invSum;
+                a.x -= nx * corrA;
+                a.y -= ny * corrA;
+                b.x += nx * corrB;
+                b.y += ny * corrB;
+                a.contacts += 1;
+                b.contacts += 1;
+
+                const rvx = b.vx - a.vx;
+                const rvy = b.vy - a.vy;
+                const vn = rvx * nx + rvy * ny;
+                if (vn < 0) {
+                  const restitution = vn < -95 ? 0.2 : 0;
+                  const imp = (-(1 + restitution) * vn) / invSum;
+                  a.vx -= imp * nx * a.invMass;
+                  a.vy -= imp * ny * a.invMass;
+                  b.vx += imp * nx * b.invMass;
+                  b.vy += imp * ny * b.invMass;
+
+                  // Energy-dissipative surface friction only on first iteration (prevents resting spin-up)
+                  if (iter === 0) {
+                    const tx = -ny;
+                    const ty = nx;
+                    const vt = rvx * tx + rvy * ty;
+                    if (Math.abs(vn) > 38 || Math.abs(vt) > 32) {
+                      const vSurf = vt - a.omega * a.r - b.omega * b.r;
+                      const maxJt = Math.abs(imp) * 0.25;
+                      const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.35) / invSum));
+                      a.vx -= jt * tx * a.invMass;
+                      a.vy -= jt * ty * a.invMass;
+                      b.vx += jt * tx * b.invMass;
+                      b.vy += jt * ty * b.invMass;
+                      a.omega -= ((jt * a.invMass) / Math.max(14, a.r)) * 0.7;
+                      b.omega -= ((jt * b.invMass) / Math.max(14, b.r)) * 0.7;
+                    } else {
+                      a.vx *= 0.94;
+                      b.vx *= 0.94;
+                      a.omega *= 0.78;
+                      b.omega *= 0.78;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Jar walls (inside vs spilled outside), neck lip spill transition, floor, and roll-off area bounds
+          for (let i = 0; i < n; i++) {
+            const b = bodies[i];
+
+            // Transition gift over the jar mouth lip into the external roll-off zone when overflow is enabled
+            if (allowSpill && !b.spilled && b.y < 74 * scale && (b.x < ox + 80 * scale || b.x > ox + 240 * scale)) {
+              b.spilled = true;
+              const dir = b.x < cx ? -1 : 1;
+              if (b.vx * dir < 70) b.vx = dir * (78 + (i % 5) * 16);
+              b.omega = dir * (2.6 + (i % 4) * 0.45);
+            }
+
+            if (b.spilled && allowSpill) {
+              // Collide with the outside of the glass jar so spilled gifts tumble down the shoulders and never clip back inside
+              if (b.y + b.r > 40 * scale) {
+                const oh = getJarOuterHalfW(Math.max(40 * scale, b.y), scale);
+                if (oh > 0) {
+                  if (b.x < cx && b.x + b.r > cx - oh) {
+                    b.x = cx - oh - b.r;
+                    b.contacts += 1;
+                    if (b.y >= 56 * scale && b.y < 128 * scale) {
+                      if (b.vx > -72) b.vx = -72 - Math.abs(b.vy) * 0.14;
+                      b.omega = Math.min(b.omega, -2.4);
+                    } else if (b.vx > 0) {
+                      b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.24 : 0;
+                    }
+                  } else if (b.x >= cx && b.x - b.r < cx + oh) {
+                    b.x = cx + oh + b.r;
+                    b.contacts += 1;
+                    if (b.y >= 56 * scale && b.y < 128 * scale) {
+                      if (b.vx < 72) b.vx = 72 + Math.abs(b.vy) * 0.14;
+                      b.omega = Math.max(b.omega, 2.4);
+                    } else if (b.vx < 0) {
+                      b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.24 : 0;
+                    }
+                  }
+                }
+              }
+
+              // Outer table floor with realistic rolling motion across the adjustable roll-off area
+              if (b.y + b.r > outerFloorY) {
+                b.y = outerFloorY - b.r;
+                b.contacts += 1;
+                if (b.vy > 0) {
+                  b.vy = b.vy > 85 ? -b.vy * 0.22 : 0;
+                }
+                b.vx *= 0.982;
+                b.omega = Math.max(-5.5, Math.min(5.5, b.vx / Math.max(12, b.r)));
+              }
+
+              // Adjustable outer roll-off area boundaries [0, worldW]
+              if (b.x - b.r < 0) {
+                b.x = b.r;
+                b.contacts += 1;
+                if (b.vx < 0) b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.22 : 0;
+                b.omega *= 0.78;
+              } else if (b.x + b.r > worldW) {
+                b.x = worldW - b.r;
+                b.contacts += 1;
+                if (b.vx > 0) b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.22 : 0;
+                b.omega *= 0.78;
+              }
+
+              if (b.y - b.r < 4) {
+                b.y = b.r + 4;
+                if (b.vy < 0) b.vy = 0;
+              }
+              continue;
+            }
+
+            // Inside jar containment (with open mouth rim when allowSpill is enabled)
+            if (b.y < neckY) {
+              if (!allowSpill || b.y >= rimLipY) {
+                const halfAllow = Math.max(0, 74 * scale - Math.min(b.r, 68 * scale));
+                const minX = cx - halfAllow;
+                const maxX = cx + halfAllow;
+                if (b.x < minX) {
+                  b.x = minX;
+                  if (b.vx < 0) b.vx = -b.vx * 0.2;
+                  b.omega *= 0.85;
+                } else if (b.x > maxX) {
+                  b.x = maxX;
+                  if (b.vx > 0) b.vx = -b.vx * 0.2;
+                  b.omega *= 0.85;
+                }
+              }
+            } else {
+              if (b.x - b.r < leftWall) {
+                b.x = leftWall + b.r;
+                b.contacts += 1;
+                if (b.vx < 0) b.vx = Math.abs(b.vx) > 50 ? -b.vx * 0.18 : 0;
+                b.omega *= 0.8;
+              } else if (b.x + b.r > rightWall) {
+                b.x = rightWall - b.r;
+                b.contacts += 1;
+                if (b.vx > 0) b.vx = Math.abs(b.vx) > 50 ? -b.vx * 0.18 : 0;
+                b.omega *= 0.8;
+              }
+            }
+
+            // Rounded bottom-left corner arc
+            if (b.x < blCx && b.y > bCy) {
+              const dx = b.x - blCx;
+              const dy = b.y - bCy;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const maxR = Math.max(2, cornerR - b.r);
+              if (dist > maxR && dist > 0.001) {
+                const nx = dx / dist;
+                const ny = dy / dist;
+                b.x = blCx + nx * maxR;
+                b.y = bCy + ny * maxR;
+                b.contacts += 1;
+                const vn = b.vx * nx + b.vy * ny;
+                if (vn > 0) {
+                  const rest = vn > 70 ? 1.15 : 1.0;
+                  b.vx -= rest * vn * nx;
+                  b.vy -= rest * vn * ny;
+                }
+                b.omega *= 0.8;
+              }
+            }
+            // Rounded bottom-right corner arc
+            if (b.x > brCx && b.y > bCy) {
+              const dx = b.x - brCx;
+              const dy = b.y - bCy;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const maxR = Math.max(2, cornerR - b.r);
+              if (dist > maxR && dist > 0.001) {
+                const nx = dx / dist;
+                const ny = dy / dist;
+                b.x = brCx + nx * maxR;
+                b.y = bCy + ny * maxR;
+                b.contacts += 1;
+                const vn = b.vx * nx + b.vy * ny;
+                if (vn > 0) {
+                  const rest = vn > 70 ? 1.15 : 1.0;
+                  b.vx -= rest * vn * nx;
+                  b.vy -= rest * vn * ny;
+                }
+                b.omega *= 0.8;
+              }
+            }
+
+            // Flat glass bottom floor
+            if (b.y + b.r > bottomY) {
+              b.y = bottomY - b.r;
+              b.contacts += 1;
+              if (b.vy > 0) {
+                b.vy = b.vy > 90 ? -b.vy * 0.16 : 0;
+              }
+              b.vx *= 0.82;
+              b.omega *= 0.72;
+            }
+
+            // Hard neck ceiling applies ONLY when spill overflow is disabled (jarSpillWidth === 0)
+            if (!allowSpill && (b.age || 0) > 55 && b.y - b.r < rimY) {
+              b.y = rimY + b.r;
+              b.contacts += 1;
+              if (b.vy < 0) b.vy = 0;
+            }
+          }
+        }
+
+        // Contact-aware sleep damping so settled piles stop spinning & stay completely calm
+        for (let i = 0; i < n; i++) {
+          const b = bodies[i];
+          if (b.contacts > 0) {
+            const moved = Math.hypot(b.x - b.px, b.y - b.py);
+            if (!b.spilled || moved < 0.35) {
+              b.omega *= 0.84;
+            }
+            if (moved < 0.25) {
+              b.vx *= 0.65;
+              b.vy *= 0.65;
+              b.omega *= 0.5;
+            }
+            if (Math.abs(b.vy) < 6) b.vy = 0;
+          }
+          if (Math.abs(b.vx) < 4) b.vx = 0;
+          if (Math.abs(b.omega) < 0.08) b.omega = 0;
+          else if (b.omega > 5.5) b.omega = 5.5;
+          else if (b.omega < -5.5) b.omega = -5.5;
+        }
+      }
+
+      for (let i = 0; i < bodies.length; i++) {
+        bodies[i].age = (bodies[i].age || 0) + 1;
+      }
+
+      // Overflow eviction:
+      // - When jarSpillWidth === 0 (contained mode): evict least-value gift when pile reaches neck.
+      // - When jarSpillWidth > 0 (overflow spill mode): let gifts spill out freely; only evict if spilled stacks fill all the way to the top!
+      if (jarEngine.evictCooldown > 0) {
+        jarEngine.evictCooldown -= 1;
+      } else if (bodies.length > 1) {
+        const isOverflowing = allowSpill
+          ? bodies.some(function (b) {
+              return b.spilled && (b.age || 0) > 90 && b.contacts > 0 && Math.abs(b.vy) <= 25 && (b.y - b.r) < rimY;
+            })
+          : bodies.some(function (b) {
+              return (b.age || 0) > 55 && b.contacts > 0 && b.vy <= 35 && (b.y - b.r) < overflowY;
+            });
+        if (isOverflowing) {
+          let evictIdx = findLeastValueJarIndex(bodies, true);
+          if (evictIdx < 0) evictIdx = findLeastValueJarIndex(bodies, false);
+          if (evictIdx >= 0) {
+            bodies.splice(evictIdx, 1);
+            jarEngine.evictCooldown = 2;
+          }
+        }
+      }
+    }
+
+    function drawJarBody(ctx, b) {
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.angle);
+      const img = getJarCachedImg(b.imageUrl);
+      if (img) {
+        const drawSize = b.r * 2.18;
+        ctx.drawImage(img, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, b.r * 0.92, 0, Math.PI * 2);
+        ctx.fillStyle = b.unitCoins >= 1000 ? '#FBBF24' : b.unitCoins >= 20 ? '#EC4899' : '#EF4444';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawJarCanvas() {
+      const canvas = document.getElementById('jar-canvas');
+      if (!canvas) return;
+      const spillCanvas = document.getElementById('jar-canvas-spill');
+      const s = getJarScale();
+      const ox = getJarSpillWidth();
+      const worldW = Math.round(320 * s) + ox * 2;
+      const worldH = Math.round(380 * s);
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const targetW = Math.round(worldW * dpr);
+      const targetH = Math.round(worldH * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, worldW, worldH);
+
+      // Clip interior gifts cleanly inside the scaled Mason Jar silhouette (allowing mouth protrusion at top when spilling)
+      ctx.save();
+      ctx.beginPath();
+      if (ox > 0) {
+        ctx.moveTo(ox + 64 * s, 0);
+        ctx.lineTo(ox + 256 * s, 0);
+        ctx.lineTo(ox + 256 * s, 56 * s);
+        ctx.lineTo(ox + 236 * s, 66 * s);
+      } else {
+        ctx.moveTo(ox + 84 * s, 32 * s);
+        ctx.lineTo(ox + 236 * s, 32 * s);
+        ctx.lineTo(ox + 236 * s, 66 * s);
+      }
+      ctx.bezierCurveTo(ox + 236 * s, 82 * s, ox + 281 * s, 92 * s, ox + 281 * s, 122 * s);
+      ctx.lineTo(ox + 281 * s, 322 * s);
+      ctx.bezierCurveTo(ox + 281 * s, 347 * s, ox + 260 * s, 362 * s, ox + 232 * s, 362 * s);
+      ctx.lineTo(ox + 88 * s, 362 * s);
+      ctx.bezierCurveTo(ox + 60 * s, 362 * s, ox + 39 * s, 347 * s, ox + 39 * s, 322 * s);
+      ctx.lineTo(ox + 39 * s, 122 * s);
+      ctx.bezierCurveTo(ox + 39 * s, 92 * s, ox + 84 * s, 82 * s, ox + 84 * s, 66 * s);
+      if (ox > 0) {
+        ctx.lineTo(ox + 64 * s, 56 * s);
+      }
+      ctx.closePath();
+      ctx.clip();
+
+      const bodies = jarEngine.bodies;
+      let hasSpilled = false;
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        if (b.spilled) {
+          hasSpilled = true;
+          continue;
+        }
+        drawJarBody(ctx, b);
+      }
+      ctx.restore();
+
+      if (spillCanvas) {
+        if (spillCanvas.width !== targetW || spillCanvas.height !== targetH) {
+          spillCanvas.width = targetW;
+          spillCanvas.height = targetH;
+        }
+        const sctx = spillCanvas.getContext('2d');
+        if (sctx) {
+          sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          sctx.clearRect(0, 0, worldW, worldH);
+          if (hasSpilled) {
+            for (let i = 0; i < bodies.length; i++) {
+              if (bodies[i].spilled) drawJarBody(sctx, bodies[i]);
+            }
+          }
+        }
+      } else if (hasSpilled) {
+        for (let i = 0; i < bodies.length; i++) {
+          if (bodies[i].spilled) drawJarBody(ctx, bodies[i]);
+        }
+      }
+    }
+
+    function jarTick(ts) {
+      const jarEl = document.getElementById('w-jar');
+      if (!jarEl || jarEl.classList.contains('hidden')) {
+        jarEngine.running = false;
+        return;
+      }
+      const dt = jarEngine.lastTime ? Math.min(0.05, (ts - jarEngine.lastTime) / 1000) : 0.016;
+      jarEngine.lastTime = ts;
+
+      if (jarEngine.pendingDrops.length > 0 && ts >= jarEngine.nextSpawnAt) {
+        const nextItem = jarEngine.pendingDrops.shift();
+        spawnJarBody(nextItem, false);
+        jarEngine.nextSpawnAt = ts + 65;
+      }
+
+      stepJarPhysics(dt);
+      drawJarCanvas();
+      requestAnimationFrame(jarTick);
+    }
+
+    function ensureJarLoop() {
+      if (!jarEngine.running) {
+        jarEngine.running = true;
+        jarEngine.lastTime = 0;
+        requestAnimationFrame(jarTick);
+      }
+    }
+
+    function updateJarDemoLoop(enabled) {
+      const next = Boolean(enabled);
+      if (next === jarEngine.demoEnabled && (next ? Boolean(jarEngine.demoTimer) : !jarEngine.demoTimer)) {
+        return;
+      }
+      jarEngine.demoEnabled = next;
+      if (jarEngine.demoTimer) {
+        clearInterval(jarEngine.demoTimer);
+        jarEngine.demoTimer = null;
+      }
+      if (jarEngine.demoEnabled) {
+        jarEngine.demoTimer = setInterval(function () {
+          const jarEl = document.getElementById('w-jar');
+          if (!jarEl || jarEl.classList.contains('hidden')) return;
+          const idx = jarEngine.demoIdx % JAR_DEMO_POOL.length;
+          jarEngine.demoIdx += 1;
+          // Drop Lion slightly less frequently than Roses/Perfumes just like the video
+          const chosen = idx === JAR_DEMO_POOL.length - 1 && jarEngine.demoIdx % 16 !== 0
+            ? JAR_DEMO_POOL[0]
+            : JAR_DEMO_POOL[idx];
+          enqueueJarDrop(chosen, false);
+          ensureJarLoop();
+        }, 1600);
+      }
+    }
+
+    function syncJarOverlayState(state, cfg, pointsUnit) {
+      jarEngine.showToast = cfg.jarShowToast !== false;
+      jarEngine.pointsUnit = pointsUnit || 'Coins';
+      jarEngine.maxItems = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Math.round(Number(cfg.jarMaxItems) || 160)));
+      updateJarDemoLoop(Boolean(cfg.jarShowDemo));
+
+      const jarData = state.jar || { events: [], resetSeq: 0 };
+      const resetSeq = Number(jarData.resetSeq) || 0;
+      if (jarEngine.lastResetSeq !== -1 && resetSeq !== jarEngine.lastResetSeq) {
+        jarEngine.bodies = [];
+        jarEngine.pendingDrops = [];
+        jarEngine.lastEventId = 0;
+      }
+      jarEngine.lastResetSeq = resetSeq;
+
+      const events = Array.isArray(jarData.events) ? jarData.events : [];
+      if (!jarEngine.initialized) {
+        jarEngine.initialized = true;
+        events.forEach(function (ev) {
+          if (ev && Number(ev.id) > jarEngine.lastEventId) {
+            jarEngine.lastEventId = Number(ev.id);
+            enqueueJarDrop(ev, true);
+          }
+        });
+      } else {
+        events.forEach(function (ev) {
+          if (ev && Number(ev.id) > jarEngine.lastEventId) {
+            jarEngine.lastEventId = Number(ev.id);
+            enqueueJarDrop(ev, false);
+          }
+        });
+      }
+      ensureJarLoop();
+    }
+
+    // 60 FPS Vertical & Horizontal Macro Roulette Reel Engine
+    const ROULETTE_ROW_H = 48;
+    const ROULETTE_COL_W = 148;
+    const ROULETTE_IDLE_SAMPLES = [
+      { id: 'idle_1', label: 'Jump', key: 'SPACE' },
+      { id: 'idle_2', label: 'Drop Item', key: 'G' },
+      { id: 'idle_3', label: 'Reload', key: 'R' },
+      { id: 'idle_4', label: 'Crouch', key: 'CTRL' },
+      { id: 'idle_5', label: 'Emote', key: 'B' },
+    ];
+    const rouletteEngine = {
+      activeSpinId: 0,
+      rafId: null,
+      targetRowIndex: 2,
+      endOffset: 0,
+      isHorizontal: false,
+      showKeys: true,
+      viewportSize: 240,
+      durationMs: 3000,
+      startedAtLocal: 0,
+      lastCenterIdx: -1,
+      rowEls: [],
+      landed: false,
+      renderedSignature: '',
+    };
+
+    // Velocity-continuous 2-phase easing: full steady speed until 2/3 (2.0s of a 3.0s spin), then smooth deceleration to landing at 3.0s
+    function rouletteEase(p) {
+      if (p <= 0) return 0;
+      if (p >= 1) return 1;
+      const split = 2 / 3;
+      const v0 = 3 / (2 * split + 1); // 9/7 for split=2/3
+      if (p <= split) {
+        return v0 * p;
+      }
+      const u = (p - split) / (1 - split);
+      return v0 * split + (v0 * (1 - split) / 3) * (1 - Math.pow(1 - u, 3));
+    }
+
+    function applyRouletteOffset(track, offset, isHoriz) {
+      if (!track) return;
+      if (isHoriz) {
+        track.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px,0,0)';
+      } else {
+        track.style.transform = 'translate3d(0,' + (-offset).toFixed(2) + 'px,0)';
+      }
+    }
+
+    function buildRouletteTrack(items, winnerIndex, isSpinning, isHoriz, durationMs) {
+      const track = document.getElementById('roulette-track');
+      if (!track) return;
+      const safeItems = Array.isArray(items) && items.length > 0 ? items : ROULETTE_IDLE_SAMPLES;
+      const count = safeItems.length;
+      const winIdx = Math.max(0, Math.min(count - 1, Number(winnerIndex) || 0));
+      const dur = Math.max(500, Math.min(5000, Number(durationMs) || 3000));
+      const targetSlots = Math.max(14, Math.round(36 * (dur / 3000)));
+      const loops = isSpinning ? Math.max(3, Math.ceil(targetSlots / count)) : (isHoriz ? 2 : 1);
+      const minIdleIdx = isHoriz ? 4 : 2;
+      const idleLoops = Math.max(1, Math.ceil((minIdleIdx - winIdx) / count));
+      const targetRow = isSpinning ? loops * count + winIdx : idleLoops * count + winIdx;
+      const totalRows = targetRow + 7;
+
+      track.textContent = '';
+      const frag = document.createDocumentFragment();
+      const rowEls = [];
+      for (let r = 0; r < totalRows; r++) {
+        const item = safeItems[r % count];
+        const row = document.createElement('div');
+        row.className = 'roulette-slot';
+
+        const lbl = document.createElement('span');
+        lbl.className = 'roulette-slot-label';
+        lbl.textContent = item.label || item.key || 'Macro';
+
+        const kbd = document.createElement('span');
+        kbd.className = 'roulette-slot-key';
+        kbd.textContent = item.key || 'KEY';
+
+        row.appendChild(lbl);
+        row.appendChild(kbd);
+        frag.appendChild(row);
+        rowEls.push(row);
+      }
+      track.appendChild(frag);
+      rouletteEngine.rowEls = rowEls;
+      rouletteEngine.targetRowIndex = targetRow;
+      rouletteEngine.isHorizontal = Boolean(isHoriz);
+      if (isHoriz) {
+        const vp = track.parentElement;
+        const vpW = (vp && vp.clientWidth) ? vp.clientWidth : 600;
+        rouletteEngine.viewportSize = vpW;
+        rouletteEngine.endOffset = Math.max(0, targetRow * ROULETTE_COL_W + ROULETTE_COL_W / 2 - vpW / 2);
+      } else {
+        rouletteEngine.viewportSize = 240;
+        rouletteEngine.endOffset = Math.max(0, (targetRow - 2) * ROULETTE_ROW_H);
+      }
+      rouletteEngine.lastCenterIdx = -1;
+    }
+
+    function setRouletteCenterRow(centerIdx, markWinner) {
+      const rows = rouletteEngine.rowEls;
+      if (rouletteEngine.lastCenterIdx >= 0 && rows[rouletteEngine.lastCenterIdx]) {
+        rows[rouletteEngine.lastCenterIdx].classList.remove('is-center', 'is-winner');
+      }
+      if (centerIdx >= 0 && rows[centerIdx]) {
+        rows[centerIdx].classList.add('is-center');
+        if (markWinner) rows[centerIdx].classList.add('is-winner');
+      }
+      rouletteEngine.lastCenterIdx = centerIdx;
+    }
+
+    function stepRouletteFrame() {
+      const track = document.getElementById('roulette-track');
+      const rootEl = document.getElementById('w-roulette');
+      if (!track || !rootEl) {
+        rouletteEngine.rafId = null;
+        return;
+      }
+      const elapsed = Math.max(0, Date.now() - rouletteEngine.startedAtLocal);
+      const dur = Math.max(100, rouletteEngine.durationMs);
+      const p = Math.min(1, elapsed / dur);
+      const eased = rouletteEase(p);
+      const offset = rouletteEngine.endOffset * eased;
+      applyRouletteOffset(track, offset, rouletteEngine.isHorizontal);
+
+      const centerIdx = rouletteEngine.isHorizontal
+        ? Math.min(
+            rouletteEngine.rowEls.length - 1,
+            Math.max(0, Math.round((offset + rouletteEngine.viewportSize / 2 - ROULETTE_COL_W / 2) / ROULETTE_COL_W))
+          )
+        : Math.min(
+            rouletteEngine.rowEls.length - 1,
+            Math.max(0, Math.round(offset / ROULETTE_ROW_H) + 2)
+          );
+      if (p >= 1) {
+        rouletteEngine.rafId = null;
+        rouletteEngine.landed = true;
+        setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
+        rootEl.classList.add('is-landed');
+        return;
+      }
+      if (centerIdx !== rouletteEngine.lastCenterIdx) {
+        setRouletteCenterRow(centerIdx, false);
+      }
+      rouletteEngine.rafId = requestAnimationFrame(stepRouletteFrame);
+    }
+
+    function syncRouletteOverlayState(state, cfg) {
+      const el = document.getElementById('w-roulette');
+      const titleEl = document.getElementById('roulette-title');
+      const badgeEl = document.getElementById('roulette-badge');
+      const trigBar = document.getElementById('roulette-trigger-bar');
+      const giftImg = document.getElementById('roulette-gift-img');
+      const trigText = document.getElementById('roulette-trigger-text');
+      const footerStatus = document.getElementById('roulette-footer-status');
+      const queuePill = document.getElementById('roulette-queue-pill');
+      const track = document.getElementById('roulette-track');
+      if (!el || !track) return;
+
+      const rState = state.roulette || {};
+      const activeSpin = rState.activeSpin || null;
+      const lastSpin = rState.lastSpin || null;
+      const qLen = Math.max(0, Number(rState.queueLength) || 0);
+      const autoHide = cfg.rouletteAutoHide !== false;
+      const isHoriz = cfg.rouletteLayout === 'horizontal';
+      const showKeys = cfg.rouletteShowKeys !== false;
+      const layoutTag = isHoriz ? 'h' : 'v';
+      rouletteEngine.showKeys = showKeys;
+
+      el.classList.toggle('is-horizontal', isHoriz);
+      el.classList.toggle('roulette-hide-keys', !showKeys);
+
+      const customOverlayTitle = String(cfg.rouletteTitle || '').trim();
+      const resolveTitle = function (spinObj) {
+        if (customOverlayTitle && customOverlayTitle !== 'Macro Roulette') return customOverlayTitle;
+        return spinObj?.ruleName || customOverlayTitle || 'Macro Roulette';
+      };
+
+      if (queuePill) {
+        queuePill.classList.toggle('hidden', qLen <= 0);
+        if (qLen > 0) queuePill.textContent = '+' + qLen + ' queued';
+      }
+
+      if (!activeSpin) {
+        el.classList.toggle('roulette-idle-hidden', autoHide);
+        if (rouletteEngine.rafId) {
+          cancelAnimationFrame(rouletteEngine.rafId);
+          rouletteEngine.rafId = null;
+        }
+        rouletteEngine.activeSpinId = 0;
+
+        const displaySpin = lastSpin;
+        titleEl.textContent = resolveTitle(displaySpin);
+        badgeEl.classList.remove('live', 'done', 'warn', 'sub');
+        if (displaySpin && displaySpin.winner) {
+          el.classList.add('is-landed');
+          badgeEl.textContent = 'LAST HIT';
+          badgeEl.classList.add('done');
+          const sig = 'idle_last_' + displaySpin.id + '_' + layoutTag;
+          if (rouletteEngine.renderedSignature !== sig) {
+            rouletteEngine.renderedSignature = sig;
+            buildRouletteTrack(displaySpin.items, displaySpin.winnerIndex, false, isHoriz);
+            applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
+            setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
+          }
+          trigBar.classList.remove('hidden');
+          if (isAllowedOverlayImageUrl(displaySpin.giftImageUrl)) {
+            giftImg.onerror = function () { giftImg.classList.add('hidden'); };
+            giftImg.src = displaySpin.giftImageUrl;
+            giftImg.classList.remove('hidden');
+          } else {
+            giftImg.classList.add('hidden');
+          }
+          trigText.textContent = '';
+          const sSpan = document.createElement('span');
+          sSpan.textContent = displaySpin.sender || 'Viewer';
+          const mSpan = document.createElement('span');
+          mSpan.className = 'roulette-trigger-muted';
+          mSpan.textContent = displaySpin.giftName ? ' sent ' + displaySpin.giftName : ' spun roulette';
+          trigText.appendChild(sSpan);
+          trigText.appendChild(mSpan);
+          footerStatus.textContent =
+            'Winner: ' + displaySpin.winner.label + (showKeys ? ' [' + displaySpin.winner.key + ']' : '');
+        } else {
+          el.classList.remove('is-landed');
+          badgeEl.textContent = 'READY';
+          trigBar.classList.add('hidden');
+          const sig = 'idle_default_' + layoutTag;
+          if (rouletteEngine.renderedSignature !== sig) {
+            rouletteEngine.renderedSignature = sig;
+            buildRouletteTrack(ROULETTE_IDLE_SAMPLES, 2, false, isHoriz);
+            applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
+            setRouletteCenterRow(rouletteEngine.targetRowIndex, false);
+          }
+          footerStatus.textContent = 'Waiting for gift trigger';
+        }
+        return;
+      }
+
+      // Active spin (spinning or landed hold)
+      el.classList.remove('roulette-idle-hidden');
+      titleEl.textContent = resolveTitle(activeSpin);
+
+      trigBar.classList.remove('hidden');
+      if (isAllowedOverlayImageUrl(activeSpin.giftImageUrl)) {
+        giftImg.onerror = function () { giftImg.classList.add('hidden'); };
+        giftImg.src = activeSpin.giftImageUrl;
+        giftImg.classList.remove('hidden');
+      } else {
+        giftImg.classList.add('hidden');
+      }
+      trigText.textContent = '';
+      const senderNode = document.createElement('span');
+      senderNode.textContent = activeSpin.sender || 'Viewer';
+      const giftNode = document.createElement('span');
+      giftNode.className = 'roulette-trigger-muted';
+      giftNode.textContent = activeSpin.giftName ? ' sent ' + activeSpin.giftName : ' spun roulette';
+      trigText.appendChild(senderNode);
+      trigText.appendChild(giftNode);
+
+      const spinSig = 'spin_' + activeSpin.id + '_' + layoutTag;
+      const isNewSpinOrLayout = activeSpin.id !== rouletteEngine.activeSpinId || rouletteEngine.renderedSignature !== spinSig;
+      if (isNewSpinOrLayout) {
+        if (rouletteEngine.rafId) {
+          cancelAnimationFrame(rouletteEngine.rafId);
+          rouletteEngine.rafId = null;
+        }
+        rouletteEngine.activeSpinId = activeSpin.id;
+        rouletteEngine.renderedSignature = spinSig;
+        rouletteEngine.durationMs = Math.max(100, Math.min(5000, Number(activeSpin.durationMs) || 3000));
+        const serverNow = Number(rState.serverNow) || Date.now();
+        const serverElapsed = activeSpin.startedAt ? Math.max(0, serverNow - Number(activeSpin.startedAt)) : 0;
+        rouletteEngine.startedAtLocal = Date.now() - serverElapsed;
+        rouletteEngine.landed = activeSpin.phase === 'landed';
+
+        buildRouletteTrack(activeSpin.items, activeSpin.winnerIndex, true, isHoriz, rouletteEngine.durationMs);
+        if (activeSpin.phase === 'landed') {
+          applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
+          setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
+          el.classList.add('is-landed');
+        } else {
+          el.classList.remove('is-landed');
+          rouletteEngine.rafId = requestAnimationFrame(stepRouletteFrame);
+        }
+      } else if (activeSpin.phase === 'landed' && !rouletteEngine.landed) {
+        if (rouletteEngine.rafId) {
+          cancelAnimationFrame(rouletteEngine.rafId);
+          rouletteEngine.rafId = null;
+        }
+        rouletteEngine.landed = true;
+        applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
+        setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
+        el.classList.add('is-landed');
+      }
+
+      badgeEl.classList.remove('live', 'done', 'warn', 'sub');
+      if (activeSpin.phase === 'landed') {
+        badgeEl.textContent = 'WINNER';
+        badgeEl.classList.add('done');
+        const w = activeSpin.winner || {};
+        footerStatus.textContent =
+          'Triggered: ' + (w.label || 'Macro') + (showKeys ? ' [' + (w.key || 'KEY') + ']' : '');
+      } else {
+        badgeEl.textContent = 'SPINNING';
+        badgeEl.classList.add('live');
+        footerStatus.textContent = 'Rolling ' + (activeSpin.items?.length || 0) + ' macros...';
+      }
+    }
+
     // Zero-crop auto-fit scaling: standalone overlays cleanly fill any OBS / LIVE Studio viewport size
+    let _lastFitScale = '';
     function fitStandaloneViewport() {
       const isStandalone = MODE !== 'all';
       document.body.classList.toggle('standalone-fit', isStandalone);
       const root = document.getElementById('root');
       if (!root) return;
       if (!isStandalone) {
-        root.style.zoom = '';
-        root.style.transform = '';
+        if (_lastFitScale !== '') {
+          root.style.zoom = '';
+          root.style.transform = '';
+          _lastFitScale = '';
+        }
         return;
       }
-      root.style.zoom = '1';
-      root.style.transform = '';
       const vw = Math.max(64, window.innerWidth || 0);
       const vh = Math.max(64, window.innerHeight || 0);
-      const natW = Math.max(1, root.offsetWidth || root.scrollWidth);
-      const natH = Math.max(1, root.offsetHeight || root.scrollHeight);
-      const scale = Math.max(0.25, Math.min(6, Math.min(vw / natW, vh / natH)));
+      const prevZoom = root.style.zoom;
+      const prevTransform = root.style.transform;
+      root.style.zoom = '1';
+      root.style.transform = '';
+      const natW = Math.max(1, root.offsetWidth || 0, root.scrollWidth || 0);
+      const natH = Math.max(1, root.offsetHeight || 0, root.scrollHeight || 0);
+      const maxScale = MODE === 'jar' ? 1 : 6;
+      const scale = Math.max(0.25, Math.min(maxScale, Math.min(vw / natW, vh / natH)));
+      const nextScale = scale.toFixed(4);
       if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '1.5')) {
-        root.style.zoom = scale.toFixed(4);
+        if (prevZoom !== nextScale || root.style.zoom !== nextScale) {
+          root.style.zoom = nextScale;
+        }
+        root.style.transform = '';
       } else {
+        root.style.zoom = '';
         root.style.transformOrigin = 'center center';
-        root.style.transform = 'scale(' + scale.toFixed(4) + ')';
+        const nextTransform = 'scale(' + nextScale + ')';
+        if (prevTransform !== nextTransform || root.style.transform !== nextTransform) {
+          root.style.transform = nextTransform;
+        }
       }
+      _lastFitScale = nextScale;
     }
 
     window.addEventListener('resize', fitStandaloneViewport);
     if (typeof ResizeObserver !== 'undefined') {
       try {
-        new ResizeObserver(fitStandaloneViewport).observe(document.getElementById('root'));
+        new ResizeObserver(fitStandaloneViewport).observe(document.documentElement);
       } catch (_) {}
     }
+    requestAnimationFrame(fitStandaloneViewport);
 
     let ws = null;
     let hbTimer = null;
+    let hbTimeout = null;
     let helloTimer = null;
     let reconnectAttempt = 0;
     let refSeq = 0;
@@ -1555,10 +3976,16 @@
         if (hbTimer) clearInterval(hbTimer);
         hbTimer = setInterval(() => {
           sendFrame({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: nextRef() });
+          if (hbTimeout) clearTimeout(hbTimeout);
+          hbTimeout = setTimeout(() => {
+            hbTimeout = null;
+            try { if (ws) ws.close(); } catch (_) {}
+          }, 15000);
         }, 25000);
       };
 
       ws.onmessage = (ev) => {
+        if (hbTimeout) { clearTimeout(hbTimeout); hbTimeout = null; }
         let msg;
         try {
           msg = JSON.parse(String(ev.data || ''));
@@ -1590,7 +4017,9 @@
 
       ws.onerror = () => {};
       ws.onclose = () => {
+        receivedFirstState = false;
         if (hbTimer) { clearInterval(hbTimer); hbTimer = null; }
+        if (hbTimeout) { clearTimeout(hbTimeout); hbTimeout = null; }
         if (helloTimer) { clearInterval(helloTimer); helloTimer = null; }
         scheduleCloudReconnect();
       };
