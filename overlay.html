@@ -1025,10 +1025,19 @@
       opacity: 0.6;
     }
 
-    /* Vertical Macro Roulette Widget */
+    /* Vertical & Horizontal Macro Roulette Widget */
+    .root.roulette-horiz-only {
+      width: auto;
+      max-width: none;
+    }
+
     .roulette-widget {
       width: 340px;
       transition: opacity 0.24s ease, transform 0.24s ease;
+    }
+
+    .roulette-widget.is-horizontal {
+      width: 600px;
     }
 
     .roulette-widget.roulette-idle-hidden {
@@ -1076,6 +1085,10 @@
       background: rgba(0, 0, 0, 0.22);
     }
 
+    .roulette-widget.is-horizontal .roulette-viewport {
+      height: 112px;
+    }
+
     .roulette-mask-top,
     .roulette-mask-bottom {
       position: absolute;
@@ -1096,6 +1109,26 @@
       background: linear-gradient(0deg, rgba(10, 10, 13, 0.88) 0%, rgba(10, 10, 13, 0) 100%);
     }
 
+    .roulette-widget.is-horizontal .roulette-mask-top,
+    .roulette-widget.is-horizontal .roulette-mask-bottom {
+      top: 0;
+      bottom: 0;
+      height: 100%;
+      width: 84px;
+    }
+
+    .roulette-widget.is-horizontal .roulette-mask-top {
+      left: 0;
+      right: auto;
+      background: linear-gradient(90deg, rgba(10, 10, 13, 0.9) 0%, rgba(10, 10, 13, 0) 100%);
+    }
+
+    .roulette-widget.is-horizontal .roulette-mask-bottom {
+      right: 0;
+      left: auto;
+      background: linear-gradient(270deg, rgba(10, 10, 13, 0.9) 0%, rgba(10, 10, 13, 0) 100%);
+    }
+
     .roulette-center-band {
       position: absolute;
       left: 0;
@@ -1108,6 +1141,20 @@
       pointer-events: none;
       z-index: 4;
       transition: border-color 0.18s ease, background-color 0.18s ease;
+    }
+
+    .roulette-widget.is-horizontal .roulette-center-band {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: 148px;
+      height: 100%;
+      transform: translateX(-50%);
+      border-top: none;
+      border-bottom: none;
+      border-left: 2px solid var(--widget-accent, var(--accent));
+      border-right: 2px solid var(--widget-accent, var(--accent));
     }
 
     .roulette-widget.is-landed .roulette-center-band {
@@ -1136,12 +1183,45 @@
       border-right: 9px solid var(--widget-accent, var(--accent));
     }
 
+    .roulette-widget.is-horizontal .roulette-pointer-left,
+    .roulette-widget.is-horizontal .roulette-pointer-right {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+    }
+
+    .roulette-widget.is-horizontal .roulette-pointer-left {
+      top: 2px;
+      bottom: auto;
+      border-top: 9px solid var(--widget-accent, var(--accent));
+      border-bottom: none;
+    }
+
+    .roulette-widget.is-horizontal .roulette-pointer-right {
+      top: auto;
+      bottom: 2px;
+      border-bottom: 9px solid var(--widget-accent, var(--accent));
+      border-top: none;
+    }
+
     .roulette-widget.is-landed .roulette-pointer-left {
       border-left-color: var(--ok);
     }
 
     .roulette-widget.is-landed .roulette-pointer-right {
       border-right-color: var(--ok);
+    }
+
+    .roulette-widget.is-horizontal.is-landed .roulette-pointer-left {
+      border-left-color: transparent;
+      border-top-color: var(--ok);
+    }
+
+    .roulette-widget.is-horizontal.is-landed .roulette-pointer-right {
+      border-right-color: transparent;
+      border-bottom-color: var(--ok);
     }
 
     .roulette-track {
@@ -1151,6 +1231,13 @@
       right: 0;
       will-change: transform;
       z-index: 2;
+    }
+
+    .roulette-widget.is-horizontal .roulette-track {
+      display: flex;
+      flex-direction: row;
+      right: auto;
+      height: 100%;
     }
 
     .roulette-slot {
@@ -1163,6 +1250,25 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       opacity: 0.56;
       transition: opacity 0.1s ease, color 0.1s ease;
+    }
+
+    .roulette-widget.roulette-hide-keys .roulette-slot {
+      justify-content: center;
+      text-align: center;
+    }
+
+    .roulette-widget.is-horizontal .roulette-slot {
+      width: 148px;
+      height: 112px;
+      flex-shrink: 0;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 10px;
+      border-bottom: none;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: center;
     }
 
     .roulette-slot.is-center {
@@ -1185,6 +1291,18 @@
       text-overflow: ellipsis;
     }
 
+    .roulette-widget.is-horizontal .roulette-slot-label {
+      flex: 0 1 auto;
+      width: 100%;
+      font-size: 14px;
+      line-height: 1.25;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
     .roulette-slot-key {
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
@@ -1195,6 +1313,10 @@
       border: 1px solid rgba(255, 255, 255, 0.18);
       background: rgba(255, 255, 255, 0.08);
       flex-shrink: 0;
+    }
+
+    .roulette-widget.roulette-hide-keys .roulette-slot-key {
+      display: none;
     }
 
     .roulette-slot.is-winner .roulette-slot-key {
@@ -1262,7 +1384,15 @@
 
     .gb-list.gb-vertical {
       flex-direction: column;
-      align-items: stretch;
+      align-items: flex-start;
+    }
+
+    .gb-list.gb-vertical.gb-pos-left {
+      align-items: flex-end;
+    }
+
+    .gb-list.gb-vertical.gb-pos-below {
+      align-items: center;
     }
 
     .gb-list.gb-horizontal {
@@ -1275,16 +1405,33 @@
     .gb-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--gb-text-gap, 10px);
       flex-shrink: 0;
     }
 
-    .gb-list.gb-horizontal .gb-item {
+    .gb-list.gb-pos-right .gb-item {
+      flex-direction: row;
+      text-align: left;
+    }
+
+    .gb-list.gb-pos-left .gb-item {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .gb-list.gb-pos-below .gb-item {
       flex-direction: column;
       justify-content: center;
-      gap: 4px;
       text-align: center;
       min-width: 64px;
+    }
+
+    .gb-list.gb-pos-left .gb-text-col {
+      align-items: flex-end;
+    }
+
+    .gb-list.gb-pos-below .gb-text-col {
+      align-items: center;
     }
 
     .gb-icon-wrap {
@@ -1697,7 +1844,11 @@
         showAvatars: ws.showAvatars !== undefined ? Boolean(ws.showAvatars) : (cfg.showAvatars !== false),
         textSize: Number.isFinite(Number(ws.textSize)) ? Math.max(14, Math.min(44, Math.round(Number(ws.textSize)))) : 24,
         iconSize: Number.isFinite(Number(ws.iconSize)) ? Math.max(32, Math.min(96, Math.round(Number(ws.iconSize)))) : 56,
-        itemGap: Number.isFinite(Number(ws.itemGap)) ? Math.max(6, Math.min(40, Math.round(Number(ws.itemGap)))) : 16,
+        itemGap: Number.isFinite(Number(ws.itemGap)) ? Math.max(4, Math.min(80, Math.round(Number(ws.itemGap)))) : 16,
+        textGap: Number.isFinite(Number(ws.textGap)) ? Math.max(0, Math.min(48, Math.round(Number(ws.textGap)))) : 10,
+        textPosition: ['left', 'right', 'below'].includes(String(ws.textPosition || '').toLowerCase())
+          ? String(ws.textPosition).toLowerCase()
+          : 'right',
         valueColor: ws.valueColor || defaultGbValColor,
         posColor: ws.posColor || '#4ADE80',
         negColor: ws.negColor || '#FB7185',
@@ -2082,6 +2233,7 @@
       root.classList.toggle('gift-spotlight-only', MODE === 'combo' || MODE === 'biggest');
       root.classList.toggle('jar-only', MODE === 'jar');
       root.classList.toggle('giftboard-only', MODE === 'giftboard_plus' || MODE === 'giftboard_minus' || MODE === 'giftboard');
+      root.classList.toggle('roulette-horiz-only', MODE === 'roulette' && cfg.rouletteLayout === 'horizontal');
       if (cfg.accentColor) {
         document.documentElement.style.setProperty('--accent', cfg.accentColor);
       }
@@ -2377,6 +2529,7 @@
         gbEl.style.setProperty('--gb-text-size', ws.textSize + 'px');
         gbEl.style.setProperty('--gb-icon-size', ws.iconSize + 'px');
         gbEl.style.setProperty('--gb-gap', ws.itemGap + 'px');
+        gbEl.style.setProperty('--gb-text-gap', ws.textGap + 'px');
 
         const boardTitle = isMinusBoard
           ? (cfg.giftBoardMinusTitle || 'Minus Gifts')
@@ -2388,8 +2541,12 @@
         const listEl = document.getElementById('gb-list');
         const boardLayout = isMinusBoard ? cfg.giftBoardMinusLayout : cfg.giftBoardPlusLayout;
         const isHoriz = boardLayout === 'horizontal';
+        const textPos = ws.textPosition || 'right';
         listEl.classList.toggle('gb-horizontal', isHoriz);
         listEl.classList.toggle('gb-vertical', !isHoriz);
+        listEl.classList.toggle('gb-pos-left', textPos === 'left');
+        listEl.classList.toggle('gb-pos-right', textPos === 'right');
+        listEl.classList.toggle('gb-pos-below', textPos === 'below');
 
         const showNames = Boolean(isMinusBoard ? cfg.giftBoardMinusShowNames : cfg.giftBoardPlusShowNames);
         const showSample = isMinusBoard
@@ -3108,8 +3265,9 @@
       ensureJarLoop();
     }
 
-    // 60 FPS Vertical Macro Roulette Reel Engine
+    // 60 FPS Vertical & Horizontal Macro Roulette Reel Engine
     const ROULETTE_ROW_H = 48;
+    const ROULETTE_COL_W = 148;
     const ROULETTE_IDLE_SAMPLES = [
       { id: 'idle_1', label: 'Jump', key: 'SPACE' },
       { id: 'idle_2', label: 'Drop Item', key: 'G' },
@@ -3121,7 +3279,10 @@
       activeSpinId: 0,
       rafId: null,
       targetRowIndex: 2,
-      endY: 0,
+      endOffset: 0,
+      isHorizontal: false,
+      showKeys: true,
+      viewportSize: 240,
       durationMs: 3000,
       startedAtLocal: 0,
       lastCenterIdx: -1,
@@ -3143,15 +3304,25 @@
       return v0 * split + (v0 * (1 - split) / 3) * (1 - Math.pow(1 - u, 3));
     }
 
-    function buildRouletteTrack(items, winnerIndex, isSpinning) {
+    function applyRouletteOffset(track, offset, isHoriz) {
+      if (!track) return;
+      if (isHoriz) {
+        track.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px,0,0)';
+      } else {
+        track.style.transform = 'translate3d(0,' + (-offset).toFixed(2) + 'px,0)';
+      }
+    }
+
+    function buildRouletteTrack(items, winnerIndex, isSpinning, isHoriz) {
       const track = document.getElementById('roulette-track');
       if (!track) return;
       const safeItems = Array.isArray(items) && items.length > 0 ? items : ROULETTE_IDLE_SAMPLES;
       const count = safeItems.length;
       const winIdx = Math.max(0, Math.min(count - 1, Number(winnerIndex) || 0));
-      const loops = isSpinning ? Math.max(5, Math.ceil(36 / count)) : 1;
-      const targetRow = isSpinning ? loops * count + winIdx : Math.max(2, count + winIdx);
-      const totalRows = targetRow + 5;
+      const loops = isSpinning ? Math.max(5, Math.ceil(36 / count)) : (isHoriz ? 2 : 1);
+      const minIdleIdx = isHoriz ? 4 : 2;
+      const targetRow = isSpinning ? loops * count + winIdx : Math.max(minIdleIdx, count + winIdx);
+      const totalRows = targetRow + 7;
 
       track.textContent = '';
       const frag = document.createDocumentFragment();
@@ -3177,7 +3348,16 @@
       track.appendChild(frag);
       rouletteEngine.rowEls = rowEls;
       rouletteEngine.targetRowIndex = targetRow;
-      rouletteEngine.endY = Math.max(0, (targetRow - 2) * ROULETTE_ROW_H);
+      rouletteEngine.isHorizontal = Boolean(isHoriz);
+      if (isHoriz) {
+        const vp = track.parentElement;
+        const vpW = (vp && vp.clientWidth) ? vp.clientWidth : 600;
+        rouletteEngine.viewportSize = vpW;
+        rouletteEngine.endOffset = Math.max(0, targetRow * ROULETTE_COL_W + ROULETTE_COL_W / 2 - vpW / 2);
+      } else {
+        rouletteEngine.viewportSize = 240;
+        rouletteEngine.endOffset = Math.max(0, (targetRow - 2) * ROULETTE_ROW_H);
+      }
       rouletteEngine.lastCenterIdx = -1;
     }
 
@@ -3204,13 +3384,18 @@
       const dur = Math.max(100, rouletteEngine.durationMs);
       const p = Math.min(1, elapsed / dur);
       const eased = rouletteEase(p);
-      const y = rouletteEngine.endY * eased;
-      track.style.transform = 'translate3d(0,' + (-y).toFixed(2) + 'px,0)';
+      const offset = rouletteEngine.endOffset * eased;
+      applyRouletteOffset(track, offset, rouletteEngine.isHorizontal);
 
-      const centerIdx = Math.min(
-        rouletteEngine.rowEls.length - 1,
-        Math.max(0, Math.round(y / ROULETTE_ROW_H) + 2)
-      );
+      const centerIdx = rouletteEngine.isHorizontal
+        ? Math.min(
+            rouletteEngine.rowEls.length - 1,
+            Math.max(0, Math.round((offset + rouletteEngine.viewportSize / 2 - ROULETTE_COL_W / 2) / ROULETTE_COL_W))
+          )
+        : Math.min(
+            rouletteEngine.rowEls.length - 1,
+            Math.max(0, Math.round(offset / ROULETTE_ROW_H) + 2)
+          );
       if (p >= 1) {
         rouletteEngine.rafId = null;
         rouletteEngine.landed = true;
@@ -3241,6 +3426,19 @@
       const lastSpin = rState.lastSpin || null;
       const qLen = Math.max(0, Number(rState.queueLength) || 0);
       const autoHide = cfg.rouletteAutoHide !== false;
+      const isHoriz = cfg.rouletteLayout === 'horizontal';
+      const showKeys = cfg.rouletteShowKeys !== false;
+      const layoutTag = isHoriz ? 'h' : 'v';
+      rouletteEngine.showKeys = showKeys;
+
+      el.classList.toggle('is-horizontal', isHoriz);
+      el.classList.toggle('roulette-hide-keys', !showKeys);
+
+      const customOverlayTitle = String(cfg.rouletteTitle || '').trim();
+      const resolveTitle = function (spinObj) {
+        if (customOverlayTitle && customOverlayTitle !== 'Macro Roulette') return customOverlayTitle;
+        return spinObj?.ruleName || customOverlayTitle || 'Macro Roulette';
+      };
 
       if (queuePill) {
         queuePill.classList.toggle('hidden', qLen <= 0);
@@ -3256,17 +3454,17 @@
         rouletteEngine.activeSpinId = 0;
 
         const displaySpin = lastSpin;
-        titleEl.textContent = displaySpin?.ruleName || cfg.rouletteTitle || 'Macro Roulette';
+        titleEl.textContent = resolveTitle(displaySpin);
         badgeEl.classList.remove('live', 'done', 'warn', 'sub');
         if (displaySpin && displaySpin.winner) {
           el.classList.add('is-landed');
           badgeEl.textContent = 'LAST HIT';
           badgeEl.classList.add('done');
-          const sig = 'idle_last_' + displaySpin.id;
+          const sig = 'idle_last_' + displaySpin.id + '_' + layoutTag;
           if (rouletteEngine.renderedSignature !== sig) {
             rouletteEngine.renderedSignature = sig;
-            buildRouletteTrack(displaySpin.items, displaySpin.winnerIndex, false);
-            track.style.transform = 'translate3d(0,' + (-rouletteEngine.endY).toFixed(2) + 'px,0)';
+            buildRouletteTrack(displaySpin.items, displaySpin.winnerIndex, false, isHoriz);
+            applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
             setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
           }
           trigBar.classList.remove('hidden');
@@ -3284,16 +3482,17 @@
           mSpan.textContent = displaySpin.giftName ? ' sent ' + displaySpin.giftName : ' spun roulette';
           trigText.appendChild(sSpan);
           trigText.appendChild(mSpan);
-          footerStatus.textContent = 'Winner: ' + displaySpin.winner.label + ' [' + displaySpin.winner.key + ']';
+          footerStatus.textContent =
+            'Winner: ' + displaySpin.winner.label + (showKeys ? ' [' + displaySpin.winner.key + ']' : '');
         } else {
           el.classList.remove('is-landed');
           badgeEl.textContent = 'READY';
           trigBar.classList.add('hidden');
-          const sig = 'idle_default';
+          const sig = 'idle_default_' + layoutTag;
           if (rouletteEngine.renderedSignature !== sig) {
             rouletteEngine.renderedSignature = sig;
-            buildRouletteTrack(ROULETTE_IDLE_SAMPLES, 2, false);
-            track.style.transform = 'translate3d(0,' + (-rouletteEngine.endY).toFixed(2) + 'px,0)';
+            buildRouletteTrack(ROULETTE_IDLE_SAMPLES, 2, false, isHoriz);
+            applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
             setRouletteCenterRow(rouletteEngine.targetRowIndex, false);
           }
           footerStatus.textContent = 'Waiting for gift trigger';
@@ -3303,7 +3502,7 @@
 
       // Active spin (spinning or landed hold)
       el.classList.remove('roulette-idle-hidden');
-      titleEl.textContent = activeSpin.ruleName || cfg.rouletteTitle || 'Macro Roulette';
+      titleEl.textContent = resolveTitle(activeSpin);
 
       trigBar.classList.remove('hidden');
       if (activeSpin.giftImageUrl && activeSpin.giftImageUrl.startsWith('https://')) {
@@ -3321,23 +3520,24 @@
       trigText.appendChild(senderNode);
       trigText.appendChild(giftNode);
 
-      const isNewSpin = activeSpin.id !== rouletteEngine.activeSpinId;
-      if (isNewSpin) {
+      const spinSig = 'spin_' + activeSpin.id + '_' + layoutTag;
+      const isNewSpinOrLayout = activeSpin.id !== rouletteEngine.activeSpinId || rouletteEngine.renderedSignature !== spinSig;
+      if (isNewSpinOrLayout) {
         if (rouletteEngine.rafId) {
           cancelAnimationFrame(rouletteEngine.rafId);
           rouletteEngine.rafId = null;
         }
         rouletteEngine.activeSpinId = activeSpin.id;
-        rouletteEngine.renderedSignature = 'spin_' + activeSpin.id;
+        rouletteEngine.renderedSignature = spinSig;
         rouletteEngine.durationMs = Math.max(100, Number(activeSpin.durationMs) || 3000);
         const serverNow = Number(rState.serverNow) || Date.now();
         const serverElapsed = activeSpin.startedAt ? Math.max(0, serverNow - Number(activeSpin.startedAt)) : 0;
         rouletteEngine.startedAtLocal = Date.now() - serverElapsed;
         rouletteEngine.landed = activeSpin.phase === 'landed';
 
-        buildRouletteTrack(activeSpin.items, activeSpin.winnerIndex, true);
+        buildRouletteTrack(activeSpin.items, activeSpin.winnerIndex, true, isHoriz);
         if (activeSpin.phase === 'landed') {
-          track.style.transform = 'translate3d(0,' + (-rouletteEngine.endY).toFixed(2) + 'px,0)';
+          applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
           setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
           el.classList.add('is-landed');
         } else {
@@ -3350,7 +3550,7 @@
           rouletteEngine.rafId = null;
         }
         rouletteEngine.landed = true;
-        track.style.transform = 'translate3d(0,' + (-rouletteEngine.endY).toFixed(2) + 'px,0)';
+        applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
         setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
         el.classList.add('is-landed');
       }
@@ -3360,7 +3560,8 @@
         badgeEl.textContent = 'WINNER';
         badgeEl.classList.add('done');
         const w = activeSpin.winner || {};
-        footerStatus.textContent = 'Triggered: ' + (w.label || 'Macro') + ' [' + (w.key || 'KEY') + ']';
+        footerStatus.textContent =
+          'Triggered: ' + (w.label || 'Macro') + (showKeys ? ' [' + (w.key || 'KEY') + ']' : '');
       } else {
         badgeEl.textContent = 'SPINNING';
         badgeEl.classList.add('live');
