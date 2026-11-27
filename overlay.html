@@ -2813,14 +2813,14 @@
       { giftName: 'Lion', unitCoins: 29999, count: 1, user: 'kinggifter', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4fb89af2082a290b37d704e20f4fe729~tplv-obj.webp' },
     ];
 
-    const JAR_HARD_BODY_LIMIT = 500;
     const JAR_MAX_IMG_CACHE = 250;
-    const JAR_MAX_PENDING_DROPS = 120;
 
     const jarEngine = {
       bodies: [],
       pendingDrops: [],
       imgCache: new Map(),
+      gridHead: null,
+      gridNext: null,
       lastEventId: 0,
       lastResetSeq: -1,
       initialized: false,
@@ -2829,8 +2829,6 @@
       iconScale: 1.45,
       spillWidth: 120,
       fitZoom: 1,
-      maxItems: 160,
-      evictCooldown: 0,
       showToast: true,
       demoEnabled: false,
       pointsUnit: 'Coins',
@@ -2910,21 +2908,6 @@
         b.px = b.x;
         b.py = b.y;
       }
-    }
-
-    function findLeastValueJarIndex(bodies, excludeFresh) {
-      let bestIdx = -1;
-      let bestCoins = Infinity;
-      for (let i = 0; i < bodies.length; i++) {
-        const b = bodies[i];
-        if (excludeFresh && (b.age || 0) < 55) continue;
-        const c = Number(b.unitCoins) || 0;
-        if (c < bestCoins) {
-          bestCoins = c;
-          bestIdx = i;
-        }
-      }
-      return bestIdx;
     }
 
     function jarRadiusForCoins(unitCoins, iconScaleOverride, jarScaleOverride) {
@@ -3036,13 +3019,6 @@
       const leftWall = ox + 42 * s;
       const rightWall = ox + 278 * s;
       const bottomY = 356 * s;
-      const bodyLimit = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Number(jarEngine.maxItems) || 160));
-      while (jarEngine.bodies.length >= bodyLimit) {
-        let evictIdx = findLeastValueJarIndex(jarEngine.bodies, true);
-        if (evictIdx < 0) evictIdx = findLeastValueJarIndex(jarEngine.bodies, false);
-        if (evictIdx < 0) break;
-        jarEngine.bodies.splice(evictIdx, 1);
-      }
       if (item.imageUrl) getJarCachedImg(item.imageUrl);
       const halfMouth = Math.max(10, 62 * s - Math.min(r, 48 * s));
       const innerMinX = leftWall + r + 8;
@@ -3078,8 +3054,7 @@
     function enqueueJarDrop(ev, silentReplay) {
       const cnt = Math.max(1, Math.min(14, Number(ev.count) || 1));
       if (silentReplay) {
-        const capReplay = Math.min(cnt, 6);
-        for (let i = 0; i < capReplay; i++) {
+        for (let i = 0; i < cnt; i++) {
           spawnJarBody(ev, true);
         }
         return;
@@ -3092,20 +3067,79 @@
           unitCoins: Number(ev.unitCoins) || 0,
         });
       }
-      if (jarEngine.pendingDrops.length > JAR_MAX_PENDING_DROPS) {
-        jarEngine.pendingDrops.splice(0, jarEngine.pendingDrops.length - JAR_MAX_PENDING_DROPS);
+    }
+
+    function resolveJarPair(a, b, rimY, iter) {
+      if ((!a.spilled) !== (!b.spilled) && (a.y > rimY || b.y > rimY)) return;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const minD = a.r + b.r;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < minD * minD && distSq > 0.0001) {
+        const dist = Math.sqrt(distSq);
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const overlap = minD - dist;
+        const invSum = a.invMass + b.invMass;
+        const corrA = (overlap * a.invMass) / invSum;
+        const corrB = (overlap * b.invMass) / invSum;
+        a.x -= nx * corrA;
+        a.y -= ny * corrA;
+        b.x += nx * corrB;
+        b.y += ny * corrB;
+        a.contacts += 1;
+        b.contacts += 1;
+
+        const rvx = b.vx - a.vx;
+        const rvy = b.vy - a.vy;
+        const vn = rvx * nx + rvy * ny;
+        if (vn < 0) {
+          const restitution = vn < -95 ? 0.2 : 0;
+          const imp = (-(1 + restitution) * vn) / invSum;
+          a.vx -= imp * nx * a.invMass;
+          a.vy -= imp * ny * a.invMass;
+          b.vx += imp * nx * b.invMass;
+          b.vy += imp * ny * b.invMass;
+
+          if (iter === 0) {
+            const tx = -ny;
+            const ty = nx;
+            const vt = rvx * tx + rvy * ty;
+            if (Math.abs(vn) > 38 || Math.abs(vt) > 32) {
+              const vSurf = vt - a.omega * a.r - b.omega * b.r;
+              const maxJt = Math.abs(imp) * 0.25;
+              const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.35) / invSum));
+              a.vx -= jt * tx * a.invMass;
+              a.vy -= jt * ty * a.invMass;
+              b.vx += jt * tx * b.invMass;
+              b.vy += jt * ty * b.invMass;
+              a.omega -= ((jt * a.invMass) / Math.max(14, a.r)) * 0.7;
+              b.omega -= ((jt * b.invMass) / Math.max(14, b.r)) * 0.7;
+            } else {
+              a.vx *= 0.94;
+              b.vx *= 0.94;
+              a.omega *= 0.78;
+              b.omega *= 0.78;
+            }
+          }
+        }
       }
     }
 
     function stepJarPhysics(dt) {
-      const substeps = 2;
+      const bodies = jarEngine.bodies;
+      const n = bodies.length;
+      if (n === 0) return;
+      const substeps = n > 200 ? 1 : 2;
       const sdt = Math.min(0.033, dt) / substeps;
       const gravity = 960;
       const scale = getJarScale();
+      const iconScale = getJarIconScale();
       const spillPx = getJarSpillWidth();
       const allowSpill = spillPx > 0;
       const ox = spillPx;
       const worldW = 320 * scale + spillPx * 2;
+      const worldH = 380 * scale;
       const cx = ox + 160 * scale;
       const leftWall = ox + 42 * scale;
       const rightWall = ox + 278 * scale;
@@ -3115,12 +3149,31 @@
       const neckY = 98 * scale;
       const rimY = 68 * scale;
       const rimLipY = 54 * scale;
-      const overflowY = 96 * scale;
       const blCx = leftWall + cornerR;
       const brCx = rightWall - cornerR;
       const bCy = bottomY - cornerR;
-      const bodies = jarEngine.bodies;
-      const n = bodies.length;
+      const solverIters = n > 300 ? 2 : n > 100 ? 3 : 4;
+      // Keep spatial grid cell size tuned to common gifts; handle oversized gifts (e.g. Lion/Galaxy) separately so 1 giant gift never coarsens the grid
+      const cellSize = Math.max(30, Math.round(32 * iconScale));
+      const halfCell = cellSize * 0.5;
+      const invCell = 1 / cellSize;
+      const cols = Math.max(1, Math.ceil(worldW * invCell));
+      const rows = Math.max(1, Math.ceil(worldH * invCell));
+      const numCells = cols * rows;
+      const useGrid = n > 48 && numCells > 4;
+      let head = null;
+      let next = null;
+      const bigIndices = [];
+      if (useGrid) {
+        if (!jarEngine.gridHead || jarEngine.gridHead.length < numCells) {
+          jarEngine.gridHead = new Int32Array(numCells);
+        }
+        if (!jarEngine.gridNext || jarEngine.gridNext.length < n) {
+          jarEngine.gridNext = new Int32Array(Math.max(256, n * 2));
+        }
+        head = jarEngine.gridHead;
+        next = jarEngine.gridNext;
+      }
 
       for (let s = 0; s < substeps; s++) {
         for (let i = 0; i < n; i++) {
@@ -3143,67 +3196,89 @@
           b.angle += b.omega * sdt;
         }
 
-        // Pairwise circle-circle collision resolution
-        for (let iter = 0; iter < 6; iter++) {
+        // Build spatial grid ONCE per substep (small gifts in tight grid, rare giant gifts checked directly)
+        if (useGrid) {
+          head.fill(-1, 0, numCells);
+          bigIndices.length = 0;
           for (let i = 0; i < n; i++) {
-            const a = bodies[i];
-            for (let j = i + 1; j < n; j++) {
-              const b = bodies[j];
-              // Glass walls separate inside gifts from spilled outside gifts below the mouth lip
-              if ((!a.spilled) !== (!b.spilled) && (a.y > rimY || b.y > rimY)) continue;
-              const dx = b.x - a.x;
-              const dy = b.y - a.y;
-              const minD = a.r + b.r;
-              const distSq = dx * dx + dy * dy;
-              if (distSq < minD * minD && distSq > 0.0001) {
-                const dist = Math.sqrt(distSq);
-                const nx = dx / dist;
-                const ny = dy / dist;
-                const overlap = minD - dist;
-                const invSum = a.invMass + b.invMass;
-                const corrA = (overlap * a.invMass) / invSum;
-                const corrB = (overlap * b.invMass) / invSum;
-                a.x -= nx * corrA;
-                a.y -= ny * corrA;
-                b.x += nx * corrB;
-                b.y += ny * corrB;
-                a.contacts += 1;
-                b.contacts += 1;
+            const b = bodies[i];
+            if (b.r > halfCell) {
+              bigIndices.push(i);
+              continue;
+            }
+            let gx = Math.floor(b.x * invCell);
+            let gy = Math.floor(b.y * invCell);
+            if (gx < 0) gx = 0;
+            else if (gx >= cols) gx = cols - 1;
+            if (gy < 0) gy = 0;
+            else if (gy >= rows) gy = rows - 1;
+            const cellIdx = gy * cols + gx;
+            next[i] = head[cellIdx];
+            head[cellIdx] = i;
+          }
+        }
 
-                const rvx = b.vx - a.vx;
-                const rvy = b.vy - a.vy;
-                const vn = rvx * nx + rvy * ny;
-                if (vn < 0) {
-                  const restitution = vn < -95 ? 0.2 : 0;
-                  const imp = (-(1 + restitution) * vn) / invSum;
-                  a.vx -= imp * nx * a.invMass;
-                  a.vy -= imp * ny * a.invMass;
-                  b.vx += imp * nx * b.invMass;
-                  b.vy += imp * ny * b.invMass;
-
-                  // Energy-dissipative surface friction only on first iteration (prevents resting spin-up)
-                  if (iter === 0) {
-                    const tx = -ny;
-                    const ty = nx;
-                    const vt = rvx * tx + rvy * ty;
-                    if (Math.abs(vn) > 38 || Math.abs(vt) > 32) {
-                      const vSurf = vt - a.omega * a.r - b.omega * b.r;
-                      const maxJt = Math.abs(imp) * 0.25;
-                      const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.35) / invSum));
-                      a.vx -= jt * tx * a.invMass;
-                      a.vy -= jt * ty * a.invMass;
-                      b.vx += jt * tx * b.invMass;
-                      b.vy += jt * ty * b.invMass;
-                      a.omega -= ((jt * a.invMass) / Math.max(14, a.r)) * 0.7;
-                      b.omega -= ((jt * b.invMass) / Math.max(14, b.r)) * 0.7;
-                    } else {
-                      a.vx *= 0.94;
-                      b.vx *= 0.94;
-                      a.omega *= 0.78;
-                      b.omega *= 0.78;
-                    }
+        for (let iter = 0; iter < solverIters; iter++) {
+          if (!useGrid) {
+            for (let i = 0; i < n; i++) {
+              const a = bodies[i];
+              for (let j = i + 1; j < n; j++) {
+                resolveJarPair(a, bodies[j], rimY, iter);
+              }
+            }
+          } else {
+            for (let gy = 0; gy < rows; gy++) {
+              const rowOff = gy * cols;
+              const nextRowOff = rowOff + cols;
+              const hasNextRow = gy + 1 < rows;
+              for (let gx = 0; gx < cols; gx++) {
+                const cellIdx = rowOff + gx;
+                let i = head[cellIdx];
+                if (i === -1) continue;
+                const rightHead = gx + 1 < cols ? head[cellIdx + 1] : -1;
+                const dlHead = hasNextRow && gx > 0 ? head[nextRowOff + gx - 1] : -1;
+                const dHead = hasNextRow ? head[nextRowOff + gx] : -1;
+                const drHead = hasNextRow && gx + 1 < cols ? head[nextRowOff + gx + 1] : -1;
+                while (i !== -1) {
+                  const a = bodies[i];
+                  let j = next[i];
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
                   }
+                  j = rightHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  j = dlHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  j = dHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  j = drHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  i = next[i];
                 }
+              }
+            }
+            const bigLen = bigIndices.length;
+            for (let bi = 0; bi < bigLen; bi++) {
+              const idx = bigIndices[bi];
+              const a = bodies[idx];
+              for (let j = 0; j < n; j++) {
+                if (j === idx) continue;
+                const b = bodies[j];
+                if (b.r > halfCell && j < idx) continue;
+                resolveJarPair(a, b, rimY, iter);
               }
             }
           }
@@ -3396,29 +3471,6 @@
       for (let i = 0; i < bodies.length; i++) {
         bodies[i].age = (bodies[i].age || 0) + 1;
       }
-
-      // Overflow eviction:
-      // - When jarSpillWidth === 0 (contained mode): evict least-value gift when pile reaches neck.
-      // - When jarSpillWidth > 0 (overflow spill mode): let gifts spill out freely; only evict if spilled stacks fill all the way to the top!
-      if (jarEngine.evictCooldown > 0) {
-        jarEngine.evictCooldown -= 1;
-      } else if (bodies.length > 1) {
-        const isOverflowing = allowSpill
-          ? bodies.some(function (b) {
-              return b.spilled && (b.age || 0) > 90 && b.contacts > 0 && Math.abs(b.vy) <= 25 && (b.y - b.r) < rimY;
-            })
-          : bodies.some(function (b) {
-              return (b.age || 0) > 55 && b.contacts > 0 && b.vy <= 35 && (b.y - b.r) < overflowY;
-            });
-        if (isOverflowing) {
-          let evictIdx = findLeastValueJarIndex(bodies, true);
-          if (evictIdx < 0) evictIdx = findLeastValueJarIndex(bodies, false);
-          if (evictIdx >= 0) {
-            bodies.splice(evictIdx, 1);
-            jarEngine.evictCooldown = 2;
-          }
-        }
-      }
     }
 
     function drawJarBody(ctx, b) {
@@ -3532,9 +3584,11 @@
       jarEngine.lastTime = ts;
 
       if (jarEngine.pendingDrops.length > 0 && ts >= jarEngine.nextSpawnAt) {
-        const nextItem = jarEngine.pendingDrops.shift();
-        spawnJarBody(nextItem, false);
-        jarEngine.nextSpawnAt = ts + 65;
+        const burstCount = jarEngine.pendingDrops.length > 100 ? 2 : 1;
+        for (let k = 0; k < burstCount && jarEngine.pendingDrops.length > 0; k++) {
+          spawnJarBody(jarEngine.pendingDrops.shift(), false);
+        }
+        jarEngine.nextSpawnAt = ts + (jarEngine.pendingDrops.length > 30 ? 20 : 65);
       }
 
       stepJarPhysics(dt);
@@ -3579,7 +3633,6 @@
     function syncJarOverlayState(state, cfg, pointsUnit) {
       jarEngine.showToast = cfg.jarShowToast !== false;
       jarEngine.pointsUnit = pointsUnit || 'Coins';
-      jarEngine.maxItems = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Math.round(Number(cfg.jarMaxItems) || 160)));
       updateJarDemoLoop(Boolean(cfg.jarShowDemo));
 
       const jarData = state.jar || { events: [], resetSeq: 0 };
