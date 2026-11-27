@@ -207,9 +207,13 @@
     }
 
     /* Realistic Glass Mason Gift Jar + Floating Donation Toast */
+    .root.jar-only {
+      padding: 4px;
+    }
+
     .jar-widget {
       overflow: visible !important;
-      padding: 4px 0 6px;
+      padding: 2px 0 4px;
     }
 
     .jar-top-title {
@@ -247,6 +251,8 @@
       height: 100%;
       pointer-events: none;
       display: block;
+      opacity: var(--jar-glass-opacity, 0.85);
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.65));
     }
 
     .jar-canvas {
@@ -263,15 +269,15 @@
       left: 50%;
       top: 10px;
       z-index: 6;
-      max-width: 356px;
+      max-width: 420px;
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 8px 13px 8px 9px;
       border-radius: 14px;
-      background: rgba(18, 18, 22, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+      background: rgba(14, 14, 18, 0.94);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       color: #FAFAFA;
       font-size: 13px;
       font-weight: 700;
@@ -279,13 +285,14 @@
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
-      transform: translate(-50%, -8px) scale(0.96);
+      transform-origin: center top;
+      transform: translate(-50%, -8px) scale(calc(var(--jar-toast-scale, 1.15) * 0.96));
       transition: opacity 220ms ease, transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .jar-toast.visible {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
+      transform: translate(-50%, 0) scale(var(--jar-toast-scale, 1.15));
     }
 
     .jar-toast-avatar {
@@ -1659,15 +1666,15 @@
           <svg id="jar-svg-back" class="jar-svg-layer" viewBox="0 0 320 380" fill="none" aria-hidden="true">
             <defs>
               <linearGradient id="jarGlassBackGrad" x1="34" y1="70" x2="286" y2="362" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="rgba(255,255,255,0.16)"/>
-                <stop offset="28%" stop-color="rgba(215,224,235,0.06)"/>
-                <stop offset="72%" stop-color="rgba(215,224,235,0.05)"/>
-                <stop offset="100%" stop-color="rgba(255,255,255,0.15)"/>
+                <stop offset="0%" stop-color="rgba(20,24,34,0.34)"/>
+                <stop offset="28%" stop-color="rgba(16,20,28,0.22)"/>
+                <stop offset="72%" stop-color="rgba(16,20,28,0.22)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.20)"/>
               </linearGradient>
               <linearGradient id="jarMouthGrad" x1="76" y1="30" x2="244" y2="74" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="rgba(255,255,255,0.28)"/>
-                <stop offset="50%" stop-color="rgba(180,192,208,0.14)"/>
-                <stop offset="100%" stop-color="rgba(255,255,255,0.28)"/>
+                <stop offset="0%" stop-color="rgba(255,255,255,0.36)"/>
+                <stop offset="50%" stop-color="rgba(180,192,208,0.22)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.36)"/>
               </linearGradient>
             </defs>
             <!-- Outer glass silhouette -->
@@ -1713,7 +1720,7 @@
             <!-- Thick curved glass bottom reflection -->
             <path d="M62 344 C94 362 226 362 258 344" stroke="rgba(255,255,255,0.42)" stroke-width="3.5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
             <!-- Main outer glass border stroke -->
-            <path id="jar-glass-outline" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66" stroke="rgba(255,255,255,0.52)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            <path id="jar-glass-outline" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66" stroke="rgba(255,255,255,0.82)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
           </svg>
 
           <!-- Spilled Gifts Layer (draws overflowing gifts tumbling over the rim & rolling outside the glass) -->
@@ -2441,23 +2448,50 @@
         const jarTitleEl = document.getElementById('jar-title');
         jarTitleEl.textContent = cfg.jarTitle || 'Gift Jar';
         jarTitleEl.classList.toggle('hidden', !ws.showTitle);
-        const jarScalePct = Math.max(100, Math.min(200, Math.round(Number(cfg.jarScale) || 100)));
+        const jarScalePct = Math.max(100, Math.min(250, Math.round(Number(cfg.jarScale) || 100)));
         const nextJarScale = jarScalePct / 100;
+        const nextIconScalePct =
+          cfg.jarIconScale !== undefined && cfg.jarIconScale !== null && Number.isFinite(Number(cfg.jarIconScale))
+            ? Math.max(50, Math.min(250, Math.round(Number(cfg.jarIconScale))))
+            : 145;
+        const nextIconScale = nextIconScalePct / 100;
+        const nextGlassOpacity =
+          cfg.jarGlassOpacity !== undefined && cfg.jarGlassOpacity !== null && Number.isFinite(Number(cfg.jarGlassOpacity))
+            ? Math.max(25, Math.min(100, Math.round(Number(cfg.jarGlassOpacity)))) / 100
+            : 0.85;
+        const nextToastScale =
+          cfg.jarToastScale !== undefined && cfg.jarToastScale !== null && Number.isFinite(Number(cfg.jarToastScale))
+            ? Math.max(75, Math.min(160, Math.round(Number(cfg.jarToastScale)))) / 100
+            : 1.15;
         const nextSpillWidth =
           cfg.jarSpillWidth !== undefined && cfg.jarSpillWidth !== null && Number.isFinite(Number(cfg.jarSpillWidth))
             ? Math.max(0, Math.min(480, Math.round(Number(cfg.jarSpillWidth))))
-            : 180;
-        if (Math.abs(nextJarScale - jarEngine.scale) > 0.0001 || nextSpillWidth !== jarEngine.spillWidth) {
-          resizeJarBodies(jarEngine.bodies, jarEngine.scale, nextJarScale, jarEngine.spillWidth, nextSpillWidth);
+            : 120;
+        if (
+          Math.abs(nextJarScale - jarEngine.scale) > 0.0001 ||
+          nextSpillWidth !== jarEngine.spillWidth ||
+          Math.abs(nextIconScale - jarEngine.iconScale) > 0.0001
+        ) {
+          resizeJarBodies(
+            jarEngine.bodies,
+            jarEngine.scale,
+            nextJarScale,
+            jarEngine.spillWidth,
+            nextSpillWidth,
+            nextIconScale
+          );
           jarEngine.scale = nextJarScale;
           jarEngine.spillWidth = nextSpillWidth;
+          jarEngine.iconScale = nextIconScale;
         }
         const jarW = Math.round(320 * nextJarScale);
         const vesselH = Math.round(380 * nextJarScale);
         const vesselW = jarW + nextSpillWidth * 2;
-        const stageW = Math.max(vesselW, jarW + 48);
+        const stageW = Math.max(vesselW, jarW + 16);
         const jarStageEl = jarEl.querySelector('.jar-stage');
         const jarVesselEl = jarEl.querySelector('.jar-vessel');
+        jarEl.style.setProperty('--jar-glass-opacity', nextGlassOpacity.toFixed(2));
+        jarEl.style.setProperty('--jar-toast-scale', nextToastScale.toFixed(2));
         if (jarStageEl) {
           jarStageEl.style.width = stageW + 'px';
           jarStageEl.style.height = vesselH + 'px';
@@ -2470,7 +2504,7 @@
           jarVesselEl.style.transform = '';
         }
         if (MODE === 'jar') {
-          root.style.width = (stageW + 24) + 'px';
+          root.style.width = (stageW + 8) + 'px';
         } else {
           root.style.width = '';
         }
@@ -2478,12 +2512,15 @@
         if (outlineEl) {
           if (ws.borderMode === 'neon') {
             outlineEl.setAttribute('stroke', ws.borderColor || '#38BDF8');
-            outlineEl.style.filter = 'drop-shadow(0 0 6px ' + (ws.borderColor || '#38BDF8') + ')';
+            outlineEl.setAttribute('stroke-width', '3.5');
+            outlineEl.style.filter = 'drop-shadow(0 0 8px ' + (ws.borderColor || '#38BDF8') + ')';
           } else if (ws.borderMode === 'solid') {
-            outlineEl.setAttribute('stroke', ws.borderColor || 'rgba(255,255,255,0.65)');
+            outlineEl.setAttribute('stroke', ws.borderColor || 'rgba(255,255,255,0.88)');
+            outlineEl.setAttribute('stroke-width', '3.2');
             outlineEl.style.filter = '';
           } else {
-            outlineEl.setAttribute('stroke', 'rgba(255,255,255,0.52)');
+            outlineEl.setAttribute('stroke', 'rgba(255,255,255,0.82)');
+            outlineEl.setAttribute('stroke-width', '3');
             outlineEl.style.filter = '';
           }
         }
@@ -2789,7 +2826,9 @@
       initialized: false,
       running: false,
       scale: 1,
-      spillWidth: 180,
+      iconScale: 1.45,
+      spillWidth: 120,
+      fitZoom: 1,
       maxItems: 160,
       evictCooldown: 0,
       showToast: true,
@@ -2803,12 +2842,17 @@
     };
 
     function getJarScale() {
-      return Math.max(1, Math.min(2, Number(jarEngine.scale) || 1));
+      return Math.max(1, Math.min(2.5, Number(jarEngine.scale) || 1));
+    }
+
+    function getJarIconScale() {
+      const raw = Number(jarEngine.iconScale);
+      return Number.isFinite(raw) ? Math.max(0.5, Math.min(2.5, raw)) : 1.45;
     }
 
     function getJarSpillWidth() {
       const raw = Number(jarEngine.spillWidth);
-      return Number.isFinite(raw) ? Math.max(0, Math.min(480, Math.round(raw))) : 180;
+      return Number.isFinite(raw) ? Math.max(0, Math.min(480, Math.round(raw))) : 120;
     }
 
     function getJarOuterHalfW(y, scale) {
@@ -2821,12 +2865,14 @@
       return 124 * scale;
     }
 
-    function resizeJarBodies(bodies, prevScale, nextScale, prevSpillArg, nextSpillArg) {
-      const ps = Math.max(1, Math.min(2, Number(prevScale) || 1));
-      const ns = Math.max(1, Math.min(2, Number(nextScale) || 1));
+    function resizeJarBodies(bodies, prevScale, nextScale, prevSpillArg, nextSpillArg, nextIconScaleArg) {
+      const ps = Math.max(1, Math.min(2.5, Number(prevScale) || 1));
+      const ns = Math.max(1, Math.min(2.5, Number(nextScale) || 1));
       const pSpill = prevSpillArg !== undefined ? Math.max(0, Math.min(480, Math.round(Number(prevSpillArg) || 0))) : getJarSpillWidth();
       const nSpill = nextSpillArg !== undefined ? Math.max(0, Math.min(480, Math.round(Number(nextSpillArg) || 0))) : pSpill;
-      if (!Array.isArray(bodies) || (Math.abs(ns - ps) < 0.0001 && pSpill === nSpill)) return;
+      const hasIconScaleChange = nextIconScaleArg !== undefined && Math.abs(Number(nextIconScaleArg) - getJarIconScale()) > 0.0001;
+      const nIconScale = nextIconScaleArg !== undefined ? Math.max(0.5, Math.min(2.5, Number(nextIconScaleArg) || 1.45)) : getJarIconScale();
+      if (!Array.isArray(bodies) || (Math.abs(ns - ps) < 0.0001 && pSpill === nSpill && !hasIconScaleChange)) return;
       const prevCx = pSpill + 160 * ps;
       const nextCx = nSpill + 160 * ns;
       const prevBottom = 356 * ps;
@@ -2838,6 +2884,11 @@
       const nextWorldW = 320 * ns + nSpill * 2;
       for (let i = 0; i < bodies.length; i++) {
         const b = bodies[i];
+        if (hasIconScaleChange) {
+          const nextR = jarRadiusForCoins(b.unitCoins, nIconScale, ns);
+          b.r = nextR;
+          b.invMass = 1 / (nextR * nextR);
+        }
         if (b.spilled && nSpill > 0) {
           const shiftedX = nextCx + (b.x - prevCx);
           b.x = Math.max(b.r, Math.min(nextWorldW - b.r, shiftedX));
@@ -2876,14 +2927,18 @@
       return bestIdx;
     }
 
-    function jarRadiusForCoins(unitCoins) {
+    function jarRadiusForCoins(unitCoins, iconScaleOverride, jarScaleOverride) {
       const c = Math.max(0, Number(unitCoins) || 0);
-      if (c >= 5000) return 52;
-      if (c >= 1000) return 38;
-      if (c >= 200) return 27;
-      if (c >= 50) return 22;
-      if (c >= 10) return 17;
-      return 13.5;
+      let baseR = 13.5;
+      if (c >= 5000) baseR = 52;
+      else if (c >= 1000) baseR = 38;
+      else if (c >= 200) baseR = 27;
+      else if (c >= 50) baseR = 22;
+      else if (c >= 10) baseR = 17;
+      const iScale = iconScaleOverride !== undefined ? Math.max(0.5, Math.min(2.5, Number(iconScaleOverride) || 1.45)) : getJarIconScale();
+      const jScale = jarScaleOverride !== undefined ? Math.max(1, Math.min(2.5, Number(jarScaleOverride) || 1)) : getJarScale();
+      const maxSafeR = 68 * jScale;
+      return Math.min(maxSafeR, Math.round(baseR * iScale * 10) / 10);
     }
 
     function getJarCachedImg(url) {
@@ -3394,7 +3449,7 @@
       const ox = getJarSpillWidth();
       const worldW = Math.round(320 * s) + ox * 2;
       const worldH = Math.round(380 * s);
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const dpr = Math.min(3, (window.devicePixelRatio || 1) * Math.max(1, Number(jarEngine.fitZoom) || 1));
       const targetW = Math.round(worldW * dpr);
       const targetH = Math.round(worldH * dpr);
       if (canvas.width !== targetW || canvas.height !== targetH) {
@@ -3888,8 +3943,11 @@
       root.style.transform = '';
       const natW = Math.max(1, root.offsetWidth || 0, root.scrollWidth || 0);
       const natH = Math.max(1, root.offsetHeight || 0, root.scrollHeight || 0);
-      const maxScale = MODE === 'jar' ? 1 : 6;
+      const maxScale = 6;
       const scale = Math.max(0.25, Math.min(maxScale, Math.min(vw / natW, vh / natH)));
+      if (MODE === 'jar') {
+        jarEngine.fitZoom = scale;
+      }
       const nextScale = scale.toFixed(4);
       if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '1.5')) {
         if (prevZoom !== nextScale || root.style.zoom !== nextScale) {
