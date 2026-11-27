@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; connect-src wss://eqcimeczulbkmatdbnie.supabase.co;" />
   <title>StreamForge Overlay — all</title>
   <style>
     :root {
@@ -74,36 +76,49 @@
       padding: 18px;
     }
 
+    body.standalone-fit .root.wins-only,
     .root.wins-only {
       width: 196px;
     }
 
+    body.standalone-fit .root.compact.wins-only,
     .root.compact.wins-only {
       width: 168px;
     }
 
+    body.standalone-fit .root.wins-vertical-only,
     .root.wins-vertical-only {
       width: 132px;
     }
 
+    body.standalone-fit .root.compact.wins-vertical-only,
     .root.compact.wins-vertical-only {
       width: 116px;
     }
 
+    body.standalone-fit .root.gift-spotlight-only,
     .root.gift-spotlight-only {
       width: 236px;
     }
 
+    body.standalone-fit .root.compact.gift-spotlight-only,
     .root.compact.gift-spotlight-only {
       width: 204px;
     }
 
+    body.standalone-fit .root.jar-only,
     .root.jar-only {
       width: 392px;
     }
 
+    body.standalone-fit .root.compact.jar-only,
     .root.compact.jar-only {
       width: 344px;
+    }
+
+    .root.all-wide-roulette {
+      width: 636px;
+      max-width: none;
     }
 
     /* Like Goal & Follower Goal Bar */
@@ -226,8 +241,9 @@
 
     .jar-svg-layer {
       position: absolute;
-      inset: 0;
-      width: 100%;
+      left: var(--jar-ox, 0px);
+      top: 0;
+      width: var(--jar-w, 320px);
       height: 100%;
       pointer-events: none;
       display: block;
@@ -239,12 +255,13 @@
       width: 100%;
       height: 100%;
       display: block;
+      pointer-events: none;
     }
 
     .jar-toast {
       position: absolute;
-      left: 0;
-      top: 132px;
+      left: 50%;
+      top: 10px;
       z-index: 6;
       max-width: 356px;
       display: inline-flex;
@@ -262,13 +279,13 @@
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
-      transform: translateX(-14px) scale(0.96);
+      transform: translate(-50%, -8px) scale(0.96);
       transition: opacity 220ms ease, transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .jar-toast.visible {
       opacity: 1;
-      transform: translateX(0) scale(1);
+      transform: translate(-50%, 0) scale(1);
     }
 
     .jar-toast-avatar {
@@ -1026,6 +1043,8 @@
     }
 
     /* Vertical & Horizontal Macro Roulette Widget */
+    body.standalone-fit .root.roulette-horiz-only,
+    body.standalone-fit .root.compact.roulette-horiz-only,
     .root.roulette-horiz-only {
       width: auto;
       max-width: none;
@@ -1349,6 +1368,8 @@
     }
 
     /* Gift Board (+/-) Vertical & Horizontal Widget */
+    body.standalone-fit .root.giftboard-only,
+    body.standalone-fit .root.compact.giftboard-only,
     .root.giftboard-only {
       width: auto;
       max-width: none;
@@ -1391,6 +1412,8 @@
       align-items: flex-end;
     }
 
+    .gb-list.gb-vertical.gb-pos-top,
+    .gb-list.gb-vertical.gb-pos-bottom,
     .gb-list.gb-vertical.gb-pos-below {
       align-items: center;
     }
@@ -1419,6 +1442,14 @@
       text-align: right;
     }
 
+    .gb-list.gb-pos-top .gb-item {
+      flex-direction: column-reverse;
+      justify-content: center;
+      text-align: center;
+      min-width: 64px;
+    }
+
+    .gb-list.gb-pos-bottom .gb-item,
     .gb-list.gb-pos-below .gb-item {
       flex-direction: column;
       justify-content: center;
@@ -1426,10 +1457,16 @@
       min-width: 64px;
     }
 
+    .gb-list.gb-pos-right .gb-text-col {
+      align-items: flex-start;
+    }
+
     .gb-list.gb-pos-left .gb-text-col {
       align-items: flex-end;
     }
 
+    .gb-list.gb-pos-top .gb-text-col,
+    .gb-list.gb-pos-bottom .gb-text-col,
     .gb-list.gb-pos-below .gb-text-col {
       align-items: center;
     }
@@ -1474,7 +1511,9 @@
       min-width: 0;
     }
 
-    .gb-list.gb-horizontal .gb-text-col {
+    .gb-list.gb-horizontal.gb-pos-top .gb-text-col,
+    .gb-list.gb-horizontal.gb-pos-bottom .gb-text-col,
+    .gb-list.gb-horizontal.gb-pos-below .gb-text-col {
       align-items: center;
     }
 
@@ -1676,6 +1715,9 @@
             <!-- Main outer glass border stroke -->
             <path id="jar-glass-outline" d="M84 66 C84 82 36 92 36 122 L36 322 C36 349 58 366 88 366 L232 366 C262 366 284 349 284 322 L284 122 C284 92 236 82 236 66" stroke="rgba(255,255,255,0.52)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
           </svg>
+
+          <!-- Spilled Gifts Layer (draws overflowing gifts tumbling over the rim & rolling outside the glass) -->
+          <canvas id="jar-canvas-spill" class="jar-canvas" width="320" height="380"></canvas>
         </div>
       </div>
     </section>
@@ -1796,8 +1838,41 @@
       return safe < 100 ? String(safe).padStart(2, '0') : safe.toLocaleString();
     }
 
+    const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+    const ALLOWED_IMG_HOST_SUFFIXES = [
+      '.tiktokcdn.com',
+      '.tiktokcdn-us.com',
+      '.tiktokcdn-eu.com',
+      '.tiktokcdn-in.com',
+      '.ibytedtos.com',
+      '.ibyteimg.com',
+      '.muscdn.com',
+      '.byteimg.com',
+      '.ttwstatic.com',
+      '.tiktokv.com',
+      '.tiktok.com',
+    ];
+
+    function safeHex(val, fallback) {
+      return typeof val === 'string' && HEX_RE.test(val.trim()) ? val.trim() : fallback;
+    }
+
+    function isAllowedOverlayImageUrl(rawUrl) {
+      if (typeof rawUrl !== 'string') return false;
+      const s = rawUrl.trim();
+      if (!s.startsWith('https://')) return false;
+      try {
+        const parsed = new URL(s);
+        if (parsed.protocol !== 'https:') return false;
+        const host = parsed.hostname.toLowerCase();
+        return ALLOWED_IMG_HOST_SUFFIXES.some((sfx) => host === sfx.slice(1) || host.endsWith(sfx));
+      } catch (_) {
+        return false;
+      }
+    }
+
     function hexToRgba(hex, opacityPct) {
-      const clean = typeof hex === 'string' && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#141418';
+      const clean = safeHex(hex, '#141418');
       const r = parseInt(clean.slice(1, 3), 16);
       const g = parseInt(clean.slice(3, 5), 16);
       const b = parseInt(clean.slice(5, 7), 16);
@@ -1820,22 +1895,31 @@
               ? '#FB7185'
               : isGiftBoard
                 ? '#4ADE80'
-                : (cfg.accentColor || '#2563EB');
+                : safeHex(cfg.accentColor, '#2563EB');
       const defaultGbValColor = key === 'giftboard_minus' ? '#FB7185' : '#4ADE80';
+      const rawTimerOp = Number(cfg.timerBgOpacity);
+      const rawCardOp = Number(cfg.cardBgOpacity);
+      const fallbackBgOpacity =
+        key === 'timer'
+          ? (Number.isFinite(rawTimerOp) ? Math.max(0, Math.min(100, rawTimerOp)) : 90)
+          : isTransparentDefault
+            ? 0
+            : (Number.isFinite(rawCardOp) ? Math.max(0, Math.min(100, rawCardOp)) : 90);
+      const rawBorderMode = String(ws.borderMode || (isTransparentDefault ? 'none' : (cfg.cardBorderMode || 'solid'))).toLowerCase();
       return {
         bgOpacity: Number.isFinite(Number(ws.bgOpacity))
           ? Math.max(0, Math.min(100, Number(ws.bgOpacity)))
-          : (key === 'timer' ? (Number(cfg.timerBgOpacity) ?? 90) : isTransparentDefault ? 0 : (Number(cfg.cardBgOpacity) ?? 90)),
-        bgColor: ws.bgColor || (key === 'timer' ? (cfg.timerBgColor || '#0F0F12') : (cfg.cardBgColor || '#141418')),
-        textColor: ws.textColor || (key === 'timer' ? (cfg.timerTextColor || '#FAFAFA') : (cfg.cardTextColor || '#FAFAFA')),
-        borderMode: ws.borderMode || (isTransparentDefault ? 'none' : (cfg.cardBorderMode || 'solid')),
-        borderColor: ws.borderColor || (isTransparentDefault ? defaultGbValColor : (cfg.cardBorderColor || '#2E2E36')),
-        accentColor: ws.accentColor || defaultAccent,
+          : fallbackBgOpacity,
+        bgColor: safeHex(ws.bgColor, key === 'timer' ? safeHex(cfg.timerBgColor, '#0F0F12') : safeHex(cfg.cardBgColor, '#141418')),
+        textColor: safeHex(ws.textColor, key === 'timer' ? safeHex(cfg.timerTextColor, '#FAFAFA') : safeHex(cfg.cardTextColor, '#FAFAFA')),
+        borderMode: ['none', 'solid', 'neon'].includes(rawBorderMode) ? rawBorderMode : 'solid',
+        borderColor: safeHex(ws.borderColor, isTransparentDefault ? defaultGbValColor : safeHex(cfg.cardBorderColor, '#2E2E36')),
+        accentColor: safeHex(ws.accentColor, defaultAccent),
         showTitle: isSpotlight && cfg.spotlightHeaderMigrated !== true
           ? true
           : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : (key !== 'jar' && key !== 'wins' && !isGiftBoard)),
         nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
-        badgeColor: ws.badgeColor || '#FBBF24',
+        badgeColor: safeHex(ws.badgeColor, '#FBBF24'),
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
         showCoins: ws.showCoins !== false,
         topLimit: Number.isFinite(Number(ws.topLimit))
@@ -1844,14 +1928,18 @@
         showAvatars: ws.showAvatars !== undefined ? Boolean(ws.showAvatars) : (cfg.showAvatars !== false),
         textSize: Number.isFinite(Number(ws.textSize)) ? Math.max(14, Math.min(44, Math.round(Number(ws.textSize)))) : 24,
         iconSize: Number.isFinite(Number(ws.iconSize)) ? Math.max(32, Math.min(96, Math.round(Number(ws.iconSize)))) : 56,
-        itemGap: Number.isFinite(Number(ws.itemGap)) ? Math.max(4, Math.min(80, Math.round(Number(ws.itemGap)))) : 16,
-        textGap: Number.isFinite(Number(ws.textGap)) ? Math.max(0, Math.min(48, Math.round(Number(ws.textGap)))) : 10,
-        textPosition: ['left', 'right', 'below'].includes(String(ws.textPosition || '').toLowerCase())
-          ? String(ws.textPosition).toLowerCase()
-          : 'right',
-        valueColor: ws.valueColor || defaultGbValColor,
-        posColor: ws.posColor || '#4ADE80',
-        negColor: ws.negColor || '#FB7185',
+        itemGap: Number.isFinite(Number(ws.itemGap)) ? Math.max(0, Math.min(100, Math.round(Number(ws.itemGap)))) : 16,
+        textGap: Number.isFinite(Number(ws.textGap)) ? Math.max(0, Math.min(64, Math.round(Number(ws.textGap)))) : 10,
+        textPosition: (function () {
+          const tp = String(ws.textPosition || '').toLowerCase();
+          if (tp === 'up' || tp === 'above' || tp === 'top') return 'top';
+          if (tp === 'down' || tp === 'below' || tp === 'bottom') return 'bottom';
+          if (tp === 'left' || tp === 'right') return tp;
+          return 'right';
+        })(),
+        valueColor: safeHex(ws.valueColor, defaultGbValColor),
+        posColor: safeHex(ws.posColor, '#4ADE80'),
+        negColor: safeHex(ws.negColor, '#FB7185'),
         autoSignColor: ws.autoSignColor !== false,
       };
     }
@@ -1860,10 +1948,10 @@
       if (!el || !ws) return;
       const o = opts || {};
       const opacity = ws.bgOpacity;
-      const bgHex = ws.bgColor;
-      const textHex = ws.textColor;
-      const borderMode = ws.borderMode || 'solid';
-      const borderHex = ws.borderColor || '#2E2E36';
+      const bgHex = safeHex(ws.bgColor, '#141418');
+      const textHex = safeHex(ws.textColor, '#FAFAFA');
+      const borderMode = ['none', 'solid', 'neon'].includes(ws.borderMode) ? ws.borderMode : 'solid';
+      const borderHex = safeHex(ws.borderColor, '#2E2E36');
 
       el.style.color = textHex;
       el.style.setProperty('--card-text', textHex);
@@ -1968,7 +2056,8 @@
       bodyEl.classList.toggle('minimal', !showTitle);
 
       const estServerNow = Date.now() - clockOffsetMs;
-      const recentAdd = t.lastAdd && Number(t.lastAdd.seconds) !== 0 && (estServerNow - Number(t.lastAdd.at || 0)) < 3500
+      const addAge = t.lastAdd ? estServerNow - Number(t.lastAdd.at || 0) : -1;
+      const recentAdd = t.lastAdd && Number(t.lastAdd.seconds) !== 0 && addAge >= 0 && addAge < 3500
         ? t.lastAdd
         : null;
 
@@ -2116,7 +2205,7 @@
     }
 
     function renderGiftIconSlot(slotEl, imageUrl, giftName) {
-      const targetSrc = imageUrl && imageUrl.startsWith('https://') ? imageUrl : '';
+      const targetSrc = isAllowedOverlayImageUrl(imageUrl) ? imageUrl : '';
       if (slotEl.dataset.renderedSrc === targetSrc && slotEl.firstChild) {
         return;
       }
@@ -2146,7 +2235,7 @@
     function createAvatarNode(entry) {
       const label = (entry.nickname || entry.user || '?').trim();
       const initials = label.slice(0, 2).toUpperCase();
-      if (entry.avatarUrl && entry.avatarUrl.startsWith('https://')) {
+      if (isAllowedOverlayImageUrl(entry.avatarUrl)) {
         const img = document.createElement('img');
         img.className = 'lb-avatar';
         img.src = entry.avatarUrl;
@@ -2234,8 +2323,10 @@
       root.classList.toggle('jar-only', MODE === 'jar');
       root.classList.toggle('giftboard-only', MODE === 'giftboard_plus' || MODE === 'giftboard_minus' || MODE === 'giftboard');
       root.classList.toggle('roulette-horiz-only', MODE === 'roulette' && cfg.rouletteLayout === 'horizontal');
+      const showRoulettePre = MODE === 'roulette' || (MODE === 'all' && cfg.showRoulette === true);
+      root.classList.toggle('all-wide-roulette', MODE === 'all' && showRoulettePre && cfg.rouletteLayout === 'horizontal');
       if (cfg.accentColor) {
-        document.documentElement.style.setProperty('--accent', cfg.accentColor);
+        document.documentElement.style.setProperty('--accent', safeHex(cfg.accentColor, '#2563EB'));
       }
 
       renderTimerTick();
@@ -2295,8 +2386,8 @@
         const lg = state.likeGoal || { current: cfg.likeGoalCount || 0, target: cfg.likeGoalTarget || 10000 };
         const cur = Math.max(0, Math.floor(Number(lg.current) || 0));
         const target = Math.max(1, Math.floor(Number(lg.target) || 10000));
-        const pct = Math.min(100, Math.round((cur / target) * 100));
         const reached = cur >= target;
+        const pct = reached ? 100 : Math.min(99, Math.floor((cur / target) * 100));
 
         document.getElementById('likegoal-title').textContent = cfg.likeGoalTitle || 'Like Goal';
         document.getElementById('likegoal-current').textContent = cur.toLocaleString();
@@ -2324,8 +2415,8 @@
         const fg = state.followGoal || { current: cfg.followGoalCount || 0, target: cfg.followGoalTarget || 100 };
         const cur = Math.max(0, Math.floor(Number(fg.current) || 0));
         const target = Math.max(1, Math.floor(Number(fg.target) || 100));
-        const pct = Math.min(100, Math.round((cur / target) * 100));
         const reached = cur >= target;
+        const pct = reached ? 100 : Math.min(99, Math.floor((cur / target) * 100));
 
         document.getElementById('followgoal-title').textContent = cfg.followGoalTitle || 'Follower Goal';
         document.getElementById('followgoal-current').textContent = cur.toLocaleString();
@@ -2352,13 +2443,19 @@
         jarTitleEl.classList.toggle('hidden', !ws.showTitle);
         const jarScalePct = Math.max(100, Math.min(200, Math.round(Number(cfg.jarScale) || 100)));
         const nextJarScale = jarScalePct / 100;
-        if (Math.abs(nextJarScale - jarEngine.scale) > 0.0001) {
-          resizeJarBodies(jarEngine.bodies, jarEngine.scale, nextJarScale);
+        const nextSpillWidth =
+          cfg.jarSpillWidth !== undefined && cfg.jarSpillWidth !== null && Number.isFinite(Number(cfg.jarSpillWidth))
+            ? Math.max(0, Math.min(480, Math.round(Number(cfg.jarSpillWidth))))
+            : 180;
+        if (Math.abs(nextJarScale - jarEngine.scale) > 0.0001 || nextSpillWidth !== jarEngine.spillWidth) {
+          resizeJarBodies(jarEngine.bodies, jarEngine.scale, nextJarScale, jarEngine.spillWidth, nextSpillWidth);
           jarEngine.scale = nextJarScale;
+          jarEngine.spillWidth = nextSpillWidth;
         }
-        const vesselW = Math.round(320 * nextJarScale);
+        const jarW = Math.round(320 * nextJarScale);
         const vesselH = Math.round(380 * nextJarScale);
-        const stageW = vesselW + 48;
+        const vesselW = jarW + nextSpillWidth * 2;
+        const stageW = Math.max(vesselW, jarW + 48);
         const jarStageEl = jarEl.querySelector('.jar-stage');
         const jarVesselEl = jarEl.querySelector('.jar-vessel');
         if (jarStageEl) {
@@ -2368,6 +2465,8 @@
         if (jarVesselEl) {
           jarVesselEl.style.width = vesselW + 'px';
           jarVesselEl.style.height = vesselH + 'px';
+          jarVesselEl.style.setProperty('--jar-ox', nextSpillWidth + 'px');
+          jarVesselEl.style.setProperty('--jar-w', jarW + 'px');
           jarVesselEl.style.transform = '';
         }
         if (MODE === 'jar') {
@@ -2546,7 +2645,9 @@
         listEl.classList.toggle('gb-vertical', !isHoriz);
         listEl.classList.toggle('gb-pos-left', textPos === 'left');
         listEl.classList.toggle('gb-pos-right', textPos === 'right');
-        listEl.classList.toggle('gb-pos-below', textPos === 'below');
+        listEl.classList.toggle('gb-pos-top', textPos === 'top');
+        listEl.classList.toggle('gb-pos-bottom', textPos === 'bottom');
+        listEl.classList.toggle('gb-pos-below', textPos === 'bottom');
 
         const showNames = Boolean(isMinusBoard ? cfg.giftBoardMinusShowNames : cfg.giftBoardPlusShowNames);
         const showSample = isMinusBoard
@@ -2609,7 +2710,7 @@
 
             const iconWrap = document.createElement('div');
             iconWrap.className = 'gb-icon-wrap';
-            if (it.imageUrl && it.imageUrl.startsWith('https://')) {
+            if (isAllowedOverlayImageUrl(it.imageUrl)) {
               const img = document.createElement('img');
               img.className = 'gb-icon-img';
               img.src = it.imageUrl;
@@ -2676,6 +2777,8 @@
     ];
 
     const JAR_HARD_BODY_LIMIT = 500;
+    const JAR_MAX_IMG_CACHE = 250;
+    const JAR_MAX_PENDING_DROPS = 120;
 
     const jarEngine = {
       bodies: [],
@@ -2686,6 +2789,8 @@
       initialized: false,
       running: false,
       scale: 1,
+      spillWidth: 180,
+      maxItems: 160,
       evictCooldown: 0,
       showToast: true,
       demoEnabled: false,
@@ -2701,25 +2806,56 @@
       return Math.max(1, Math.min(2, Number(jarEngine.scale) || 1));
     }
 
-    function resizeJarBodies(bodies, prevScale, nextScale) {
+    function getJarSpillWidth() {
+      const raw = Number(jarEngine.spillWidth);
+      return Number.isFinite(raw) ? Math.max(0, Math.min(480, Math.round(raw))) : 180;
+    }
+
+    function getJarOuterHalfW(y, scale) {
+      if (y < 40 * scale) return 0;
+      if (y < 68 * scale) return 84 * scale;
+      if (y < 122 * scale) {
+        const t = (y - 68 * scale) / (54 * scale);
+        return (84 + 40 * t) * scale;
+      }
+      return 124 * scale;
+    }
+
+    function resizeJarBodies(bodies, prevScale, nextScale, prevSpillArg, nextSpillArg) {
       const ps = Math.max(1, Math.min(2, Number(prevScale) || 1));
       const ns = Math.max(1, Math.min(2, Number(nextScale) || 1));
-      if (!Array.isArray(bodies) || Math.abs(ns - ps) < 0.0001) return;
-      const prevCx = 160 * ps;
-      const nextCx = 160 * ns;
+      const pSpill = prevSpillArg !== undefined ? Math.max(0, Math.min(480, Math.round(Number(prevSpillArg) || 0))) : getJarSpillWidth();
+      const nSpill = nextSpillArg !== undefined ? Math.max(0, Math.min(480, Math.round(Number(nextSpillArg) || 0))) : pSpill;
+      if (!Array.isArray(bodies) || (Math.abs(ns - ps) < 0.0001 && pSpill === nSpill)) return;
+      const prevCx = pSpill + 160 * ps;
+      const nextCx = nSpill + 160 * ns;
       const prevBottom = 356 * ps;
       const nextBottom = 356 * ns;
-      const leftWall = 42 * ns;
-      const rightWall = 278 * ns;
+      const nextOuterFloor = 366 * ns;
+      const leftWall = nSpill + 42 * ns;
+      const rightWall = nSpill + 278 * ns;
       const rimY = 68 * ns;
+      const nextWorldW = 320 * ns + nSpill * 2;
       for (let i = 0; i < bodies.length; i++) {
         const b = bodies[i];
-        const minX = leftWall + b.r;
-        const maxX = rightWall - b.r;
-        b.x = Math.max(minX, Math.min(maxX, nextCx + (b.x - prevCx)));
-        const minY = rimY + b.r;
-        const maxY = nextBottom - b.r;
-        b.y = Math.max(minY, Math.min(maxY, nextBottom - (prevBottom - b.y)));
+        if (b.spilled && nSpill > 0) {
+          const shiftedX = nextCx + (b.x - prevCx);
+          b.x = Math.max(b.r, Math.min(nextWorldW - b.r, shiftedX));
+          b.y = Math.max(b.r + 4, Math.min(nextOuterFloor - b.r, nextOuterFloor - (366 * ps - b.y)));
+          const oh = getJarOuterHalfW(b.y, ns);
+          if (oh > 0) {
+            if (b.x < nextCx && b.x + b.r > nextCx - oh) b.x = Math.max(b.r, nextCx - oh - b.r);
+            else if (b.x >= nextCx && b.x - b.r < nextCx + oh) b.x = Math.min(nextWorldW - b.r, nextCx + oh + b.r);
+          }
+        } else {
+          b.spilled = false;
+          const minX = leftWall + b.r;
+          const maxX = rightWall - b.r;
+          b.x = Math.max(minX, Math.min(maxX, nextCx + (b.x - prevCx)));
+          const minY = rimY + b.r;
+          const maxY = nextBottom - b.r;
+          b.y = Math.max(minY, Math.min(maxY, nextBottom - (prevBottom - b.y)));
+        }
         b.px = b.x;
         b.py = b.y;
       }
@@ -2751,9 +2887,13 @@
     }
 
     function getJarCachedImg(url) {
-      if (!url || !url.startsWith('https://')) return null;
+      if (!isAllowedOverlayImageUrl(url)) return null;
       let entry = jarEngine.imgCache.get(url);
       if (!entry) {
+        if (jarEngine.imgCache.size >= JAR_MAX_IMG_CACHE) {
+          const oldestKey = jarEngine.imgCache.keys().next().value;
+          if (oldestKey !== undefined) jarEngine.imgCache.delete(oldestKey);
+        }
         const img = new Image();
         img.referrerPolicy = 'no-referrer';
         entry = { img, loaded: false, failed: false };
@@ -2772,12 +2912,18 @@
       toast.textContent = '';
 
       const labelName = String(ev.nickname || ev.user || 'Viewer').trim();
-      if (ev.avatarUrl && ev.avatarUrl.startsWith('https://')) {
+      if (isAllowedOverlayImageUrl(ev.avatarUrl)) {
         const av = document.createElement('img');
         av.className = 'jar-toast-avatar';
         av.src = ev.avatarUrl;
         av.alt = '';
         av.referrerPolicy = 'no-referrer';
+        av.onerror = function () {
+          const fb = document.createElement('span');
+          fb.className = 'jar-toast-avatar-fb';
+          fb.textContent = labelName.slice(0, 2).toUpperCase();
+          av.replaceWith(fb);
+        };
         toast.appendChild(av);
       } else {
         const fb = document.createElement('span');
@@ -2795,12 +2941,15 @@
       verbEl.textContent = 'donated';
       toast.appendChild(verbEl);
 
-      if (ev.imageUrl && ev.imageUrl.startsWith('https://')) {
+      if (isAllowedOverlayImageUrl(ev.imageUrl)) {
         const gi = document.createElement('img');
         gi.className = 'jar-toast-gift-img';
         gi.src = ev.imageUrl;
         gi.alt = ev.giftName || 'Gift';
         gi.referrerPolicy = 'no-referrer';
+        gi.onerror = function () {
+          gi.remove();
+        };
         toast.appendChild(gi);
       }
 
@@ -2827,11 +2976,13 @@
     function spawnJarBody(item, settled) {
       const r = jarRadiusForCoins(item.unitCoins);
       const s = getJarScale();
-      const cx = 160 * s;
-      const leftWall = 42 * s;
-      const rightWall = 278 * s;
+      const ox = getJarSpillWidth();
+      const cx = ox + 160 * s;
+      const leftWall = ox + 42 * s;
+      const rightWall = ox + 278 * s;
       const bottomY = 356 * s;
-      while (jarEngine.bodies.length >= JAR_HARD_BODY_LIMIT) {
+      const bodyLimit = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Number(jarEngine.maxItems) || 160));
+      while (jarEngine.bodies.length >= bodyLimit) {
         let evictIdx = findLeastValueJarIndex(jarEngine.bodies, true);
         if (evictIdx < 0) evictIdx = findLeastValueJarIndex(jarEngine.bodies, false);
         if (evictIdx < 0) break;
@@ -2860,6 +3011,7 @@
         omega: settled ? 0 : (Math.random() - 0.5) * 2.6,
         contacts: 0,
         age: settled ? 80 : 0,
+        spilled: false,
         r: r,
         invMass: 1 / (r * r),
         imageUrl: item.imageUrl || '',
@@ -2885,6 +3037,9 @@
           unitCoins: Number(ev.unitCoins) || 0,
         });
       }
+      if (jarEngine.pendingDrops.length > JAR_MAX_PENDING_DROPS) {
+        jarEngine.pendingDrops.splice(0, jarEngine.pendingDrops.length - JAR_MAX_PENDING_DROPS);
+      }
     }
 
     function stepJarPhysics(dt) {
@@ -2892,13 +3047,19 @@
       const sdt = Math.min(0.033, dt) / substeps;
       const gravity = 960;
       const scale = getJarScale();
-      const cx = 160 * scale;
-      const leftWall = 42 * scale;
-      const rightWall = 278 * scale;
+      const spillPx = getJarSpillWidth();
+      const allowSpill = spillPx > 0;
+      const ox = spillPx;
+      const worldW = 320 * scale + spillPx * 2;
+      const cx = ox + 160 * scale;
+      const leftWall = ox + 42 * scale;
+      const rightWall = ox + 278 * scale;
       const bottomY = 356 * scale;
+      const outerFloorY = 366 * scale;
       const cornerR = 34 * scale;
       const neckY = 98 * scale;
       const rimY = 68 * scale;
+      const rimLipY = 54 * scale;
       const overflowY = 96 * scale;
       const blCx = leftWall + cornerR;
       const brCx = rightWall - cornerR;
@@ -2913,9 +3074,13 @@
           b.py = b.y;
           b.contacts = 0;
           b.vy += gravity * sdt;
-          b.vx *= 0.992;
+          if (allowSpill && !b.spilled && b.y < 64 * scale && (b.age || 0) > 16) {
+            const dir = b.x > cx ? 1 : b.x < cx ? -1 : (i % 2 === 0 ? 1 : -1);
+            b.vx += dir * 320 * sdt;
+          }
+          b.vx *= b.spilled ? 0.996 : 0.992;
           b.vy *= 0.994;
-          b.omega *= 0.96;
+          b.omega *= b.spilled ? 0.98 : 0.96;
           if (b.omega > 5.5) b.omega = 5.5;
           else if (b.omega < -5.5) b.omega = -5.5;
           b.x += b.vx * sdt;
@@ -2929,6 +3094,8 @@
             const a = bodies[i];
             for (let j = i + 1; j < n; j++) {
               const b = bodies[j];
+              // Glass walls separate inside gifts from spilled outside gifts below the mouth lip
+              if ((!a.spilled) !== (!b.spilled) && (a.y > rimY || b.y > rimY)) continue;
               const dx = b.x - a.x;
               const dy = b.y - a.y;
               const minD = a.r + b.r;
@@ -2986,22 +3153,91 @@
             }
           }
 
-          // Jar walls, neck funnel, floor, and rounded bottom corners (scaled by jar vessel size)
+          // Jar walls (inside vs spilled outside), neck lip spill transition, floor, and roll-off area bounds
           for (let i = 0; i < n; i++) {
             const b = bodies[i];
-            // Funnel through neck mouth when entering top
+
+            // Transition gift over the jar mouth lip into the external roll-off zone when overflow is enabled
+            if (allowSpill && !b.spilled && b.y < 74 * scale && (b.x < ox + 80 * scale || b.x > ox + 240 * scale)) {
+              b.spilled = true;
+              const dir = b.x < cx ? -1 : 1;
+              if (b.vx * dir < 70) b.vx = dir * (78 + (i % 5) * 16);
+              b.omega = dir * (2.6 + (i % 4) * 0.45);
+            }
+
+            if (b.spilled && allowSpill) {
+              // Collide with the outside of the glass jar so spilled gifts tumble down the shoulders and never clip back inside
+              if (b.y + b.r > 40 * scale) {
+                const oh = getJarOuterHalfW(Math.max(40 * scale, b.y), scale);
+                if (oh > 0) {
+                  if (b.x < cx && b.x + b.r > cx - oh) {
+                    b.x = cx - oh - b.r;
+                    b.contacts += 1;
+                    if (b.y >= 56 * scale && b.y < 128 * scale) {
+                      if (b.vx > -72) b.vx = -72 - Math.abs(b.vy) * 0.14;
+                      b.omega = Math.min(b.omega, -2.4);
+                    } else if (b.vx > 0) {
+                      b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.24 : 0;
+                    }
+                  } else if (b.x >= cx && b.x - b.r < cx + oh) {
+                    b.x = cx + oh + b.r;
+                    b.contacts += 1;
+                    if (b.y >= 56 * scale && b.y < 128 * scale) {
+                      if (b.vx < 72) b.vx = 72 + Math.abs(b.vy) * 0.14;
+                      b.omega = Math.max(b.omega, 2.4);
+                    } else if (b.vx < 0) {
+                      b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.24 : 0;
+                    }
+                  }
+                }
+              }
+
+              // Outer table floor with realistic rolling motion across the adjustable roll-off area
+              if (b.y + b.r > outerFloorY) {
+                b.y = outerFloorY - b.r;
+                b.contacts += 1;
+                if (b.vy > 0) {
+                  b.vy = b.vy > 85 ? -b.vy * 0.22 : 0;
+                }
+                b.vx *= 0.982;
+                b.omega = Math.max(-5.5, Math.min(5.5, b.vx / Math.max(12, b.r)));
+              }
+
+              // Adjustable outer roll-off area boundaries [0, worldW]
+              if (b.x - b.r < 0) {
+                b.x = b.r;
+                b.contacts += 1;
+                if (b.vx < 0) b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.22 : 0;
+                b.omega *= 0.78;
+              } else if (b.x + b.r > worldW) {
+                b.x = worldW - b.r;
+                b.contacts += 1;
+                if (b.vx > 0) b.vx = Math.abs(b.vx) > 45 ? -b.vx * 0.22 : 0;
+                b.omega *= 0.78;
+              }
+
+              if (b.y - b.r < 4) {
+                b.y = b.r + 4;
+                if (b.vy < 0) b.vy = 0;
+              }
+              continue;
+            }
+
+            // Inside jar containment (with open mouth rim when allowSpill is enabled)
             if (b.y < neckY) {
-              const halfAllow = Math.max(0, 74 * scale - Math.min(b.r, 68 * scale));
-              const minX = cx - halfAllow;
-              const maxX = cx + halfAllow;
-              if (b.x < minX) {
-                b.x = minX;
-                if (b.vx < 0) b.vx = -b.vx * 0.2;
-                b.omega *= 0.85;
-              } else if (b.x > maxX) {
-                b.x = maxX;
-                if (b.vx > 0) b.vx = -b.vx * 0.2;
-                b.omega *= 0.85;
+              if (!allowSpill || b.y >= rimLipY) {
+                const halfAllow = Math.max(0, 74 * scale - Math.min(b.r, 68 * scale));
+                const minX = cx - halfAllow;
+                const maxX = cx + halfAllow;
+                if (b.x < minX) {
+                  b.x = minX;
+                  if (b.vx < 0) b.vx = -b.vx * 0.2;
+                  b.omega *= 0.85;
+                } else if (b.x > maxX) {
+                  b.x = maxX;
+                  if (b.vx > 0) b.vx = -b.vx * 0.2;
+                  b.omega *= 0.85;
+                }
               }
             } else {
               if (b.x - b.r < leftWall) {
@@ -3071,8 +3307,8 @@
               b.omega *= 0.72;
             }
 
-            // Hard neck ceiling for settled gifts so nothing can ever pop out of the jar
-            if ((b.age || 0) > 55 && b.y - b.r < rimY) {
+            // Hard neck ceiling applies ONLY when spill overflow is disabled (jarSpillWidth === 0)
+            if (!allowSpill && (b.age || 0) > 55 && b.y - b.r < rimY) {
               b.y = rimY + b.r;
               b.contacts += 1;
               if (b.vy < 0) b.vy = 0;
@@ -3085,7 +3321,9 @@
           const b = bodies[i];
           if (b.contacts > 0) {
             const moved = Math.hypot(b.x - b.px, b.y - b.py);
-            b.omega *= 0.84;
+            if (!b.spilled || moved < 0.35) {
+              b.omega *= 0.84;
+            }
             if (moved < 0.25) {
               b.vx *= 0.65;
               b.vy *= 0.65;
@@ -3104,13 +3342,19 @@
         bodies[i].age = (bodies[i].age || 0) + 1;
       }
 
-      // Overflow-only deletion: remove the least-value gift strictly when the pile physically overflows the jar
+      // Overflow eviction:
+      // - When jarSpillWidth === 0 (contained mode): evict least-value gift when pile reaches neck.
+      // - When jarSpillWidth > 0 (overflow spill mode): let gifts spill out freely; only evict if spilled stacks fill all the way to the top!
       if (jarEngine.evictCooldown > 0) {
         jarEngine.evictCooldown -= 1;
       } else if (bodies.length > 1) {
-        const isOverflowing = bodies.some(function (b) {
-          return (b.age || 0) > 55 && b.contacts > 0 && b.vy <= 35 && (b.y - b.r) < overflowY;
-        });
+        const isOverflowing = allowSpill
+          ? bodies.some(function (b) {
+              return b.spilled && (b.age || 0) > 90 && b.contacts > 0 && Math.abs(b.vy) <= 25 && (b.y - b.r) < rimY;
+            })
+          : bodies.some(function (b) {
+              return (b.age || 0) > 55 && b.contacts > 0 && b.vy <= 35 && (b.y - b.r) < overflowY;
+            });
         if (isOverflowing) {
           let evictIdx = findLeastValueJarIndex(bodies, true);
           if (evictIdx < 0) evictIdx = findLeastValueJarIndex(bodies, false);
@@ -3122,11 +3366,33 @@
       }
     }
 
+    function drawJarBody(ctx, b) {
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.angle);
+      const img = getJarCachedImg(b.imageUrl);
+      if (img) {
+        const drawSize = b.r * 2.18;
+        ctx.drawImage(img, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, b.r * 0.92, 0, Math.PI * 2);
+        ctx.fillStyle = b.unitCoins >= 1000 ? '#FBBF24' : b.unitCoins >= 20 ? '#EC4899' : '#EF4444';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
     function drawJarCanvas() {
       const canvas = document.getElementById('jar-canvas');
       if (!canvas) return;
+      const spillCanvas = document.getElementById('jar-canvas-spill');
       const s = getJarScale();
-      const worldW = Math.round(320 * s);
+      const ox = getJarSpillWidth();
+      const worldW = Math.round(320 * s) + ox * 2;
       const worldH = Math.round(380 * s);
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const targetW = Math.round(worldW * dpr);
@@ -3141,44 +3407,64 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, worldW, worldH);
 
-      // Clip strictly inside the scaled Mason Jar interior while icons draw at fixed unscaled size
+      // Clip interior gifts cleanly inside the scaled Mason Jar silhouette (allowing mouth protrusion at top when spilling)
       ctx.save();
       ctx.beginPath();
-      ctx.moveTo(84 * s, 32 * s);
-      ctx.lineTo(236 * s, 32 * s);
-      ctx.lineTo(236 * s, 66 * s);
-      ctx.bezierCurveTo(236 * s, 82 * s, 281 * s, 92 * s, 281 * s, 122 * s);
-      ctx.lineTo(281 * s, 322 * s);
-      ctx.bezierCurveTo(281 * s, 347 * s, 260 * s, 362 * s, 232 * s, 362 * s);
-      ctx.lineTo(88 * s, 362 * s);
-      ctx.bezierCurveTo(60 * s, 362 * s, 39 * s, 347 * s, 39 * s, 322 * s);
-      ctx.lineTo(39 * s, 122 * s);
-      ctx.bezierCurveTo(39 * s, 92 * s, 84 * s, 82 * s, 84 * s, 66 * s);
+      if (ox > 0) {
+        ctx.moveTo(ox + 64 * s, 0);
+        ctx.lineTo(ox + 256 * s, 0);
+        ctx.lineTo(ox + 256 * s, 56 * s);
+        ctx.lineTo(ox + 236 * s, 66 * s);
+      } else {
+        ctx.moveTo(ox + 84 * s, 32 * s);
+        ctx.lineTo(ox + 236 * s, 32 * s);
+        ctx.lineTo(ox + 236 * s, 66 * s);
+      }
+      ctx.bezierCurveTo(ox + 236 * s, 82 * s, ox + 281 * s, 92 * s, ox + 281 * s, 122 * s);
+      ctx.lineTo(ox + 281 * s, 322 * s);
+      ctx.bezierCurveTo(ox + 281 * s, 347 * s, ox + 260 * s, 362 * s, ox + 232 * s, 362 * s);
+      ctx.lineTo(ox + 88 * s, 362 * s);
+      ctx.bezierCurveTo(ox + 60 * s, 362 * s, ox + 39 * s, 347 * s, ox + 39 * s, 322 * s);
+      ctx.lineTo(ox + 39 * s, 122 * s);
+      ctx.bezierCurveTo(ox + 39 * s, 92 * s, ox + 84 * s, 82 * s, ox + 84 * s, 66 * s);
+      if (ox > 0) {
+        ctx.lineTo(ox + 64 * s, 56 * s);
+      }
       ctx.closePath();
       ctx.clip();
 
       const bodies = jarEngine.bodies;
+      let hasSpilled = false;
       for (let i = 0; i < bodies.length; i++) {
         const b = bodies[i];
-        ctx.save();
-        ctx.translate(b.x, b.y);
-        ctx.rotate(b.angle);
-        const img = getJarCachedImg(b.imageUrl);
-        if (img) {
-          const drawSize = b.r * 2.18;
-          ctx.drawImage(img, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
-        } else {
-          ctx.beginPath();
-          ctx.arc(0, 0, b.r * 0.92, 0, Math.PI * 2);
-          ctx.fillStyle = b.unitCoins >= 1000 ? '#FBBF24' : b.unitCoins >= 20 ? '#EC4899' : '#EF4444';
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(255,255,255,0.65)';
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
+        if (b.spilled) {
+          hasSpilled = true;
+          continue;
         }
-        ctx.restore();
+        drawJarBody(ctx, b);
       }
       ctx.restore();
+
+      if (spillCanvas) {
+        if (spillCanvas.width !== targetW || spillCanvas.height !== targetH) {
+          spillCanvas.width = targetW;
+          spillCanvas.height = targetH;
+        }
+        const sctx = spillCanvas.getContext('2d');
+        if (sctx) {
+          sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          sctx.clearRect(0, 0, worldW, worldH);
+          if (hasSpilled) {
+            for (let i = 0; i < bodies.length; i++) {
+              if (bodies[i].spilled) drawJarBody(sctx, bodies[i]);
+            }
+          }
+        }
+      } else if (hasSpilled) {
+        for (let i = 0; i < bodies.length; i++) {
+          if (bodies[i].spilled) drawJarBody(ctx, bodies[i]);
+        }
+      }
     }
 
     function jarTick(ts) {
@@ -3210,7 +3496,11 @@
     }
 
     function updateJarDemoLoop(enabled) {
-      jarEngine.demoEnabled = Boolean(enabled);
+      const next = Boolean(enabled);
+      if (next === jarEngine.demoEnabled && (next ? Boolean(jarEngine.demoTimer) : !jarEngine.demoTimer)) {
+        return;
+      }
+      jarEngine.demoEnabled = next;
       if (jarEngine.demoTimer) {
         clearInterval(jarEngine.demoTimer);
         jarEngine.demoTimer = null;
@@ -3234,6 +3524,7 @@
     function syncJarOverlayState(state, cfg, pointsUnit) {
       jarEngine.showToast = cfg.jarShowToast !== false;
       jarEngine.pointsUnit = pointsUnit || 'Coins';
+      jarEngine.maxItems = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Math.round(Number(cfg.jarMaxItems) || 160)));
       updateJarDemoLoop(Boolean(cfg.jarShowDemo));
 
       const jarData = state.jar || { events: [], resetSeq: 0 };
@@ -3313,15 +3604,18 @@
       }
     }
 
-    function buildRouletteTrack(items, winnerIndex, isSpinning, isHoriz) {
+    function buildRouletteTrack(items, winnerIndex, isSpinning, isHoriz, durationMs) {
       const track = document.getElementById('roulette-track');
       if (!track) return;
       const safeItems = Array.isArray(items) && items.length > 0 ? items : ROULETTE_IDLE_SAMPLES;
       const count = safeItems.length;
       const winIdx = Math.max(0, Math.min(count - 1, Number(winnerIndex) || 0));
-      const loops = isSpinning ? Math.max(5, Math.ceil(36 / count)) : (isHoriz ? 2 : 1);
+      const dur = Math.max(500, Math.min(5000, Number(durationMs) || 3000));
+      const targetSlots = Math.max(14, Math.round(36 * (dur / 3000)));
+      const loops = isSpinning ? Math.max(3, Math.ceil(targetSlots / count)) : (isHoriz ? 2 : 1);
       const minIdleIdx = isHoriz ? 4 : 2;
-      const targetRow = isSpinning ? loops * count + winIdx : Math.max(minIdleIdx, count + winIdx);
+      const idleLoops = Math.max(1, Math.ceil((minIdleIdx - winIdx) / count));
+      const targetRow = isSpinning ? loops * count + winIdx : idleLoops * count + winIdx;
       const totalRows = targetRow + 7;
 
       track.textContent = '';
@@ -3468,7 +3762,8 @@
             setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
           }
           trigBar.classList.remove('hidden');
-          if (displaySpin.giftImageUrl && displaySpin.giftImageUrl.startsWith('https://')) {
+          if (isAllowedOverlayImageUrl(displaySpin.giftImageUrl)) {
+            giftImg.onerror = function () { giftImg.classList.add('hidden'); };
             giftImg.src = displaySpin.giftImageUrl;
             giftImg.classList.remove('hidden');
           } else {
@@ -3505,7 +3800,8 @@
       titleEl.textContent = resolveTitle(activeSpin);
 
       trigBar.classList.remove('hidden');
-      if (activeSpin.giftImageUrl && activeSpin.giftImageUrl.startsWith('https://')) {
+      if (isAllowedOverlayImageUrl(activeSpin.giftImageUrl)) {
+        giftImg.onerror = function () { giftImg.classList.add('hidden'); };
         giftImg.src = activeSpin.giftImageUrl;
         giftImg.classList.remove('hidden');
       } else {
@@ -3529,13 +3825,13 @@
         }
         rouletteEngine.activeSpinId = activeSpin.id;
         rouletteEngine.renderedSignature = spinSig;
-        rouletteEngine.durationMs = Math.max(100, Number(activeSpin.durationMs) || 3000);
+        rouletteEngine.durationMs = Math.max(100, Math.min(5000, Number(activeSpin.durationMs) || 3000));
         const serverNow = Number(rState.serverNow) || Date.now();
         const serverElapsed = activeSpin.startedAt ? Math.max(0, serverNow - Number(activeSpin.startedAt)) : 0;
         rouletteEngine.startedAtLocal = Date.now() - serverElapsed;
         rouletteEngine.landed = activeSpin.phase === 'landed';
 
-        buildRouletteTrack(activeSpin.items, activeSpin.winnerIndex, true, isHoriz);
+        buildRouletteTrack(activeSpin.items, activeSpin.winnerIndex, true, isHoriz, rouletteEngine.durationMs);
         if (activeSpin.phase === 'landed') {
           applyRouletteOffset(track, rouletteEngine.endOffset, isHoriz);
           setRouletteCenterRow(rouletteEngine.targetRowIndex, true);
@@ -3590,8 +3886,8 @@
       const prevTransform = root.style.transform;
       root.style.zoom = '1';
       root.style.transform = '';
-      const natW = Math.max(1, root.offsetWidth || root.scrollWidth);
-      const natH = Math.max(1, root.offsetHeight || root.scrollHeight);
+      const natW = Math.max(1, root.offsetWidth || 0, root.scrollWidth || 0);
+      const natH = Math.max(1, root.offsetHeight || 0, root.scrollHeight || 0);
       const maxScale = MODE === 'jar' ? 1 : 6;
       const scale = Math.max(0.25, Math.min(maxScale, Math.min(vw / natW, vh / natH)));
       const nextScale = scale.toFixed(4);
@@ -3621,6 +3917,7 @@
 
     let ws = null;
     let hbTimer = null;
+    let hbTimeout = null;
     let helloTimer = null;
     let reconnectAttempt = 0;
     let refSeq = 0;
@@ -3679,10 +3976,16 @@
         if (hbTimer) clearInterval(hbTimer);
         hbTimer = setInterval(() => {
           sendFrame({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: nextRef() });
+          if (hbTimeout) clearTimeout(hbTimeout);
+          hbTimeout = setTimeout(() => {
+            hbTimeout = null;
+            try { if (ws) ws.close(); } catch (_) {}
+          }, 15000);
         }, 25000);
       };
 
       ws.onmessage = (ev) => {
+        if (hbTimeout) { clearTimeout(hbTimeout); hbTimeout = null; }
         let msg;
         try {
           msg = JSON.parse(String(ev.data || ''));
@@ -3714,7 +4017,9 @@
 
       ws.onerror = () => {};
       ws.onclose = () => {
+        receivedFirstState = false;
         if (hbTimer) { clearInterval(hbTimer); hbTimer = null; }
+        if (hbTimeout) { clearTimeout(hbTimeout); hbTimeout = null; }
         if (helloTimer) { clearInterval(helloTimer); helloTimer = null; }
         scheduleCloudReconnect();
       };
