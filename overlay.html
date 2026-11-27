@@ -814,7 +814,10 @@
     .text-outline-on .win-goal,
     .text-outline-on .timer-num,
     .text-outline-on .lb-name,
-    .text-outline-on .lb-score {
+    .text-outline-on .lb-score,
+    .text-outline-on .gb-value,
+    .text-outline-on .gb-gift-name,
+    .text-outline-on .gb-top-title {
       text-shadow:
         -1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
          1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
@@ -1223,6 +1226,129 @@
       color: #4ADE80;
     }
 
+    /* Gift Board (+/-) Vertical & Horizontal Widget */
+    .root.giftboard-only {
+      width: auto;
+      max-width: none;
+    }
+
+    .giftboard-widget {
+      width: auto;
+      display: inline-flex;
+      flex-direction: column;
+    }
+
+    .gb-body {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .gb-top-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: center;
+      color: inherit;
+    }
+
+    .gb-list {
+      display: flex;
+      align-items: center;
+      gap: var(--gb-gap, 16px);
+    }
+
+    .gb-list.gb-vertical {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .gb-list.gb-horizontal {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .gb-list.gb-horizontal .gb-item {
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      text-align: center;
+      min-width: 64px;
+    }
+
+    .gb-icon-wrap {
+      width: var(--gb-icon-size, 56px);
+      height: var(--gb-icon-size, 56px);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .gb-icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
+    }
+
+    .gb-icon-fallback {
+      width: 82%;
+      height: 82%;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 800;
+      color: inherit;
+    }
+
+    .gb-text-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .gb-list.gb-horizontal .gb-text-col {
+      align-items: center;
+    }
+
+    .gb-value {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: var(--gb-text-size, 24px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .gb-gift-name {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.8;
+      white-space: nowrap;
+      color: inherit;
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -1489,6 +1615,13 @@
         <span id="roulette-queue-pill" class="pill hidden">+0 queued</span>
       </div>
     </section>
+
+    <section id="w-giftboard" class="widget giftboard-widget hidden">
+      <div id="gb-body" class="gb-body">
+        <div id="gb-title" class="gb-top-title hidden">Gift Board</div>
+        <div id="gb-list" class="gb-list gb-vertical"></div>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -1496,7 +1629,7 @@
     const CLOUD_SB_KEY = "sb_publishable_BfwBTX4NzKuJURYLjDBn_g_6i17jD_O";
     const qp = new URLSearchParams(window.location.search || '');
     const reqMode = String(qp.get('mode') || 'all').toLowerCase();
-    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'roulette', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
+    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'roulette', 'giftboard', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
     document.getElementById('root').dataset.mode = MODE;
     const ROOM_TOKEN = String(qp.get('room') || '').trim();
     const VALID_ROOM = /^[a-zA-Z0-9_-]{8,64}$/.test(ROOM_TOKEN);
@@ -1528,8 +1661,8 @@
       const map = cfg && cfg.widgetStyles && typeof cfg.widgetStyles === 'object' ? cfg.widgetStyles : {};
       const ws = map[key] && typeof map[key] === 'object' ? map[key] : {};
       const isSpotlight = key === 'combo' || key === 'biggest';
-      const isTransparentDefault = isSpotlight || key === 'jar';
-      const defaultAccent = key === 'likegoal' ? '#EF4444' : key === 'followgoal' ? '#38BDF8' : (cfg.accentColor || '#2563EB');
+      const isTransparentDefault = isSpotlight || key === 'jar' || key === 'giftboard';
+      const defaultAccent = key === 'likegoal' ? '#EF4444' : key === 'followgoal' ? '#38BDF8' : key === 'giftboard' ? '#4ADE80' : (cfg.accentColor || '#2563EB');
       return {
         bgOpacity: Number.isFinite(Number(ws.bgOpacity))
           ? Math.max(0, Math.min(100, Number(ws.bgOpacity)))
@@ -1541,7 +1674,7 @@
         accentColor: ws.accentColor || defaultAccent,
         showTitle: isSpotlight && cfg.spotlightHeaderMigrated !== true
           ? true
-          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : (key !== 'jar' && key !== 'wins')),
+          : (ws.showTitle !== undefined ? Boolean(ws.showTitle) : (key !== 'jar' && key !== 'wins' && key !== 'giftboard')),
         nameSize: Number.isFinite(Number(ws.nameSize)) ? Math.max(12, Math.min(40, Number(ws.nameSize))) : (Number(cfg.giftCardNameSize) || 20),
         badgeColor: ws.badgeColor || '#FBBF24',
         badgeTilt: Number.isFinite(Number(ws.badgeTilt)) ? Math.max(-25, Math.min(25, Number(ws.badgeTilt))) : -10,
@@ -1550,6 +1683,12 @@
           ? Math.max(3, Math.min(10, Math.round(Number(ws.topLimit))))
           : Math.max(3, Math.min(10, Math.round(Number(cfg.topLimit) || 5))),
         showAvatars: ws.showAvatars !== undefined ? Boolean(ws.showAvatars) : (cfg.showAvatars !== false),
+        textSize: Number.isFinite(Number(ws.textSize)) ? Math.max(14, Math.min(44, Math.round(Number(ws.textSize)))) : 24,
+        iconSize: Number.isFinite(Number(ws.iconSize)) ? Math.max(32, Math.min(96, Math.round(Number(ws.iconSize)))) : 56,
+        itemGap: Number.isFinite(Number(ws.itemGap)) ? Math.max(6, Math.min(40, Math.round(Number(ws.itemGap)))) : 16,
+        posColor: ws.posColor || '#4ADE80',
+        negColor: ws.negColor || '#FB7185',
+        autoSignColor: ws.autoSignColor !== false,
       };
     }
 
@@ -1929,6 +2068,7 @@
       root.classList.toggle('wins-vertical-only', MODE === 'wins' && cfg.winLayout === 'vertical');
       root.classList.toggle('gift-spotlight-only', MODE === 'combo' || MODE === 'biggest');
       root.classList.toggle('jar-only', MODE === 'jar');
+      root.classList.toggle('giftboard-only', MODE === 'giftboard');
       if (cfg.accentColor) {
         document.documentElement.style.setProperty('--accent', cfg.accentColor);
       }
@@ -1940,6 +2080,7 @@
       const showFollowGoal = MODE === 'followgoal' || (MODE === 'all' && cfg.showFollowGoal !== false);
       const showJar = MODE === 'jar' || (MODE === 'all' && cfg.showJar === true);
       const showRoulette = MODE === 'roulette' || (MODE === 'all' && cfg.showRoulette === true);
+      const showGiftBoard = MODE === 'giftboard' || (MODE === 'all' && cfg.showGiftBoard === true);
       const showCombo = MODE === 'combo' || (MODE === 'all' && cfg.showCombo !== false);
       const showBiggest = MODE === 'biggest' || (MODE === 'all' && cfg.showBiggest !== false);
       const showLikers = MODE === 'likers' || (MODE === 'all' && cfg.showLikers !== false);
@@ -2206,6 +2347,118 @@
         headEl.classList.toggle('hidden', !ws.showTitle);
         applyWidgetAppearance(rouletteEl, ws, { headEl, footerEl });
         syncRouletteOverlayState(state, cfg);
+      }
+
+      // Gift Board (+/- Vertical or Horizontal Display)
+      const gbEl = document.getElementById('w-giftboard');
+      gbEl.classList.toggle('hidden', !showGiftBoard);
+      if (showGiftBoard) {
+        const ws = getWidgetStyle(cfg, 'giftboard');
+        applyWidgetAppearance(gbEl, ws, {});
+        gbEl.style.setProperty('--gb-text-size', ws.textSize + 'px');
+        gbEl.style.setProperty('--gb-icon-size', ws.iconSize + 'px');
+        gbEl.style.setProperty('--gb-gap', ws.itemGap + 'px');
+
+        const titleEl = document.getElementById('gb-title');
+        titleEl.textContent = cfg.giftBoardTitle || 'Gift Board';
+        titleEl.classList.toggle('hidden', !ws.showTitle);
+
+        const listEl = document.getElementById('gb-list');
+        const isHoriz = cfg.giftBoardLayout === 'horizontal';
+        listEl.classList.toggle('gb-horizontal', isHoriz);
+        listEl.classList.toggle('gb-vertical', !isHoriz);
+
+        const rawItems = Array.isArray(cfg.giftBoardItems)
+          ? cfg.giftBoardItems.filter(function (it) { return it && it.enabled !== false && it.giftName && it.text; })
+          : [];
+        const items = rawItems.length > 0
+          ? rawItems
+          : (cfg.giftBoardShowSample !== false
+              ? [
+                  {
+                    id: 'sample_pos',
+                    giftName: 'Rose',
+                    imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
+                    text: '+1',
+                  },
+                  {
+                    id: 'sample_neg',
+                    giftName: 'Heart Me',
+                    imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d56945782445b0b8c8658ed44f894c7b~tplv-resize:258:258.webp',
+                    text: '-1',
+                  },
+                ]
+              : []);
+
+        const sig = JSON.stringify({
+          isHoriz,
+          showNames: Boolean(cfg.giftBoardShowNames),
+          autoSign: ws.autoSignColor,
+          posColor: ws.posColor,
+          negColor: ws.negColor,
+          textColor: ws.textColor,
+          items: items.map(function (x) { return [x.id, x.giftName, x.imageUrl, x.text]; }),
+        });
+        if (listEl.dataset.sig !== sig) {
+          listEl.dataset.sig = sig;
+          listEl.textContent = '';
+          const frag = document.createDocumentFragment();
+          items.forEach(function (it) {
+            const row = document.createElement('div');
+            row.className = 'gb-item';
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'gb-icon-wrap';
+            if (it.imageUrl && it.imageUrl.startsWith('https://')) {
+              const img = document.createElement('img');
+              img.className = 'gb-icon-img';
+              img.src = it.imageUrl;
+              img.alt = it.giftName || 'Gift';
+              img.referrerPolicy = 'no-referrer';
+              img.onerror = function () {
+                iconWrap.textContent = '';
+                const fb = document.createElement('span');
+                fb.className = 'gb-icon-fallback';
+                fb.textContent = String(it.giftName || 'G').slice(0, 2).toUpperCase();
+                iconWrap.appendChild(fb);
+              };
+              iconWrap.appendChild(img);
+            } else {
+              const fb = document.createElement('span');
+              fb.className = 'gb-icon-fallback';
+              fb.textContent = String(it.giftName || 'G').slice(0, 2).toUpperCase();
+              iconWrap.appendChild(fb);
+            }
+            row.appendChild(iconWrap);
+
+            const textCol = document.createElement('div');
+            textCol.className = 'gb-text-col';
+
+            const valEl = document.createElement('span');
+            valEl.className = 'gb-value';
+            const txt = String(it.text || '').trim();
+            valEl.textContent = txt;
+            if (ws.autoSignColor) {
+              if (txt.startsWith('+')) valEl.style.color = ws.posColor || '#4ADE80';
+              else if (txt.startsWith('-')) valEl.style.color = ws.negColor || '#FB7185';
+              else valEl.style.color = ws.textColor || '#FAFAFA';
+            } else {
+              valEl.style.color = ws.textColor || '#FAFAFA';
+            }
+            textCol.appendChild(valEl);
+
+            if (cfg.giftBoardShowNames) {
+              const nameEl = document.createElement('span');
+              nameEl.className = 'gb-gift-name';
+              nameEl.textContent = it.giftName || '';
+              textCol.appendChild(nameEl);
+            }
+
+            row.appendChild(textCol);
+            frag.appendChild(row);
+          });
+          listEl.appendChild(frag);
+        }
       }
 
       if (MODE !== 'all') {
