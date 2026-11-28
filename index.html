@@ -841,7 +841,8 @@
     .text-outline-on .lb-score,
     .text-outline-on .gb-value,
     .text-outline-on .gb-gift-name,
-    .text-outline-on .gb-top-title {
+    .text-outline-on .gb-top-title,
+    .text-outline-on .lb-equals {
       text-shadow:
         -1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
          1.5px -1.5px 0 rgba(0, 0, 0, 0.88),
@@ -1542,6 +1543,33 @@
       color: inherit;
     }
 
+    .lb-effect-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+
+    .lb-equals {
+      font-family: var(--font-mono);
+      font-size: calc(var(--gb-text-size, 22px) * 0.85);
+      font-weight: 800;
+      opacity: 0.72;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .lb-effect-icon-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1.5px solid rgba(251, 146, 60, 0.42);
+      background: rgba(20, 20, 24, 0.72);
+      flex-shrink: 0;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.55));
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -1818,6 +1846,13 @@
         <div id="gb-list" class="gb-list gb-vertical"></div>
       </div>
     </section>
+
+    <section id="w-lethalboard" class="widget giftboard-widget hidden">
+      <div id="lboard-body" class="gb-body">
+        <div id="lboard-title" class="gb-top-title hidden">Lethal Effects</div>
+        <div id="lboard-list" class="gb-list gb-vertical"></div>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -1826,7 +1861,7 @@
     const qp = new URLSearchParams(window.location.search || '');
     const rawReqMode = String(qp.get('mode') || 'all').toLowerCase();
     const reqMode = rawReqMode === 'giftboard' ? 'giftboard_plus' : rawReqMode;
-    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'roulette', 'giftboard_plus', 'giftboard_minus', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
+    const MODE = ['all', 'timer', 'wins', 'likegoal', 'followgoal', 'jar', 'roulette', 'giftboard_plus', 'giftboard_minus', 'lethalboard', 'likers', 'coins', 'combo', 'biggest'].includes(reqMode) ? reqMode : 'all';
     document.getElementById('root').dataset.mode = MODE;
     const ROOM_TOKEN = String(qp.get('room') || '').trim();
     const VALID_ROOM = /^[a-zA-Z0-9_-]{8,64}$/.test(ROOM_TOKEN);
@@ -1891,7 +1926,7 @@
       const map = cfg && cfg.widgetStyles && typeof cfg.widgetStyles === 'object' ? cfg.widgetStyles : {};
       const ws = map[key] && typeof map[key] === 'object' ? map[key] : {};
       const isSpotlight = key === 'combo' || key === 'biggest';
-      const isGiftBoard = key === 'giftboard' || key === 'giftboard_plus' || key === 'giftboard_minus';
+      const isGiftBoard = key === 'giftboard' || key === 'giftboard_plus' || key === 'giftboard_minus' || key === 'lethalboard';
       const isTransparentDefault = isSpotlight || key === 'jar' || isGiftBoard;
       const defaultAccent =
         key === 'likegoal'
@@ -1900,10 +1935,12 @@
             ? '#38BDF8'
             : key === 'giftboard_minus'
               ? '#FB7185'
-              : isGiftBoard
-                ? '#4ADE80'
-                : safeHex(cfg.accentColor, '#2563EB');
-      const defaultGbValColor = key === 'giftboard_minus' ? '#FB7185' : '#4ADE80';
+              : key === 'lethalboard'
+                ? '#FB923C'
+                : isGiftBoard
+                  ? '#4ADE80'
+                  : safeHex(cfg.accentColor, '#2563EB');
+      const defaultGbValColor = key === 'giftboard_minus' ? '#FB7185' : key === 'lethalboard' ? '#FBBF24' : '#4ADE80';
       const rawTimerOp = Number(cfg.timerBgOpacity);
       const rawCardOp = Number(cfg.cardBgOpacity);
       const fallbackBgOpacity =
@@ -1948,6 +1985,9 @@
         posColor: safeHex(ws.posColor, '#4ADE80'),
         negColor: safeHex(ws.negColor, '#FB7185'),
         autoSignColor: ws.autoSignColor !== false,
+        autoToneColor: ws.autoToneColor !== false,
+        showEffectIcon: ws.showEffectIcon !== false,
+        showEquals: ws.showEquals !== false,
       };
     }
 
@@ -2164,6 +2204,46 @@
       return el;
     }
 
+    const LETHAL_TONES = {"danger":{"color":"#F87171","bg":"rgba(239, 68, 68, 0.16)","border":"rgba(239, 68, 68, 0.42)"},"hazard":{"color":"#FB923C","bg":"rgba(249, 115, 22, 0.16)","border":"rgba(249, 115, 22, 0.42)"},"ok":{"color":"#4ADE80","bg":"rgba(34, 197, 94, 0.16)","border":"rgba(34, 197, 94, 0.42)"},"amber":{"color":"#FBBF24","bg":"rgba(251, 191, 36, 0.16)","border":"rgba(251, 191, 36, 0.42)"},"sky":{"color":"#38BDF8","bg":"rgba(56, 189, 248, 0.16)","border":"rgba(56, 189, 248, 0.42)"},"violet":{"color":"#C084FC","bg":"rgba(192, 132, 252, 0.16)","border":"rgba(192, 132, 252, 0.42)"}};
+    const LETHAL_ICONS = {"spawn_bracken":{"tone":"danger","shortLabel":"SPAWN BRACKEN","shapes":[["path",{"d":"M5 10c0-4.2 3.1-7 7-7s7 2.8 7 7c0 2.5-.8 4.4-2 5.8V21l-2.5-1.4L12 21l-2.5-1.4L7 21v-5.2C5.8 14.4 5 12.5 5 10Z"}],["path",{"d":"M8 5.2 5.5 3M16 5.2 18.5 3M4.5 9.5 2.5 8.5M19.5 9.5l2-1"}],["circle",{"cx":"9.6","cy":"10.4","r":"1.2","fill":"currentColor","stroke":"none"}],["circle",{"cx":"14.4","cy":"10.4","r":"1.2","fill":"currentColor","stroke":"none"}]]},"spawn_coilhead":{"tone":"hazard","shortLabel":"COIL-HEAD","shapes":[["circle",{"cx":"12","cy":"6","r":"3.2"}],["path",{"d":"M9.5 9.8h5l-5 2.1h5l-5 2.1h5"}],["path",{"d":"M6.5 21v-2.2c0-2 2.4-3.3 5.5-3.3s5.5 1.3 5.5 3.3V21"}],["line",{"x1":"9","y1":"6","x2":"10.4","y2":"6"}],["line",{"x1":"13.6","y1":"6","x2":"15","y2":"6"}]]},"spawn_jester":{"tone":"violet","shortLabel":"SPAWN JESTER","shapes":[["rect",{"x":"6","y":"13","width":"12","height":"8","rx":"1.5"}],["path",{"d":"M18 16h2.5v2.5"}],["path",{"d":"M12 13l-1.6-1.4 3.2-1.4L12 8.8"}],["circle",{"cx":"12","cy":"5.8","r":"2.8"}],["circle",{"cx":"11","cy":"5.5","r":"0.6","fill":"currentColor","stroke":"none"}],["circle",{"cx":"13","cy":"5.5","r":"0.6","fill":"currentColor","stroke":"none"}],["path",{"d":"M6 16.5h12"}]]},"spawn_hoarding_bug":{"tone":"amber","shortLabel":"HOARDING BUG","shapes":[["ellipse",{"cx":"12","cy":"14","rx":"4.2","ry":"5"}],["path",{"d":"M12 9v10"}],["path",{"d":"M9.8 6.4 8 4M14.2 6.4 16 4"}],["path",{"d":"M8.5 10.5 5 8V6M15.5 10.5 19 8V6"}],["path",{"d":"M7.8 14.5 4.5 16M16.2 14.5l3.3 1.5"}],["path",{"d":"M8.6 17.5 6 20M15.4 17.5 18 20"}],["path",{"d":"M10.5 5.2 12 3.8l1.5 1.4-1.5 1.4Z","fill":"currentColor","stroke":"none"}]]},"spawn_nutcracker":{"tone":"danger","shortLabel":"NUTCRACKER","shapes":[["path",{"d":"M7 9V4.5h10V9"}],["path",{"d":"M5.5 9h13"}],["rect",{"x":"7","y":"9","width":"10","height":"7","rx":"1.5"}],["circle",{"cx":"12","cy":"12.5","r":"2"}],["circle",{"cx":"12","cy":"12.5","r":"0.7","fill":"currentColor","stroke":"none"}],["path",{"d":"M8.5 16v4.5M15.5 16v4.5M8.5 19h7"}],["path",{"d":"M17 14l4-1.5"}]]},"spawn_thumper":{"tone":"danger","shortLabel":"THUMPER","shapes":[["path",{"d":"M5 10.5C5 6.8 8.1 4 12 4s7 2.8 7 6.5c0 2.6-1.4 4.8-3.5 5.8H8.5C6.4 15.3 5 13.1 5 10.5Z"}],["path",{"d":"M7.5 11.2h9"}],["path",{"d":"M9 11.2l1 2.2 1-2.2 1 2.2 1-2.2 1 2.2 1-2.2"}],["path",{"d":"M7 15.8 4 20M17 15.8 20 20"}]]},"spawn_spider":{"tone":"danger","shortLabel":"SPIDER","shapes":[["circle",{"cx":"12","cy":"9.5","r":"2.6"}],["ellipse",{"cx":"12","cy":"15.2","rx":"3.4","ry":"3.8"}],["path",{"d":"M9.5 9.5 4.5 7 3 9.5M14.5 9.5 19.5 7 21 9.5"}],["path",{"d":"M9.2 12 4 12 2.8 14.8M14.8 12l5.2 0 1.2 2.8"}],["path",{"d":"M8.8 14.5 4.2 16.5 3.4 19.5M15.2 14.5l4.6 2 .8 3"}],["path",{"d":"M10.5 7 9.6 5.2M13.5 7l.9-1.8"}]]},"spawn_eyeless_dog":{"tone":"hazard","shortLabel":"EYELESS DOG","shapes":[["path",{"d":"M4 10.5 7.5 6l2.5 2h6.5l3.5 2.5-3.5 2.5H11l4.5 3.5-2.5 2.5-6.5-3.5L4 17V10.5Z"}],["path",{"d":"M11.5 10.5h6M12.5 10.5l.8 1.6.9-1.6.8 1.6.9-1.6"}],["path",{"d":"M18.2 5.2a3.5 3.5 0 0 1 2.6 2.6M16.5 3.4a6 6 0 0 1 4.4 4.4"}]]},"spawn_forest_giant":{"tone":"hazard","shortLabel":"FOREST GIANT","shapes":[["path",{"d":"M7.5 8.5C7.5 5.5 9.5 4 12 4s4.5 1.5 4.5 4.5v5.5c0 1.8-.9 3-2 3.8V21h-5v-3.2c-1.1-.8-2-2-2-3.8V8.5Z"}],["path",{"d":"M8.5 5.2 5.5 3M15.5 5.2 18.5 3M7.5 11.5 4 14M16.5 11.5 20 14"}],["circle",{"cx":"12","cy":"9.5","r":"2"}],["circle",{"cx":"12","cy":"9.5","r":"0.7","fill":"currentColor","stroke":"none"}],["path",{"d":"M9.5 14h5"}]]},"spawn_masked":{"tone":"violet","shortLabel":"MASKED MIMIC","shapes":[["path",{"d":"M5.5 5.5c0-.8.7-1.5 1.5-1.5h10c.8 0 1.5.7 1.5 1.5v6.2c0 4.5-2.9 7.8-6.5 8.8-3.6-1-6.5-4.3-6.5-8.8V5.5Z"}],["ellipse",{"cx":"9.3","cy":"9.5","rx":"1.3","ry":"1.6","fill":"currentColor","stroke":"none"}],["ellipse",{"cx":"14.7","cy":"9.5","rx":"1.3","ry":"1.6","fill":"currentColor","stroke":"none"}],["path",{"d":"M8.5 14.2c1.1 1.8 5.9 1.8 7 0"}]]},"spawn_random_enemy":{"tone":"danger","shortLabel":"RANDOM MONSTER","shapes":[["path",{"d":"M4.5 6.5 7 10.5M4.5 17.5 7 13.5M19.5 6.5 17 10.5M19.5 17.5 17 13.5"}],["circle",{"cx":"12","cy":"12","r":"7"}],["path",{"d":"M9.8 9.6a2.3 2.3 0 0 1 4.4.8c0 1.5-2.2 1.8-2.2 3.1"}],["circle",{"cx":"12","cy":"16.2","r":"0.8","fill":"currentColor","stroke":"none"}]]},"heal_full":{"tone":"ok","shortLabel":"+100 HP HEAL","shapes":[["path",{"d":"M12 3 5 5.8v5.7c0 4.8 3 8.1 7 9.5 4-1.4 7-4.7 7-9.5V5.8L12 3Z"}],["path",{"d":"M12 8.2v7.6M8.2 12h7.6"}]]},"damage_25":{"tone":"danger","shortLabel":"-25 HP","shapes":[["path",{"d":"M12 20.2s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 8.8 6c1.5 0 2.7.7 3.2 1.8.5-1.1 1.7-1.8 3.2-1.8a4.3 4.3 0 0 1 4.3 4.2c0 5.4-7.5 10-7.5 10Z"}],["path",{"d":"M12.5 8.5 10.7 12l2.6 1.2-1.8 3.5"}]]},"kill_player":{"tone":"danger","shortLabel":"INSTANT KILL","shapes":[["path",{"d":"M5.5 11.2a6.5 6.5 0 1 1 13 0c0 2.3-1.2 4.3-3 5.4V19a1.5 1.5 0 0 1-1.5 1.5h-4A1.5 1.5 0 0 1 8.5 19v-2.4c-1.8-1.1-3-3.1-3-5.4Z"}],["path",{"d":"M8.5 10l2 2m0-2-2 2M13.5 10l2 2m0-2-2 2"}],["path",{"d":"M10.5 17v3.5M13.5 17v3.5"}]]},"drain_stamina":{"tone":"hazard","shortLabel":"DRAIN STAMINA","shapes":[["rect",{"x":"3","y":"7.5","width":"16","height":"9","rx":"2"}],["path",{"d":"M21 10.5v3"}],["path",{"d":"M6.5 12h2"}],["path",{"d":"M5 19 17.5 5"}]]},"infinite_stamina":{"tone":"ok","shortLabel":"INF STAMINA","shapes":[["path",{"d":"M7.5 15.5a3.5 3.5 0 1 1 0-7c2.4 0 3.7 2.2 4.5 3.5.8 1.3 2.1 3.5 4.5 3.5a3.5 3.5 0 1 0 0-7c-2.4 0-3.7 2.2-4.5 3.5-.8 1.3-2.1 3.5-4.5 3.5Z"}],["path",{"d":"M12.5 3.5 10.5 6.8h2.6l-1.6 2.7"}]]},"speed_boost":{"tone":"ok","shortLabel":"TURBO SPEED","shapes":[["path",{"d":"M5 7l5 5-5 5M12 7l5 5-5 5"}],["path",{"d":"M19 8.5h2M18 12h3M19 15.5h2"}]]},"slow_motion":{"tone":"sky","shortLabel":"SLOW-MO","shapes":[["path",{"d":"M9.5 7.5a2.5 2.5 0 1 1 5 0"}],["path",{"d":"M6.5 9.5h11l1.8 9.5a1.5 1.5 0 0 1-1.5 1.8H6.2a1.5 1.5 0 0 1-1.5-1.8l1.8-9.5Z"}],["path",{"d":"M12 12.5v4.5M10 15l2 2 2-2"}]]},"super_jump":{"tone":"ok","shortLabel":"SUPER JUMP","shapes":[["path",{"d":"M12 14V4M8 8l4-4 4 4"}],["path",{"d":"M7 17h10M8.5 20h7"}]]},"drunk_vision":{"tone":"violet","shortLabel":"DRUNK VISION","shapes":[["rect",{"x":"4.5","y":"8","width":"7.5","height":"12","rx":"1.8"}],["path",{"d":"M6.8 8V5.5h3V8M8.3 5.5V4M6.8 12.5h3"}],["path",{"d":"M16.5 11.5a1.5 1.5 0 1 0-1.5-1.5c0 2 3 2.5 3 0a3.5 3.5 0 1 0-3.5 3.5"}]]},"flip_screen":{"tone":"violet","shortLabel":"FLIP SCREEN","shapes":[["rect",{"x":"3.5","y":"5","width":"17","height":"12","rx":"2"}],["path",{"d":"M12 5v12","stroke-dasharray":"2 2"}],["path",{"d":"M7 11h10M9 9l-2 2 2 2M15 9l2 2-2 2"}],["path",{"d":"M9 20h6"}]]},"drop_held":{"tone":"amber","shortLabel":"DROP ITEM","shapes":[["path",{"d":"M7 6.5h10v2.5a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3V6.5Z"}],["path",{"d":"M12 13.5V20M9.5 17.5 12 20l2.5-2.5"}]]},"drop_all":{"tone":"hazard","shortLabel":"DROP ALL","shapes":[["rect",{"x":"3.5","y":"4.5","width":"3.8","height":"3.8","rx":"0.8"}],["rect",{"x":"8.3","y":"4.5","width":"3.8","height":"3.8","rx":"0.8"}],["rect",{"x":"13.1","y":"4.5","width":"3.8","height":"3.8","rx":"0.8"}],["rect",{"x":"17.9","y":"4.5","width":"2.6","height":"3.8","rx":"0.8"}],["path",{"d":"M6 11.5V19M4.2 17 6 19l1.8-2"}],["path",{"d":"M12 11.5V20M10.2 18 12 20l1.8-2"}],["path",{"d":"M18 11.5V19M16.2 17 18 19l1.8-2"}]]},"teleport_random":{"tone":"violet","shortLabel":"RANDOM TP","shapes":[["ellipse",{"cx":"12","cy":"19","rx":"7","ry":"2.2"}],["path",{"d":"M7.5 17V9M16.5 17V9","stroke-dasharray":"2.2 2"}],["path",{"d":"M10.2 6.8a2 2 0 0 1 3.8.7c0 1.3-2 1.6-2 2.8"}],["circle",{"cx":"12","cy":"12.8","r":"0.8","fill":"currentColor","stroke":"none"}]]},"teleport_ship":{"tone":"sky","shortLabel":"SHIP RESCUE","shapes":[["path",{"d":"M5 7h14l-2-3H7L5 7Z"}],["path",{"d":"M7.5 7 5.5 20M16.5 7l2 13","stroke-dasharray":"2.5 2"}],["path",{"d":"M12 18.5V10M9.2 12.8 12 10l2.8 2.8"}]]},"jumpscare_shake":{"tone":"danger","shortLabel":"FEAR SHAKE","shapes":[["path",{"d":"M3.5 12s3.2-5 8.5-5 8.5 5 8.5 5-3.2 5-8.5 5-8.5-5-8.5-5Z"}],["circle",{"cx":"12","cy":"12","r":"2.2"}],["circle",{"cx":"12","cy":"12","r":"0.8","fill":"currentColor","stroke":"none"}],["path",{"d":"M4.5 5 6 7M19.5 5 18 7M4.5 19 6 17M19.5 19 18 17"}]]},"credits_add_100":{"tone":"ok","shortLabel":"+100 CREDITS","shapes":[["rect",{"x":"3.5","y":"6","width":"13","height":"12","rx":"2"}],["path",{"d":"M7 10h6M7 14h4"}],["path",{"d":"M19 9v6M16 12h6"}]]},"credits_add_500":{"tone":"amber","shortLabel":"+500 CREDITS","shapes":[["rect",{"x":"3.5","y":"8","width":"12.5","height":"10.5","rx":"2"}],["path",{"d":"M6.5 5h10.5a2 2 0 0 1 2 2v8"}],["path",{"d":"M7 12h5.5M9.75 9.5v5"}]]},"credits_sub_100":{"tone":"danger","shortLabel":"-100 CREDITS","shapes":[["rect",{"x":"3.5","y":"6","width":"13","height":"12","rx":"2"}],["path",{"d":"M7 10h6M7 14h4"}],["path",{"d":"M16 12h5.5"}]]},"toggle_ship_doors":{"tone":"sky","shortLabel":"SHIP DOORS","shapes":[["rect",{"x":"3.5","y":"4.5","width":"17","height":"15","rx":"2"}],["path",{"d":"M12 4.5v15"}],["path",{"d":"M6.5 12h3M8.2 10.2 9.8 12l-1.6 1.8"}],["path",{"d":"M17.5 12h-3M15.8 10.2 14.2 12l1.6 1.8"}]]},"toggle_ship_lights":{"tone":"amber","shortLabel":"SHIP LIGHTS","shapes":[["path",{"d":"M9 14.5c-1.5-1-2.5-2.6-2.5-4.5a5.5 5.5 0 1 1 11 0c0 1.9-1 3.5-2.5 4.5v2H9v-2Z"}],["path",{"d":"M9.5 19.5h5M12 2.5v1.2M4 10H2.8M21.2 10H20M6.2 5.2l-.9-.9M17.8 5.2l.9-.9"}]]},"power_outage":{"tone":"hazard","shortLabel":"LIGHTS OUT","shapes":[["rect",{"x":"5","y":"3.5","width":"14","height":"17","rx":"2"}],["path",{"d":"M12.8 7.5 9.5 12.2h3l-1.3 4.3 3.3-4.7h-3l1.3-4.3Z"}],["path",{"d":"M4 20 20 4"}]]},"ring_ship_horn":{"tone":"amber","shortLabel":"SHIP HORN","shapes":[["path",{"d":"M4 10.5h3.5L14.5 6v12l-7-4.5H4a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1Z"}],["path",{"d":"M6.5 13.5 8 18.5"}],["path",{"d":"M17.5 9.2a4.2 4.2 0 0 1 0 5.6M19.8 7a7.2 7.2 0 0 1 0 10"}]]},"lightning_strike":{"tone":"sky","shortLabel":"LIGHTNING","shapes":[["path",{"d":"M6.5 12.5h11a3.2 3.2 0 0 0 .4-6.3A4.8 4.8 0 0 0 8.5 5a3.8 3.8 0 0 0-2 7.5Z"}],["path",{"d":"M12.5 12.5 9.8 17h3l-1.5 4 4.2-5.5h-3l1-3"}]]},"explosion_blast":{"tone":"danger","shortLabel":"EXPLOSION","shapes":[["ellipse",{"cx":"12","cy":"18.2","rx":"6.5","ry":"2.3"}],["circle",{"cx":"12","cy":"17.8","r":"1.1","fill":"currentColor","stroke":"none"}],["path",{"d":"M12 13.5V4M7.5 14.2 4.5 8M16.5 14.2 19.5 8M9.5 13.2 8 6.5M14.5 13.2 16 6.5"}]]},"spawn_shovel":{"tone":"amber","shortLabel":"SHOVEL","shapes":[["path",{"d":"M16.5 4.5 19.5 7.5"}],["path",{"d":"M18 6 10.5 13.5"}],["path",{"d":"M8.5 11.5 12.5 15.5l-2.8 3.5a2.4 2.4 0 0 1-3.5.1l-.8-.8a2.4 2.4 0 0 1 .1-3.5l3-3.3Z"}]]},"spawn_flashlight":{"tone":"amber","shortLabel":"FLASHLIGHT","shapes":[["path",{"d":"M3.5 14.5 10.5 7.5l3 3-7 7-3-3Z"}],["path",{"d":"M10.5 7.5 13 6l4 4-1.5 2.5"}],["path",{"d":"M16.5 5.5 20.5 3.5M18 9l3 .5M16 12l2.5 2.5"}]]},"spawn_jetpack":{"tone":"sky","shortLabel":"JETPACK","shapes":[["rect",{"x":"5.5","y":"5","width":"5","height":"10.5","rx":"2"}],["rect",{"x":"13.5","y":"5","width":"5","height":"10.5","rx":"2"}],["path",{"d":"M10.5 9h3M10.5 12h3"}],["path",{"d":"M6.8 15.5 8 20l1.2-4.5M14.8 15.5 16 20l1.2-4.5"}]]},"spawn_stun_grenade":{"tone":"sky","shortLabel":"STUN GRENADE","shapes":[["rect",{"x":"7","y":"8","width":"8.5","height":"12","rx":"2"}],["path",{"d":"M9.5 8V5.5h3.5V8M13 6h3.5"}],["circle",{"cx":"17.8","cy":"6.2","r":"1.4"}],["path",{"d":"M7 12h8.5M7 16h8.5"}]]},"spawn_random_scrap":{"tone":"amber","shortLabel":"RANDOM SCRAP","shapes":[["path",{"d":"M4.5 9 12 5l7.5 4v7.5L12 20.5 4.5 16.5V9Z"}],["path",{"d":"M4.5 9 12 13l7.5-4M12 13v7.5"}],["path",{"d":"M18.5 3v3M17 4.5h3"}]]}};
+
+    function createLethalEffectIconNode(effectId, boxPx) {
+      const def = LETHAL_ICONS[effectId] || null;
+      const tone = (def && LETHAL_TONES[def.tone]) ? LETHAL_TONES[def.tone] : LETHAL_TONES.hazard;
+      const size = Math.max(22, Math.min(64, Math.round(boxPx)));
+      const svgSize = Math.max(14, Math.round(size * 0.64));
+      const box = document.createElement('span');
+      box.className = 'lb-effect-icon-box';
+      box.style.width = size + 'px';
+      box.style.height = size + 'px';
+      box.style.borderColor = tone.border;
+      box.style.backgroundColor = 'rgba(16, 16, 20, 0.82)';
+
+      const svg = createSvgEl('svg', {
+        width: String(svgSize),
+        height: String(svgSize),
+        viewBox: '0 0 24 24',
+        fill: 'none',
+        stroke: tone.color,
+        'stroke-width': '1.9',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'aria-hidden': 'true',
+      });
+      svg.style.color = tone.color;
+      svg.style.display = 'block';
+      const shapes = def && Array.isArray(def.shapes)
+        ? def.shapes
+        : [['circle', { cx: '12', cy: '12', r: '8' }], ['path', { d: 'M12 8v4l2.5 2.5' }]];
+      shapes.forEach(function (entry) {
+        if (Array.isArray(entry) && entry[0]) {
+          svg.appendChild(createSvgEl(entry[0], entry[1] || {}));
+        }
+      });
+      box.appendChild(svg);
+      return box;
+    }
+
     function createCrownSvg() {
       const svg = createSvgEl('svg', {
         class: 'lb-crown-svg',
@@ -2328,7 +2408,7 @@
       root.classList.toggle('wins-vertical-only', MODE === 'wins' && cfg.winLayout === 'vertical');
       root.classList.toggle('gift-spotlight-only', MODE === 'combo' || MODE === 'biggest');
       root.classList.toggle('jar-only', MODE === 'jar');
-      root.classList.toggle('giftboard-only', MODE === 'giftboard_plus' || MODE === 'giftboard_minus' || MODE === 'giftboard');
+      root.classList.toggle('giftboard-only', MODE === 'giftboard_plus' || MODE === 'giftboard_minus' || MODE === 'giftboard' || MODE === 'lethalboard');
       root.classList.toggle('roulette-horiz-only', MODE === 'roulette' && cfg.rouletteLayout === 'horizontal');
       const showRoulettePre = MODE === 'roulette' || (MODE === 'all' && cfg.showRoulette === true);
       root.classList.toggle('all-wide-roulette', MODE === 'all' && showRoulettePre && cfg.rouletteLayout === 'horizontal');
@@ -2348,6 +2428,9 @@
         MODE === 'giftboard_minus' ||
         MODE === 'giftboard' ||
         (MODE === 'all' && cfg.showGiftBoard === true);
+      const showLethalBoard =
+        MODE === 'lethalboard' ||
+        (MODE === 'all' && cfg.showLethalBoard === true);
       const showCombo = MODE === 'combo' || (MODE === 'all' && cfg.showCombo !== false);
       const showBiggest = MODE === 'biggest' || (MODE === 'all' && cfg.showBiggest !== false);
       const showLikers = MODE === 'likers' || (MODE === 'all' && cfg.showLikers !== false);
@@ -2792,6 +2875,150 @@
         }
       }
 
+      // Lethal Company Effects Board (Gift Icon = Effect Icon + Effect Label)
+      const lbEl = document.getElementById('w-lethalboard');
+      lbEl.classList.toggle('hidden', !showLethalBoard);
+      if (showLethalBoard) {
+        const ws = getWidgetStyle(cfg, 'lethalboard');
+        applyWidgetAppearance(lbEl, ws, {});
+        lbEl.style.setProperty('--gb-text-size', ws.textSize + 'px');
+        lbEl.style.setProperty('--gb-icon-size', ws.iconSize + 'px');
+        lbEl.style.setProperty('--gb-gap', ws.itemGap + 'px');
+        lbEl.style.setProperty('--gb-text-gap', ws.textGap + 'px');
+
+        const titleEl = document.getElementById('lboard-title');
+        titleEl.textContent = cfg.lethalBoardTitle || 'Lethal Effects';
+        titleEl.classList.toggle('hidden', !ws.showTitle);
+
+        const listEl = document.getElementById('lboard-list');
+        const isHoriz = cfg.lethalBoardLayout === 'horizontal';
+        const textPos = ws.textPosition || 'right';
+        listEl.classList.toggle('gb-horizontal', isHoriz);
+        listEl.classList.toggle('gb-vertical', !isHoriz);
+        listEl.classList.toggle('gb-pos-left', textPos === 'left');
+        listEl.classList.toggle('gb-pos-right', textPos === 'right');
+        listEl.classList.toggle('gb-pos-top', textPos === 'top');
+        listEl.classList.toggle('gb-pos-bottom', textPos === 'bottom');
+        listEl.classList.toggle('gb-pos-below', textPos === 'bottom');
+
+        const showNames = Boolean(cfg.lethalBoardShowNames);
+        const showSample = cfg.lethalBoardShowSample !== false;
+        const rawItems = Array.isArray(cfg.lethalBoardItems)
+          ? cfg.lethalBoardItems.filter(function (it) { return it && it.enabled !== false && it.giftName && it.text; })
+          : [];
+        const items = rawItems.length > 0
+          ? rawItems
+          : (showSample
+              ? [
+                  {
+                    id: 'sample_lc_1',
+                    giftName: 'Rose',
+                    imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
+                    effectId: 'credits_add_500',
+                    text: '+500 CREDITS',
+                  },
+                  {
+                    id: 'sample_lc_2',
+                    giftName: 'Heart Me',
+                    imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d56945782445b0b8c8658ed44f894c7b~tplv-resize:258:258.webp',
+                    effectId: 'spawn_hoarding_bug',
+                    text: 'HOARDING BUG',
+                  },
+                  {
+                    id: 'sample_lc_3',
+                    giftName: 'Galaxy',
+                    imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/79a02148079526539f7599150da9fd28.png~tplv-obj.webp',
+                    effectId: 'spawn_bracken',
+                    text: 'SPAWN BRACKEN',
+                  },
+                ]
+              : []);
+
+        const effectBoxPx = Math.max(24, Math.min(54, Math.round(ws.textSize * 1.45)));
+        const sig = JSON.stringify({
+          isHoriz,
+          textPos,
+          showNames,
+          autoToneColor: ws.autoToneColor,
+          showEffectIcon: ws.showEffectIcon,
+          showEquals: ws.showEquals,
+          valColor: ws.valueColor,
+          textColor: ws.textColor,
+          effectBoxPx,
+          items: items.map(function (x) { return [x.id, x.giftName, x.imageUrl, x.effectId, x.text]; }),
+        });
+        if (listEl.dataset.sig !== sig) {
+          listEl.dataset.sig = sig;
+          listEl.textContent = '';
+          const frag = document.createDocumentFragment();
+          items.forEach(function (it) {
+            const row = document.createElement('div');
+            row.className = 'gb-item';
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'gb-icon-wrap';
+            if (isAllowedOverlayImageUrl(it.imageUrl)) {
+              const img = document.createElement('img');
+              img.className = 'gb-icon-img';
+              img.src = it.imageUrl;
+              img.alt = it.giftName || 'Gift';
+              img.referrerPolicy = 'no-referrer';
+              img.onerror = function () {
+                iconWrap.textContent = '';
+                const fb = document.createElement('span');
+                fb.className = 'gb-icon-fallback';
+                fb.textContent = String(it.giftName || 'G').slice(0, 2).toUpperCase();
+                iconWrap.appendChild(fb);
+              };
+              iconWrap.appendChild(img);
+            } else {
+              const fb = document.createElement('span');
+              fb.className = 'gb-icon-fallback';
+              fb.textContent = String(it.giftName || 'G').slice(0, 2).toUpperCase();
+              iconWrap.appendChild(fb);
+            }
+            row.appendChild(iconWrap);
+
+            const isSideBySide = textPos === 'left' || textPos === 'right';
+            if (ws.showEquals && isSideBySide) {
+              const eqEl = document.createElement('span');
+              eqEl.className = 'lb-equals';
+              eqEl.textContent = '=';
+              row.appendChild(eqEl);
+            }
+
+            const textCol = document.createElement('div');
+            textCol.className = 'gb-text-col';
+
+            const effRow = document.createElement('div');
+            effRow.className = 'lb-effect-row';
+            if (ws.showEffectIcon && it.effectId) {
+              effRow.appendChild(createLethalEffectIconNode(it.effectId, effectBoxPx));
+            }
+
+            const def = it.effectId ? LETHAL_ICONS[it.effectId] : null;
+            const toneColor = (def && LETHAL_TONES[def.tone]) ? LETHAL_TONES[def.tone].color : ws.valueColor;
+            const valEl = document.createElement('span');
+            valEl.className = 'gb-value';
+            valEl.textContent = String(it.text || '').trim();
+            valEl.style.color = ws.autoToneColor ? toneColor : ws.valueColor;
+            effRow.appendChild(valEl);
+            textCol.appendChild(effRow);
+
+            if (showNames) {
+              const nameEl = document.createElement('span');
+              nameEl.className = 'gb-gift-name';
+              nameEl.textContent = it.giftName || '';
+              textCol.appendChild(nameEl);
+            }
+
+            row.appendChild(textCol);
+            frag.appendChild(row);
+          });
+          listEl.appendChild(frag);
+        }
+      }
+
       if (MODE !== 'all') {
         const activeStyle = getWidgetStyle(cfg, MODE);
         root.classList.toggle('has-neon-glow', activeStyle.borderMode === 'neon');
@@ -2813,14 +3040,14 @@
       { giftName: 'Lion', unitCoins: 29999, count: 1, user: 'kinggifter', imageUrl: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4fb89af2082a290b37d704e20f4fe729~tplv-obj.webp' },
     ];
 
-    const JAR_HARD_BODY_LIMIT = 500;
     const JAR_MAX_IMG_CACHE = 250;
-    const JAR_MAX_PENDING_DROPS = 120;
 
     const jarEngine = {
       bodies: [],
       pendingDrops: [],
       imgCache: new Map(),
+      gridHead: null,
+      gridNext: null,
       lastEventId: 0,
       lastResetSeq: -1,
       initialized: false,
@@ -2829,8 +3056,6 @@
       iconScale: 1.45,
       spillWidth: 120,
       fitZoom: 1,
-      maxItems: 160,
-      evictCooldown: 0,
       showToast: true,
       demoEnabled: false,
       pointsUnit: 'Coins',
@@ -2910,21 +3135,6 @@
         b.px = b.x;
         b.py = b.y;
       }
-    }
-
-    function findLeastValueJarIndex(bodies, excludeFresh) {
-      let bestIdx = -1;
-      let bestCoins = Infinity;
-      for (let i = 0; i < bodies.length; i++) {
-        const b = bodies[i];
-        if (excludeFresh && (b.age || 0) < 55) continue;
-        const c = Number(b.unitCoins) || 0;
-        if (c < bestCoins) {
-          bestCoins = c;
-          bestIdx = i;
-        }
-      }
-      return bestIdx;
     }
 
     function jarRadiusForCoins(unitCoins, iconScaleOverride, jarScaleOverride) {
@@ -3036,13 +3246,6 @@
       const leftWall = ox + 42 * s;
       const rightWall = ox + 278 * s;
       const bottomY = 356 * s;
-      const bodyLimit = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Number(jarEngine.maxItems) || 160));
-      while (jarEngine.bodies.length >= bodyLimit) {
-        let evictIdx = findLeastValueJarIndex(jarEngine.bodies, true);
-        if (evictIdx < 0) evictIdx = findLeastValueJarIndex(jarEngine.bodies, false);
-        if (evictIdx < 0) break;
-        jarEngine.bodies.splice(evictIdx, 1);
-      }
       if (item.imageUrl) getJarCachedImg(item.imageUrl);
       const halfMouth = Math.max(10, 62 * s - Math.min(r, 48 * s));
       const innerMinX = leftWall + r + 8;
@@ -3078,8 +3281,7 @@
     function enqueueJarDrop(ev, silentReplay) {
       const cnt = Math.max(1, Math.min(14, Number(ev.count) || 1));
       if (silentReplay) {
-        const capReplay = Math.min(cnt, 6);
-        for (let i = 0; i < capReplay; i++) {
+        for (let i = 0; i < cnt; i++) {
           spawnJarBody(ev, true);
         }
         return;
@@ -3092,20 +3294,79 @@
           unitCoins: Number(ev.unitCoins) || 0,
         });
       }
-      if (jarEngine.pendingDrops.length > JAR_MAX_PENDING_DROPS) {
-        jarEngine.pendingDrops.splice(0, jarEngine.pendingDrops.length - JAR_MAX_PENDING_DROPS);
+    }
+
+    function resolveJarPair(a, b, rimY, iter) {
+      if ((!a.spilled) !== (!b.spilled) && (a.y > rimY || b.y > rimY)) return;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const minD = a.r + b.r;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < minD * minD && distSq > 0.0001) {
+        const dist = Math.sqrt(distSq);
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const overlap = minD - dist;
+        const invSum = a.invMass + b.invMass;
+        const corrA = (overlap * a.invMass) / invSum;
+        const corrB = (overlap * b.invMass) / invSum;
+        a.x -= nx * corrA;
+        a.y -= ny * corrA;
+        b.x += nx * corrB;
+        b.y += ny * corrB;
+        a.contacts += 1;
+        b.contacts += 1;
+
+        const rvx = b.vx - a.vx;
+        const rvy = b.vy - a.vy;
+        const vn = rvx * nx + rvy * ny;
+        if (vn < 0) {
+          const restitution = vn < -95 ? 0.2 : 0;
+          const imp = (-(1 + restitution) * vn) / invSum;
+          a.vx -= imp * nx * a.invMass;
+          a.vy -= imp * ny * a.invMass;
+          b.vx += imp * nx * b.invMass;
+          b.vy += imp * ny * b.invMass;
+
+          if (iter === 0) {
+            const tx = -ny;
+            const ty = nx;
+            const vt = rvx * tx + rvy * ty;
+            if (Math.abs(vn) > 38 || Math.abs(vt) > 32) {
+              const vSurf = vt - a.omega * a.r - b.omega * b.r;
+              const maxJt = Math.abs(imp) * 0.25;
+              const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.35) / invSum));
+              a.vx -= jt * tx * a.invMass;
+              a.vy -= jt * ty * a.invMass;
+              b.vx += jt * tx * b.invMass;
+              b.vy += jt * ty * b.invMass;
+              a.omega -= ((jt * a.invMass) / Math.max(14, a.r)) * 0.7;
+              b.omega -= ((jt * b.invMass) / Math.max(14, b.r)) * 0.7;
+            } else {
+              a.vx *= 0.94;
+              b.vx *= 0.94;
+              a.omega *= 0.78;
+              b.omega *= 0.78;
+            }
+          }
+        }
       }
     }
 
     function stepJarPhysics(dt) {
-      const substeps = 2;
+      const bodies = jarEngine.bodies;
+      const n = bodies.length;
+      if (n === 0) return;
+      const substeps = n > 200 ? 1 : 2;
       const sdt = Math.min(0.033, dt) / substeps;
       const gravity = 960;
       const scale = getJarScale();
+      const iconScale = getJarIconScale();
       const spillPx = getJarSpillWidth();
       const allowSpill = spillPx > 0;
       const ox = spillPx;
       const worldW = 320 * scale + spillPx * 2;
+      const worldH = 380 * scale;
       const cx = ox + 160 * scale;
       const leftWall = ox + 42 * scale;
       const rightWall = ox + 278 * scale;
@@ -3115,12 +3376,31 @@
       const neckY = 98 * scale;
       const rimY = 68 * scale;
       const rimLipY = 54 * scale;
-      const overflowY = 96 * scale;
       const blCx = leftWall + cornerR;
       const brCx = rightWall - cornerR;
       const bCy = bottomY - cornerR;
-      const bodies = jarEngine.bodies;
-      const n = bodies.length;
+      const solverIters = n > 300 ? 2 : n > 100 ? 3 : 4;
+      // Keep spatial grid cell size tuned to common gifts; handle oversized gifts (e.g. Lion/Galaxy) separately so 1 giant gift never coarsens the grid
+      const cellSize = Math.max(30, Math.round(32 * iconScale));
+      const halfCell = cellSize * 0.5;
+      const invCell = 1 / cellSize;
+      const cols = Math.max(1, Math.ceil(worldW * invCell));
+      const rows = Math.max(1, Math.ceil(worldH * invCell));
+      const numCells = cols * rows;
+      const useGrid = n > 48 && numCells > 4;
+      let head = null;
+      let next = null;
+      const bigIndices = [];
+      if (useGrid) {
+        if (!jarEngine.gridHead || jarEngine.gridHead.length < numCells) {
+          jarEngine.gridHead = new Int32Array(numCells);
+        }
+        if (!jarEngine.gridNext || jarEngine.gridNext.length < n) {
+          jarEngine.gridNext = new Int32Array(Math.max(256, n * 2));
+        }
+        head = jarEngine.gridHead;
+        next = jarEngine.gridNext;
+      }
 
       for (let s = 0; s < substeps; s++) {
         for (let i = 0; i < n; i++) {
@@ -3143,67 +3423,89 @@
           b.angle += b.omega * sdt;
         }
 
-        // Pairwise circle-circle collision resolution
-        for (let iter = 0; iter < 6; iter++) {
+        // Build spatial grid ONCE per substep (small gifts in tight grid, rare giant gifts checked directly)
+        if (useGrid) {
+          head.fill(-1, 0, numCells);
+          bigIndices.length = 0;
           for (let i = 0; i < n; i++) {
-            const a = bodies[i];
-            for (let j = i + 1; j < n; j++) {
-              const b = bodies[j];
-              // Glass walls separate inside gifts from spilled outside gifts below the mouth lip
-              if ((!a.spilled) !== (!b.spilled) && (a.y > rimY || b.y > rimY)) continue;
-              const dx = b.x - a.x;
-              const dy = b.y - a.y;
-              const minD = a.r + b.r;
-              const distSq = dx * dx + dy * dy;
-              if (distSq < minD * minD && distSq > 0.0001) {
-                const dist = Math.sqrt(distSq);
-                const nx = dx / dist;
-                const ny = dy / dist;
-                const overlap = minD - dist;
-                const invSum = a.invMass + b.invMass;
-                const corrA = (overlap * a.invMass) / invSum;
-                const corrB = (overlap * b.invMass) / invSum;
-                a.x -= nx * corrA;
-                a.y -= ny * corrA;
-                b.x += nx * corrB;
-                b.y += ny * corrB;
-                a.contacts += 1;
-                b.contacts += 1;
+            const b = bodies[i];
+            if (b.r > halfCell) {
+              bigIndices.push(i);
+              continue;
+            }
+            let gx = Math.floor(b.x * invCell);
+            let gy = Math.floor(b.y * invCell);
+            if (gx < 0) gx = 0;
+            else if (gx >= cols) gx = cols - 1;
+            if (gy < 0) gy = 0;
+            else if (gy >= rows) gy = rows - 1;
+            const cellIdx = gy * cols + gx;
+            next[i] = head[cellIdx];
+            head[cellIdx] = i;
+          }
+        }
 
-                const rvx = b.vx - a.vx;
-                const rvy = b.vy - a.vy;
-                const vn = rvx * nx + rvy * ny;
-                if (vn < 0) {
-                  const restitution = vn < -95 ? 0.2 : 0;
-                  const imp = (-(1 + restitution) * vn) / invSum;
-                  a.vx -= imp * nx * a.invMass;
-                  a.vy -= imp * ny * a.invMass;
-                  b.vx += imp * nx * b.invMass;
-                  b.vy += imp * ny * b.invMass;
-
-                  // Energy-dissipative surface friction only on first iteration (prevents resting spin-up)
-                  if (iter === 0) {
-                    const tx = -ny;
-                    const ty = nx;
-                    const vt = rvx * tx + rvy * ty;
-                    if (Math.abs(vn) > 38 || Math.abs(vt) > 32) {
-                      const vSurf = vt - a.omega * a.r - b.omega * b.r;
-                      const maxJt = Math.abs(imp) * 0.25;
-                      const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.35) / invSum));
-                      a.vx -= jt * tx * a.invMass;
-                      a.vy -= jt * ty * a.invMass;
-                      b.vx += jt * tx * b.invMass;
-                      b.vy += jt * ty * b.invMass;
-                      a.omega -= ((jt * a.invMass) / Math.max(14, a.r)) * 0.7;
-                      b.omega -= ((jt * b.invMass) / Math.max(14, b.r)) * 0.7;
-                    } else {
-                      a.vx *= 0.94;
-                      b.vx *= 0.94;
-                      a.omega *= 0.78;
-                      b.omega *= 0.78;
-                    }
+        for (let iter = 0; iter < solverIters; iter++) {
+          if (!useGrid) {
+            for (let i = 0; i < n; i++) {
+              const a = bodies[i];
+              for (let j = i + 1; j < n; j++) {
+                resolveJarPair(a, bodies[j], rimY, iter);
+              }
+            }
+          } else {
+            for (let gy = 0; gy < rows; gy++) {
+              const rowOff = gy * cols;
+              const nextRowOff = rowOff + cols;
+              const hasNextRow = gy + 1 < rows;
+              for (let gx = 0; gx < cols; gx++) {
+                const cellIdx = rowOff + gx;
+                let i = head[cellIdx];
+                if (i === -1) continue;
+                const rightHead = gx + 1 < cols ? head[cellIdx + 1] : -1;
+                const dlHead = hasNextRow && gx > 0 ? head[nextRowOff + gx - 1] : -1;
+                const dHead = hasNextRow ? head[nextRowOff + gx] : -1;
+                const drHead = hasNextRow && gx + 1 < cols ? head[nextRowOff + gx + 1] : -1;
+                while (i !== -1) {
+                  const a = bodies[i];
+                  let j = next[i];
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
                   }
+                  j = rightHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  j = dlHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  j = dHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  j = drHead;
+                  while (j !== -1) {
+                    resolveJarPair(a, bodies[j], rimY, iter);
+                    j = next[j];
+                  }
+                  i = next[i];
                 }
+              }
+            }
+            const bigLen = bigIndices.length;
+            for (let bi = 0; bi < bigLen; bi++) {
+              const idx = bigIndices[bi];
+              const a = bodies[idx];
+              for (let j = 0; j < n; j++) {
+                if (j === idx) continue;
+                const b = bodies[j];
+                if (b.r > halfCell && j < idx) continue;
+                resolveJarPair(a, b, rimY, iter);
               }
             }
           }
@@ -3396,29 +3698,6 @@
       for (let i = 0; i < bodies.length; i++) {
         bodies[i].age = (bodies[i].age || 0) + 1;
       }
-
-      // Overflow eviction:
-      // - When jarSpillWidth === 0 (contained mode): evict least-value gift when pile reaches neck.
-      // - When jarSpillWidth > 0 (overflow spill mode): let gifts spill out freely; only evict if spilled stacks fill all the way to the top!
-      if (jarEngine.evictCooldown > 0) {
-        jarEngine.evictCooldown -= 1;
-      } else if (bodies.length > 1) {
-        const isOverflowing = allowSpill
-          ? bodies.some(function (b) {
-              return b.spilled && (b.age || 0) > 90 && b.contacts > 0 && Math.abs(b.vy) <= 25 && (b.y - b.r) < rimY;
-            })
-          : bodies.some(function (b) {
-              return (b.age || 0) > 55 && b.contacts > 0 && b.vy <= 35 && (b.y - b.r) < overflowY;
-            });
-        if (isOverflowing) {
-          let evictIdx = findLeastValueJarIndex(bodies, true);
-          if (evictIdx < 0) evictIdx = findLeastValueJarIndex(bodies, false);
-          if (evictIdx >= 0) {
-            bodies.splice(evictIdx, 1);
-            jarEngine.evictCooldown = 2;
-          }
-        }
-      }
     }
 
     function drawJarBody(ctx, b) {
@@ -3532,9 +3811,11 @@
       jarEngine.lastTime = ts;
 
       if (jarEngine.pendingDrops.length > 0 && ts >= jarEngine.nextSpawnAt) {
-        const nextItem = jarEngine.pendingDrops.shift();
-        spawnJarBody(nextItem, false);
-        jarEngine.nextSpawnAt = ts + 65;
+        const burstCount = jarEngine.pendingDrops.length > 100 ? 2 : 1;
+        for (let k = 0; k < burstCount && jarEngine.pendingDrops.length > 0; k++) {
+          spawnJarBody(jarEngine.pendingDrops.shift(), false);
+        }
+        jarEngine.nextSpawnAt = ts + (jarEngine.pendingDrops.length > 30 ? 20 : 65);
       }
 
       stepJarPhysics(dt);
@@ -3579,7 +3860,6 @@
     function syncJarOverlayState(state, cfg, pointsUnit) {
       jarEngine.showToast = cfg.jarShowToast !== false;
       jarEngine.pointsUnit = pointsUnit || 'Coins';
-      jarEngine.maxItems = Math.max(40, Math.min(JAR_HARD_BODY_LIMIT, Math.round(Number(cfg.jarMaxItems) || 160)));
       updateJarDemoLoop(Boolean(cfg.jarShowDemo));
 
       const jarData = state.jar || { events: [], resetSeq: 0 };
