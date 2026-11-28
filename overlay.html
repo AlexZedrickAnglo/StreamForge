@@ -1461,18 +1461,27 @@
       color: #4ADE80;
     }
 
-    /* Gift Board (+/-) Vertical & Horizontal Widget */
+    /* Gift Board (+/-) & Lethal Board Vertical & Horizontal Widget */
     body.standalone-fit .root.giftboard-only,
     body.standalone-fit .root.compact.giftboard-only,
     .root.giftboard-only {
-      width: auto;
+      width: max-content;
       max-width: none;
     }
 
     .giftboard-widget {
-      width: auto;
+      width: max-content;
       display: inline-flex;
       flex-direction: column;
+    }
+
+    .root:not(.giftboard-only) .giftboard-widget {
+      width: auto;
+      max-width: 100%;
+    }
+
+    .root:not(.giftboard-only) .gb-list.gb-horizontal {
+      flex-wrap: wrap;
     }
 
     .gb-body {
@@ -1634,6 +1643,10 @@
       align-items: center;
       gap: 8px;
       flex-wrap: nowrap;
+    }
+
+    .gb-list.gb-pos-left .lb-effect-row {
+      flex-direction: row-reverse;
     }
 
     .lb-equals {
@@ -3217,10 +3230,13 @@
     }
 
     function getJarOuterHalfW(y, scale) {
-      if (y < 40 * scale) return 0;
-      if (y < 68 * scale) return 84 * scale;
+      if (y < 74 * scale) return 0;
+      if (y < 84 * scale) {
+        const t = (y - 74 * scale) / (10 * scale);
+        return (76 + 8 * t) * scale;
+      }
       if (y < 122 * scale) {
-        const t = (y - 68 * scale) / (54 * scale);
+        const t = (y - 84 * scale) / (38 * scale);
         return (84 + 40 * t) * scale;
       }
       return 124 * scale;
@@ -3275,8 +3291,15 @@
         b.omega = 0;
         b.sleeping = false;
         b.sleepFrames = 0;
+        b.immobileFrames = 0;
         b.supported = false;
         b.wasSupported = false;
+        b.onFloor = false;
+        b.supBelowStatic = false;
+        b.supLeftStatic = false;
+        b.supRightStatic = false;
+        b.supLeftChain = false;
+        b.supRightChain = false;
         b.anchorX = b.x;
         b.anchorY = b.y;
         b.prevContacts = 0;
@@ -3419,8 +3442,15 @@
         prevContacts: 0,
         supported: false,
         wasSupported: false,
+        onFloor: false,
+        supBelowStatic: false,
+        supLeftStatic: false,
+        supRightStatic: false,
+        supLeftChain: false,
+        supRightChain: false,
         sleeping: false,
         sleepFrames: 0,
+        immobileFrames: 0,
         age: settled ? 80 : 0,
         spilled: false,
         r: r,
@@ -3449,7 +3479,29 @@
       }
     }
 
-    function resolveJarPair(a, b, rimY, iter, scale, allowSpill) {
+    function wakeSupportedAbove(bodies, baseBody) {
+      const queue = [baseBody];
+      while (queue.length > 0) {
+        const cur = queue.pop();
+        for (let k = 0; k < bodies.length; k++) {
+          const u = bodies[k];
+          if (!u.sleeping || u === cur) continue;
+          if (u.y > cur.y + cur.r * 0.6) continue;
+          const reach = cur.r + u.r + 5;
+          const dx = u.x - cur.x;
+          const dy = u.y - cur.y;
+          if (dx * dx + dy * dy <= reach * reach) {
+            u.sleeping = false;
+            u.sleepFrames = 0;
+            u.anchorX = u.x;
+            u.anchorY = u.y;
+            queue.push(u);
+          }
+        }
+      }
+    }
+
+    function resolveJarPair(a, b, rimY, iter, scale, allowSpill, bodies) {
       if (a.sleeping && b.sleeping) return;
       if ((!a.spilled) !== (!b.spilled) && (a.y > rimY || b.y > rimY)) return;
       const dx = b.x - a.x;
@@ -3474,17 +3526,19 @@
       const rvy = b.vy - a.vy;
       const vn = rvx * nx + rvy * ny;
 
-      // Only wake near-surface sleeping gifts on strong direct impacts; deeply buried gifts remain static support so new drops never boil the pile
-      if (a.sleeping && !b.sleeping && vn < -150 && a.y < rimY + 110 * scale && (a.prevContacts || 0) < 5) {
+      // Only wake near-surface sleeping gifts on strong direct impacts, and cascade-wake any sleeping gift resting above them so nothing ever floats
+      if (a.sleeping && !b.sleeping && vn < -165 && a.y < rimY + 110 * scale && (a.prevContacts || 0) < 5) {
         a.sleeping = false;
         a.sleepFrames = 0;
         a.anchorX = a.x;
         a.anchorY = a.y;
-      } else if (b.sleeping && !a.sleeping && vn < -150 && b.y < rimY + 110 * scale && (b.prevContacts || 0) < 5) {
+        if (bodies) wakeSupportedAbove(bodies, a);
+      } else if (b.sleeping && !a.sleeping && vn < -165 && b.y < rimY + 110 * scale && (b.prevContacts || 0) < 5) {
         b.sleeping = false;
         b.sleepFrames = 0;
         b.anchorX = b.x;
         b.anchorY = b.y;
+        if (bodies) wakeSupportedAbove(bodies, b);
       }
 
       const invA = a.sleeping ? 0 : a.invMass;
@@ -3499,24 +3553,67 @@
         if (invB > 0) b.iterContacts = (b.iterContacts || 0) + 1;
       }
 
-      // Inductive floor-chained vertical support: a body is ONLY supported if resting on the floor
-      // or on top of another body that is already floor-supported/sleeping. Prevents mid-air neck clogs!
-      if (ny > 0.28 && (b.sleeping || b.wasSupported || b.supported)) {
+      // 1) Fast inductive floor-chain (for jarFull spill opening, crowded anti-boiling, and deadlock breaking)
+      const bFloorChain = Boolean(b.sleeping || b.wasSupported || b.supported);
+      const aFloorChain = Boolean(a.sleeping || a.wasSupported || a.supported);
+      if (ny > 0.14 && bFloorChain) {
         a.supported = true;
-      } else if (ny < -0.28 && (a.sleeping || a.wasSupported || a.supported)) {
+        if (nx < -0.1) a.supLeftChain = true;
+        else if (nx > 0.1) a.supRightChain = true;
+      } else if (ny < -0.14 && aFloorChain) {
         b.supported = true;
+        if (nx > 0.1) b.supLeftChain = true;
+        else if (nx < -0.1) b.supRightChain = true;
+      }
+      if (bFloorChain) {
+        if (nx > 0.22) a.supRightChain = true;
+        else if (nx < -0.22) a.supLeftChain = true;
+      }
+      if (aFloorChain) {
+        if (nx > 0.22) b.supLeftChain = true;
+        else if (nx < -0.22) b.supRightChain = true;
+      }
+
+      // 2) Strict STATIC-ONLY bottom-up cradling (walls + ALREADY-SLEEPING bodies ONLY).
+      // Awake bodies can NEVER brace each other into sleeping in mid-air or forming staircases!
+      if (b.sleeping && !a.sleeping) {
+        if (ny > 0.14) {
+          a.supBelowStatic = true;
+          if (nx < -0.1) a.supLeftStatic = true;
+          else if (nx > 0.1) a.supRightStatic = true;
+          else if (iter === 0 && !a.onFloor && Math.abs(a.vx) < 12 && (a.iterContacts || 0) <= 2) {
+            const tipDir = Math.abs(a.x - b.x) > 0.5 ? (a.x > b.x ? 1 : -1) : (a.angle >= 0 ? 1 : -1);
+            a.vx += tipDir * 8;
+          }
+        } else {
+          if (nx > 0.22) a.supRightStatic = true;
+          else if (nx < -0.22) a.supLeftStatic = true;
+        }
+      } else if (a.sleeping && !b.sleeping) {
+        if (ny < -0.14) {
+          b.supBelowStatic = true;
+          if (nx > 0.1) b.supLeftStatic = true;
+          else if (nx < -0.1) b.supRightStatic = true;
+          else if (iter === 0 && !b.onFloor && Math.abs(b.vx) < 12 && (b.iterContacts || 0) <= 2) {
+            const tipDir = Math.abs(b.x - a.x) > 0.5 ? (b.x > a.x ? 1 : -1) : (b.angle >= 0 ? 1 : -1);
+            b.vx += tipDir * 8;
+          }
+        } else {
+          if (nx > 0.22) b.supLeftStatic = true;
+          else if (nx < -0.22) b.supRightStatic = true;
+        }
       }
 
       // Neighbor-normalized Baumgarte relaxation: dividing by simultaneous neighbor count prevents
-      // Gauss-Seidel over-relaxation ("boiling") when hundreds of supported gifts pack the jar,
-      // while keeping free-falling and actively overflowing mouth gifts crisp so they drop or spill cleanly.
-      const pairSupported = (a.sleeping || a.wasSupported || a.supported) && (b.sleeping || b.wasSupported || b.supported);
+      // Gauss-Seidel over-relaxation ("boiling") when hundreds of supported gifts pack the jar.
+      const pairSupported = aFloorChain || bFloorChain;
       const rawK = Math.max(1, a.iterContacts || 0, b.iterContacts || 0, a.prevContacts || 0, b.prevContacts || 0);
-      const crowded = pairSupported && rawK >= 5;
+      // 2D disk kissing number is 6: >= 7 simultaneous contacts guarantees physical overfill
+      const crowded = pairSupported && rawK >= 7;
       const slop = crowded ? Math.min(minD * 0.26, 5.5) : 0.45;
       const rawOverlap = minD - dist;
       if (rawOverlap > slop) {
-        const beta = crowded ? Math.max(0.015, 0.42 / rawK) : 0.46;
+        const beta = crowded ? Math.max(0.015, 0.42 / rawK) : 0.48;
         const maxPen = crowded ? Math.max(0.35, 3.4 / rawK) : 4.2;
         const pen = Math.min(maxPen, (rawOverlap - slop) * beta);
         if (invA > 0) {
@@ -3549,8 +3646,8 @@
           const vt = rvx * tx + rvy * ty;
           if (Math.abs(vn) > 55 || Math.abs(vt) > 48) {
             const vSurf = vt - (invA > 0 ? a.omega * a.r : 0) - (invB > 0 ? b.omega * b.r : 0);
-            const maxJt = Math.abs(imp) * 0.28;
-            const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.38) / invSum));
+            const maxJt = Math.abs(imp) * 0.24;
+            const jt = Math.max(-maxJt, Math.min(maxJt, (-vSurf * 0.32) / invSum));
             if (invA > 0) {
               a.vx -= jt * tx * invA;
               a.vy -= jt * ty * invA;
@@ -3561,16 +3658,16 @@
               b.vy += jt * ty * invB;
               b.omega -= ((jt * invB) / Math.max(14, b.r)) * 0.6;
             }
-          } else if (pairSupported) {
+          } else if (crowded) {
             if (invA > 0) {
-              a.vx *= 0.86;
+              a.vx *= 0.88;
               a.vy *= 0.92;
-              a.omega *= 0.7;
+              a.omega *= 0.72;
             }
             if (invB > 0) {
-              b.vx *= 0.86;
+              b.vx *= 0.88;
               b.vy *= 0.92;
-              b.omega *= 0.7;
+              b.omega *= 0.72;
             }
           }
         }
@@ -3638,6 +3735,14 @@
         next = jarEngine.gridNext;
       }
 
+      for (let i = 0; i < n; i++) {
+        const b = bodies[i];
+        if (!b.sleeping) {
+          b.frameStartX = b.x;
+          b.frameStartY = b.y;
+        }
+      }
+
       for (let s = 0; s < substeps; s++) {
         for (let i = 0; i < n; i++) {
           const b = bodies[i];
@@ -3647,10 +3752,19 @@
           b.contacts = 0;
           b.iterContacts = 0;
           b.supported = false;
+          b.onFloor = false;
+          b.supBelowStatic = false;
+          b.supLeftStatic = false;
+          b.supRightStatic = false;
+          b.supLeftChain = false;
+          b.supRightChain = false;
           b.vy += gravity * sdt;
-          if (allowSpill && jarFull && !b.spilled && b.y < 82 * scale && (b.age || 0) > 10 && (b.sleepFrames || 0) < 20 && Math.abs(b.vx) < 135) {
+          if (allowSpill && jarFull && !b.spilled && b.y < 82 * scale && (b.age || 0) > 10 && (b.age || 0) < 180 && (b.sleepFrames || 0) < 28 && Math.abs(b.vx) < 145) {
             const dir = b.x > cx ? 1 : b.x < cx ? -1 : (i % 2 === 0 ? 1 : -1);
-            b.vx += dir * 380 * sdt;
+            b.vx += dir * 420 * sdt;
+            if (b.y > 46 * scale && Math.abs(b.x - cx) > 42 * scale && b.vy > -80) {
+              b.vy -= 260 * sdt;
+            }
           }
           b.vx *= b.spilled ? 0.994 : 0.988;
           b.vy *= 0.992;
@@ -3690,7 +3804,7 @@
             for (let i = 0; i < n; i++) {
               const a = bodies[i];
               for (let j = i + 1; j < n; j++) {
-                resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen);
+                resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen, bodies);
               }
             }
           } else {
@@ -3710,27 +3824,27 @@
                   const a = bodies[i];
                   let j = next[i];
                   while (j !== -1) {
-                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen);
+                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen, bodies);
                     j = next[j];
                   }
                   j = rightHead;
                   while (j !== -1) {
-                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen);
+                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen, bodies);
                     j = next[j];
                   }
                   j = dlHead;
                   while (j !== -1) {
-                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen);
+                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen, bodies);
                     j = next[j];
                   }
                   j = dHead;
                   while (j !== -1) {
-                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen);
+                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen, bodies);
                     j = next[j];
                   }
                   j = drHead;
                   while (j !== -1) {
-                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen);
+                    resolveJarPair(a, bodies[j], rimY, iter, scale, mouthSpillOpen, bodies);
                     j = next[j];
                   }
                   i = next[i];
@@ -3745,19 +3859,22 @@
                 if (j === idx) continue;
                 const b = bodies[j];
                 if (b.r > halfCell && j < idx) continue;
-                resolveJarPair(a, b, rimY, iter, scale, mouthSpillOpen);
+                resolveJarPair(a, b, rimY, iter, scale, mouthSpillOpen, bodies);
               }
             }
           }
 
-          // Jar walls (inside vs spilled outside), neck lip spill transition, floor, and roll-off area bounds
+          // Jar walls (inside vs spilled outside), continuous rounded lip spill transition, floor, and roll-off area bounds
           for (let i = 0; i < n; i++) {
             const b = bodies[i];
             if (b.sleeping) continue;
 
-            // Transition gift over the jar mouth lip ONLY when the real floor-supported pile has reached the neck
+            // Transition gift smoothly over the rounded jar lip ONLY when the real floor-supported pile has reached the neck
             const canOverflowLip = mouthSpillOpen;
-            if (canOverflowLip && !b.spilled && b.y < 76 * scale && (b.x < ox + 80 * scale || b.x > ox + 240 * scale)) {
+            const rimEdgeOff = 76 * scale;
+            const rimTopY = 74 * scale;
+            const lipR = Math.min(b.r, 58 * scale);
+            if (canOverflowLip && !b.spilled && b.y < rimTopY && (b.x < cx - rimEdgeOff || b.x > cx + rimEdgeOff)) {
               b.spilled = true;
               const dir = b.x < cx ? -1 : 1;
               if (b.vx * dir < 70) b.vx = dir * (78 + (i % 5) * 16);
@@ -3765,14 +3882,33 @@
             }
 
             if (b.spilled && allowSpill) {
-              // Collide with the outside of the glass jar so spilled gifts tumble down the shoulders and never clip back inside
-              if (b.y + b.r > 40 * scale) {
-                const oh = getJarOuterHalfW(Math.max(40 * scale, b.y), scale);
+              // Continuous rounded lip corner above y=64*scale + smooth outer bevel/wall below y=64*scale (ZERO teleport cliff!)
+              if (b.y < rimTopY) {
+                const rimX = b.x < cx ? cx - rimEdgeOff : cx + rimEdgeOff;
+                const rdx = b.x - rimX;
+                const rdy = b.y - rimTopY;
+                const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+                if (rdist < lipR && rdist > 0.001) {
+                  const rnx = rdx / rdist;
+                  const rny = rdy / rdist;
+                  b.x = rimX + rnx * lipR;
+                  b.y = rimTopY + rny * lipR;
+                  b.contacts += 1;
+                  const rvn = b.vx * rnx + b.vy * rny;
+                  if (rvn < 0) {
+                    b.vx -= rvn * rnx;
+                    b.vy -= rvn * rny;
+                  }
+                }
+              } else {
+                const oh = getJarOuterHalfW(b.y, scale);
                 if (oh > 0) {
-                  const freeOnShoulder = (b.prevContacts || 0) <= 2 && (b.sleepFrames || 0) < 12;
+                  const freeOnShoulder = !b.wasSupported && !b.supported && (b.prevContacts || 0) <= 2 && b.vy > -10 && (b.sleepFrames || 0) < 12;
                   if (b.x < cx && b.x + b.r > cx - oh) {
                     b.x = cx - oh - b.r;
                     b.contacts += 1;
+                    b.supRightStatic = true;
+                    b.supRightChain = true;
                     if (freeOnShoulder && b.y >= 56 * scale && b.y < 128 * scale) {
                       if (b.vx > -72) b.vx = -72 - Math.abs(b.vy) * 0.14;
                       b.omega = Math.min(b.omega, -2.4);
@@ -3782,6 +3918,8 @@
                   } else if (b.x >= cx && b.x - b.r < cx + oh) {
                     b.x = cx + oh + b.r;
                     b.contacts += 1;
+                    b.supLeftStatic = true;
+                    b.supLeftChain = true;
                     if (freeOnShoulder && b.y >= 56 * scale && b.y < 128 * scale) {
                       if (b.vx < 72) b.vx = 72 + Math.abs(b.vy) * 0.14;
                       b.omega = Math.max(b.omega, 2.4);
@@ -3796,11 +3934,17 @@
               if (b.y + b.r > outerFloorY) {
                 b.y = outerFloorY - b.r;
                 b.contacts += 1;
+                b.onFloor = true;
                 b.supported = true;
+                b.supBelowStatic = true;
+                b.supLeftStatic = true;
+                b.supRightStatic = true;
+                b.supLeftChain = true;
+                b.supRightChain = true;
                 if (b.vy > 0) {
                   b.vy = b.vy > 110 ? -b.vy * 0.18 : 0;
                 }
-                b.vx *= 0.975;
+                b.vx *= 0.988;
                 b.omega = Math.max(-5.5, Math.min(5.5, b.vx / Math.max(12, b.r)));
               }
 
@@ -3808,11 +3952,15 @@
               if (b.x - b.r < 0) {
                 b.x = b.r;
                 b.contacts += 1;
+                b.supLeftStatic = true;
+                b.supLeftChain = true;
                 if (b.vx < 0) b.vx = Math.abs(b.vx) > 65 ? -b.vx * 0.18 : 0;
                 b.omega *= 0.75;
               } else if (b.x + b.r > worldW) {
                 b.x = worldW - b.r;
                 b.contacts += 1;
+                b.supRightStatic = true;
+                b.supRightChain = true;
                 if (b.vx > 0) b.vx = Math.abs(b.vx) > 65 ? -b.vx * 0.18 : 0;
                 b.omega *= 0.75;
               }
@@ -3825,33 +3973,70 @@
               continue;
             }
 
-            // Inside jar containment (funnel falling gifts into mouth; open mouth rim once pile reaches lip)
+            // Inside jar containment (funnel falling gifts into mouth; continuous rounded rim lip once pile reaches lip)
             if (b.y < neckY) {
-              if (!canOverflowLip || b.y >= rimLipY) {
-                const halfAllow = Math.max(0, 74 * scale - Math.min(b.r, 68 * scale));
+              if (!canOverflowLip || b.y >= rimTopY) {
+                const halfAllow = Math.max(0, rimEdgeOff - lipR);
                 const minX = cx - halfAllow;
                 const maxX = cx + halfAllow;
                 if (b.x < minX) {
                   b.x = minX;
                   b.contacts += 1;
+                  b.supLeftStatic = true;
+                  b.supLeftChain = true;
                   if (b.vx < 0) b.vx = Math.abs(b.vx) > 60 ? -b.vx * 0.16 : 0;
                   b.omega *= 0.8;
                 } else if (b.x > maxX) {
                   b.x = maxX;
                   b.contacts += 1;
+                  b.supRightStatic = true;
+                  b.supRightChain = true;
                   if (b.vx > 0) b.vx = Math.abs(b.vx) > 60 ? -b.vx * 0.16 : 0;
                   b.omega *= 0.8;
+                }
+              } else {
+                // Smoothly roll over the left/right rounded glass lip at (cx ± rimEdgeOff, rimTopY)
+                const rimX = b.x < cx ? cx - rimEdgeOff : cx + rimEdgeOff;
+                const rdx = b.x - rimX;
+                const rdy = b.y - rimTopY;
+                const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+                if (rdist < lipR && rdist > 0.001) {
+                  const rnx = rdx / rdist;
+                  const rny = rdy / rdist;
+                  b.x = rimX + rnx * lipR;
+                  b.y = rimTopY + rny * lipR;
+                  b.contacts += 1;
+                  if (rny < -0.25) {
+                    b.supported = true;
+                    b.supBelowStatic = true;
+                  }
+                  if (rnx > 0.15) {
+                    b.supLeftStatic = true;
+                    b.supLeftChain = true;
+                  } else if (rnx < -0.15) {
+                    b.supRightStatic = true;
+                    b.supRightChain = true;
+                  }
+                  const rvn = b.vx * rnx + b.vy * rny;
+                  if (rvn < 0) {
+                    b.vx -= rvn * rnx;
+                    b.vy -= rvn * rny;
+                  }
                 }
               }
             } else {
               if (b.x - b.r < leftWall) {
                 b.x = leftWall + b.r;
                 b.contacts += 1;
+                b.supLeftStatic = true;
+                b.supLeftChain = true;
                 if (b.vx < 0) b.vx = Math.abs(b.vx) > 65 ? -b.vx * 0.16 : 0;
                 b.omega *= 0.76;
               } else if (b.x + b.r > rightWall) {
                 b.x = rightWall - b.r;
                 b.contacts += 1;
+                b.supRightStatic = true;
+                b.supRightChain = true;
                 if (b.vx > 0) b.vx = Math.abs(b.vx) > 65 ? -b.vx * 0.16 : 0;
                 b.omega *= 0.76;
               }
@@ -3869,7 +4054,20 @@
                 b.x = blCx + nx * maxR;
                 b.y = bCy + ny * maxR;
                 b.contacts += 1;
-                if (ny > 0.25) b.supported = true;
+                if (ny > 0.22) {
+                  b.supported = true;
+                  b.supBelowStatic = true;
+                }
+                if (ny > 0.92) {
+                  b.onFloor = true;
+                  b.supLeftStatic = true;
+                  b.supRightStatic = true;
+                  b.supLeftChain = true;
+                  b.supRightChain = true;
+                } else if (nx < -0.15) {
+                  b.supLeftStatic = true;
+                  b.supLeftChain = true;
+                }
                 const vn = b.vx * nx + b.vy * ny;
                 if (vn > 0) {
                   const rest = vn > 95 ? 1.12 : 1.0;
@@ -3891,7 +4089,20 @@
                 b.x = brCx + nx * maxR;
                 b.y = bCy + ny * maxR;
                 b.contacts += 1;
-                if (ny > 0.25) b.supported = true;
+                if (ny > 0.22) {
+                  b.supported = true;
+                  b.supBelowStatic = true;
+                }
+                if (ny > 0.92) {
+                  b.onFloor = true;
+                  b.supLeftStatic = true;
+                  b.supRightStatic = true;
+                  b.supLeftChain = true;
+                  b.supRightChain = true;
+                } else if (nx > 0.15) {
+                  b.supRightStatic = true;
+                  b.supRightChain = true;
+                }
                 const vn = b.vx * nx + b.vy * ny;
                 if (vn > 0) {
                   const rest = vn > 95 ? 1.12 : 1.0;
@@ -3906,12 +4117,18 @@
             if (b.y + b.r > bottomY) {
               b.y = bottomY - b.r;
               b.contacts += 1;
+              b.onFloor = true;
               b.supported = true;
+              b.supBelowStatic = true;
+              b.supLeftStatic = true;
+              b.supRightStatic = true;
+              b.supLeftChain = true;
+              b.supRightChain = true;
               if (b.vy > 0) {
                 b.vy = b.vy > 110 ? -b.vy * 0.14 : 0;
               }
-              b.vx *= 0.8;
-              b.omega *= 0.7;
+              b.vx *= 0.88;
+              b.omega *= 0.72;
             }
 
             // Hard neck ceiling applies ONLY when spill overflow is disabled (jarSpillWidth === 0)
@@ -3923,70 +4140,99 @@
           }
         }
 
-        // Contact-aware damping ONLY for floor-supported gifts so free-falling gifts drop cleanly into the jar
+        // Only damp genuinely STATIC-CRADLED bodies (on floor OR braced below + left + right by walls / ALREADY-SLEEPING bodies).
+        // Uncradled marbles NEVER get deadzone-damped, so they roll freely into empty gaps and across the floor!
         for (let i = 0; i < n; i++) {
           const b = bodies[i];
           if (b.sleeping) continue;
-          if (b.supported) {
-            const spillingAtLip = mouthSpillOpen && !b.spilled && b.y < 78 * scale && (b.sleepFrames || 0) < 18;
+          const staticCradled = b.onFloor || (b.supBelowStatic && b.supLeftStatic && b.supRightStatic);
+          if (staticCradled) {
+            const spillingAtLip = mouthSpillOpen && !b.spilled && b.y < 82 * scale && (b.age || 0) < 180 && (b.sleepFrames || 0) < 28;
+            const rollingOnFloor = b.onFloor && Math.abs(b.vx) > (b.spilled ? 10 : 16);
             const moved = Math.hypot(b.x - b.px, b.y - b.py);
-            if (!spillingAtLip) {
-              if (b.contacts >= 3) {
-                b.vx *= 0.82;
-                b.vy *= 0.82;
-                b.omega *= 0.68;
-              } else if (!b.spilled || moved < 0.35) {
-                b.omega *= 0.8;
+            if (!spillingAtLip && !rollingOnFloor) {
+              if (b.contacts >= 4) {
+                b.vx *= 0.86;
+                b.vy *= 0.86;
+                b.omega *= 0.72;
+              } else if (!b.spilled || moved < 0.3) {
+                b.omega *= 0.82;
               }
-              if (moved < 0.35) {
-                b.vx *= 0.55;
-                b.vy *= 0.55;
-                b.omega *= 0.45;
+              if (moved < 0.25) {
+                b.vx *= 0.65;
+                b.vy *= 0.65;
+                b.omega *= 0.5;
               }
-              if (Math.abs(b.vy) < 10) b.vy = 0;
-              if (Math.abs(b.vx) < 8) b.vx = 0;
+              if (Math.abs(b.vy) < 6) b.vy = 0;
+              if (Math.abs(b.vx) < 4) b.vx = 0;
             }
-          } else if (Math.abs(b.vx) < 4) {
-            b.vx = 0;
           }
-          if (Math.abs(b.omega) < 0.12) b.omega = 0;
+          if (Math.abs(b.omega) < 0.08) b.omega = 0;
           else if (b.omega > 5.5) b.omega = 5.5;
           else if (b.omega < -5.5) b.omega = -5.5;
         }
       }
 
-      // Anchor-based sleep transition: ONLY floor-supported gifts can sleep (zero mid-air freezing, zero boiling, zero deletion)
+      // Bottom-up anchor sleep transition:
+      // 1) Fast path: staticCradled (on floor OR braced below + left + right by walls / ALREADY-SLEEPING bodies).
+      // 2) Equilibrium deadlock breaker: floor-chained + braced left & right + genuinely motionless (<0.14px/frame & <1.5px drift for 36 frames) with ZERO artificial damping!
       for (let i = 0; i < n; i++) {
         const b = bodies[i];
         b.age = (b.age || 0) + 1;
         if (b.sleeping) continue;
         b.prevContacts = b.iterContacts || b.contacts;
         b.wasSupported = Boolean(b.supported);
+        const staticCradled = b.onFloor || (b.supBelowStatic && b.supLeftStatic && b.supRightStatic);
+        const chainCradled = b.supported && b.supLeftChain && b.supRightChain;
+        const rollingOnOuterFloor = b.spilled && b.onFloor && Math.abs(b.vx) > 10;
+        const frameStep = Math.hypot(b.x - (b.frameStartX !== undefined ? b.frameStartX : b.x), b.y - (b.frameStartY !== undefined ? b.frameStartY : b.y));
         const ax = b.anchorX !== undefined ? b.anchorX : b.x;
         const ay = b.anchorY !== undefined ? b.anchorY : b.y;
         const driftX = b.x - ax;
         const driftY = b.y - ay;
         const driftSq = driftX * driftX + driftY * driftY;
         const speedSq = b.vx * b.vx + b.vy * b.vy;
-        const pinnedInCrowd = b.supported && b.age > 95 && b.prevContacts >= 5 && speedSq < 400;
-        if (!b.supported) {
+        const atOpenLip = allowSpill && jarFull && !b.spilled && b.y < 82 * scale && (b.age || 0) < 180;
+        const overpackedCradled = chainCradled && !atOpenLip && ((b.age > 65 && b.prevContacts >= 7 && speedSq < 400) || (b.age > 95 && b.prevContacts >= 6 && speedSq < 250 && frameStep < 0.35));
+        const pinnedInCrowd = (staticCradled && !atOpenLip && b.age > 85 && b.prevContacts >= 6 && speedSq < 400) || overpackedCradled;
+        if (rollingOnOuterFloor) {
           b.sleepFrames = 0;
-          if (driftSq > 42.25) {
-            b.anchorX = b.x;
-            b.anchorY = b.y;
+          b.immobileFrames = 0;
+          b.anchorX = b.x;
+          b.anchorY = b.y;
+        } else if (!staticCradled && !overpackedCradled) {
+          b.sleepFrames = 0;
+          if (chainCradled && !atOpenLip && b.age > 24 && frameStep < 0.25 && driftSq < 2.25) {
+            b.immobileFrames = (b.immobileFrames || 0) + 1;
+            if (b.immobileFrames >= 24) {
+              b.sleeping = true;
+              b.vx = 0;
+              b.vy = 0;
+              b.omega = 0;
+              b.anchorX = b.x;
+              b.anchorY = b.y;
+            }
+          } else {
+            b.immobileFrames = 0;
+            if (driftSq > 2.25) {
+              b.anchorX = b.x;
+              b.anchorY = b.y;
+            }
           }
-        } else if (driftSq > 42.25 && !pinnedInCrowd) {
+        } else if (driftSq > 36 && !pinnedInCrowd) {
           b.anchorX = b.x;
           b.anchorY = b.y;
           b.sleepFrames = 0;
-        } else if (b.age > 24) {
-          b.sleepFrames = (b.sleepFrames || 0) + (speedSq < 900 ? 2 : 1);
-          if (b.sleepFrames > 14) {
+          b.immobileFrames = 0;
+        } else if (b.age > 20) {
+          const sleepTarget = atOpenLip ? 36 : 26;
+          b.sleepFrames = (b.sleepFrames || 0) + (!atOpenLip && speedSq < 900 ? 2 : 1);
+          if (b.sleepFrames > (atOpenLip ? 22 : 12)) {
             b.vx *= 0.72;
             b.vy *= 0.72;
             b.omega *= 0.65;
           }
-          if (b.sleepFrames >= 32) {
+          if (b.sleepFrames >= sleepTarget) {
             b.sleeping = true;
             b.vx = 0;
             b.vy = 0;
@@ -4521,8 +4767,10 @@
       root.style.transform = '';
       const natW = Math.max(1, root.offsetWidth || 0, root.scrollWidth || 0);
       const natH = Math.max(1, root.offsetHeight || 0, root.scrollHeight || 0);
+      const isBoardMode = MODE === 'lethalboard' || MODE === 'giftboard_plus' || MODE === 'giftboard_minus' || MODE === 'giftboard';
+      const minScale = isBoardMode ? 0.08 : 0.25;
       const maxScale = 6;
-      const scale = Math.max(0.25, Math.min(maxScale, Math.min(vw / natW, vh / natH)));
+      const scale = Math.max(minScale, Math.min(maxScale, Math.min(vw / natW, vh / natH)));
       if (MODE === 'jar') {
         jarEngine.fitZoom = scale;
       }
